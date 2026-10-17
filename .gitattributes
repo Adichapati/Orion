@@ -1,0 +1,2 @@
+# Normalize line endings so Windows and other machines don't fight over them (Godot's default)
+* text=auto eol=lf
