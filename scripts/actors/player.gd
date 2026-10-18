@@ -17,6 +17,13 @@ const TORCH_RADIUS := 96.0
 const JUMP_TIME := 0.42
 const DODGE_TIME := 0.28
 const DODGE_TILES := 1.3
+## Movement ramps (tiles/s²): quick enough to feel direct, slow enough to feel like a body.
+const ACCEL := 26.0
+const DECEL := 20.0
+## A press this many seconds before an action is allowed still fires it (attack chains, a dodge
+## pressed during a swing, a jump pressed while landing).
+const BUFFER := 0.15
+const BUFFERED := ["attack", "parry", "dodge", "jump", "shove", "thrust"]
 
 var room: Room
 var state := S.NORMAL
@@ -44,11 +51,14 @@ var _told_unarmed := false
 var _flicker := FastNoiseLite.new()
 var _noise_t := 0.0
 var _mouse_aim_t := 0.0
+var _gvel := Vector2.ZERO
+var _buf := {}
 
 var body_node: Node2D
 var sprite: Sprite2D
 var torch: PointLight2D
-var camera: Camera2D
+var camera: ShakeCamera
+var life: Life
 
 
 func _ready() -> void:
@@ -66,6 +76,9 @@ func _ready() -> void:
 	add_child(body_node)
 	sprite = Art.feet_sprite("cedalion_se")
 	body_node.add_child(sprite)
+	life = Life.new()
+	add_child(life)
+	life.setup(body_node, sprite, 12)
 	torch = PointLight2D.new()
 	torch.texture = Art.tex("light_radial")
 	torch.texture_scale = TORCH_RADIUS / 64.0
@@ -77,10 +90,11 @@ func _ready() -> void:
 	_flicker.frequency = 9.0
 	_flicker.seed = 3
 
-	camera = Camera2D.new()
+	camera = ShakeCamera.new()
 	camera.position_smoothing_enabled = true
 	camera.position_smoothing_speed = 6.0
-	camera.offset = Vector2(0, -12)
+	camera.base_offset = Vector2(0, -12)
+	camera.offset = camera.base_offset
 	add_child(camera)
 
 
@@ -145,6 +159,11 @@ func _physics_process(delta: float) -> void:
 	_parry_t = maxf(0.0, _parry_t - delta)
 	_state_t += delta
 	Sfx.listener_pos = global_position
+	for a in BUFFERED:
+		if Input.is_action_just_pressed(a):
+			_buf[a] = BUFFER
+		else:
+			_buf[a] = maxf(0.0, _buf.get(a, 0.0) - delta)
 
 	match state:
 		S.NORMAL:
@@ -175,8 +194,19 @@ func _physics_process(delta: float) -> void:
 
 
 func _set_state(s: S) -> void:
+	if s == S.NORMAL and state != S.NORMAL:
+		# Carry some momentum out of a dodge or a knock instead of stopping dead.
+		_gvel = Iso.screen_to_grid(velocity).limit_length(RUN) * 0.5
 	state = s
 	_state_t = 0.0
+
+
+## Consumes a buffered press of an action.
+func _take(action: String) -> bool:
+	if _buf.get(action, 0.0) > 0.0:
+		_buf[action] = 0.0
+		return true
+	return false
 
 
 func _slide(speed: float) -> void:
@@ -195,8 +225,14 @@ func _normal(delta: float) -> void:
 	elif Input.is_action_pressed("run"):
 		gait = "run"
 		speed = RUN
-	velocity = Iso.grid_vel_to_screen(dir * speed)
+	var target := dir * speed
+	var rate := ACCEL if dir != Vector2.ZERO else DECEL
+	if dir != Vector2.ZERO and _gvel.dot(target) < 0.0:
+		rate *= 1.8
+	_gvel = _gvel.move_toward(target, rate * delta)
+	velocity = Iso.grid_vel_to_screen(_gvel)
 	move_and_slide()
+	_gvel = Iso.screen_to_grid(velocity)
 	if dir != Vector2.ZERO:
 		facing = dir
 		_step_t += delta
@@ -207,17 +243,18 @@ func _normal(delta: float) -> void:
 		_step_t = STEP_TIME[gait] * 0.6
 
 	_update_focus(delta)
-	if Input.is_action_just_pressed("attack"):
+	if _buf.get("attack", 0.0) > 0.0 and _cool.attack <= 0.0:
+		_take("attack")
 		_start_attack()
-	elif Input.is_action_just_pressed("parry") and _cool.parry <= 0.0:
+	elif _cool.parry <= 0.0 and _take("parry"):
 		_start_parry()
-	elif Input.is_action_just_pressed("dodge") and _cool.dodge <= 0.0:
+	elif _cool.dodge <= 0.0 and _take("dodge"):
 		_start_dodge(dir)
-	elif Input.is_action_just_pressed("jump"):
+	elif _take("jump"):
 		_start_jump()
-	elif Input.is_action_just_pressed("shove") and _cool.shove <= 0.0:
+	elif _cool.shove <= 0.0 and _take("shove"):
 		_start_shove()
-	elif Input.is_action_just_pressed("thrust") and _cool.thrust <= 0.0:
+	elif _cool.thrust <= 0.0 and _take("thrust"):
 		_start_thrust()
 	elif Input.is_action_just_pressed("toss") and _cool.toss <= 0.0:
 		_toss()
@@ -241,6 +278,8 @@ func _footstep() -> void:
 		NoiseBus.emit_noise(global_position, radius, self)
 	if gait != "sneak":
 		Sfx.play("step", null, -16.0 if gait == "walk" else -10.0, 0.15)
+	if gait == "run" and room:
+		Fx.dust(room.world, global_position + Vector2(0, -elev), 3, 5.0)
 
 
 # ============================================================== interaction
@@ -302,6 +341,7 @@ func _start_attack() -> void:
 	_hit_done = false
 	_set_state(S.ATTACK)
 	_aim_at_nearest(w.reach + 0.6)
+	life.squash(Vector2(1.14, 0.9) if _combo < 2 else Vector2(1.22, 0.84))
 	Sfx.play("swing", null, -6.0, 0.12)
 
 
@@ -318,6 +358,15 @@ func _attacking(delta: float) -> void:
 	if not _hit_done and _state_t >= dur * 0.35:
 		_hit_done = true
 		_resolve_hit(w)
+	if _hit_done and _state_t >= dur * 0.6 and _buf.get("attack", 0.0) > 0.0 and _combo < 2:
+		# Chain the next swing of the combo straight from this one's follow-through.
+		_buf["attack"] = 0.0
+		_combo_window = 0.45
+		_start_attack()
+		return
+	if _hit_done and _cool.dodge <= 0.0 and _take("dodge"):
+		_start_dodge(Iso.input_to_grid_dir(Input.get_vector("move_left", "move_right", "move_up", "move_down")))
+		return
 	if _state_t >= dur:
 		_combo_window = 0.45
 		_set_state(S.NORMAL)
@@ -336,23 +385,32 @@ func _resolve_hit(w: WeaponData) -> void:
 			g.on_blocked(self)
 			Fx.sparks(room.world, g.global_position + Vector2(0, -16))
 			Sfx.play("shield", g.global_position)
+			ShakeCamera.add_trauma(0.18)
+			Juice.freeze(get_tree(), 0.04)
 			NoiseBus.emit_noise(global_position, 8.0, self)
 			continue
 		var dmg := w.damage
+		var heavy := false
 		if _riposte_t > 0.0:
 			dmg *= 2
 			_riposte_t = 0.0
+			heavy = true
 		if unaware and behind:
 			if w.backstab_ko:
 				g.knock_out(false, self)
 				Sfx.play("ko", g.global_position)
+				Juice.freeze(get_tree(), 0.12)
+				ShakeCamera.add_trauma(0.4)
+				ShakeCamera.punch(0.04)
 				continue
 			dmg *= 2
-		g.take_damage(dmg, global_position)
-		Fx.sparks(room.world, g.global_position + Vector2(0, -14), 5)
+			heavy = true
+		g.take_damage(dmg, global_position, 1.8 if heavy or _combo == 2 else 1.0)
+		Fx.sparks(room.world, g.global_position + Vector2(0, -14), 8 if heavy else 5, heavy)
 		Sfx.play("hit", g.global_position)
 		NoiseBus.emit_noise(global_position, 8.0, self)
-		_hitstop(0.06)
+		Juice.freeze(get_tree(), 0.1 if heavy else 0.065)
+		ShakeCamera.add_trauma(0.38 if heavy else 0.22)
 	# pots and jars
 	var me := grid_pos()
 	for b in get_tree().get_nodes_in_group("breakable"):
@@ -364,12 +422,6 @@ func _resolve_hit(w: WeaponData) -> void:
 			break
 	if not hit_any:
 		NoiseBus.emit_noise(global_position, 1.0, self)
-
-
-func _hitstop(t: float) -> void:
-	Engine.time_scale = 0.05
-	await get_tree().create_timer(t * 0.05).timeout
-	Engine.time_scale = 1.0
 
 
 func _start_parry() -> void:
@@ -388,11 +440,22 @@ func try_parry(attack: AttackData, guard: Node) -> bool:
 		return false
 	_riposte_t = 1.0
 	_parry_t = 0.0
-	Fx.sparks(room.world, (global_position + guard.global_position) * 0.5 + Vector2(0, -14), 10, true)
+	var clash: Vector2 = (global_position + guard.global_position) * 0.5 + Vector2(0, -14)
+	Fx.sparks(room.world, clash, 12, true)
+	Fx.ring(room.world, clash)
 	Sfx.play("parry")
 	NoiseBus.emit_noise(global_position, 8.0, self)
-	_hitstop(0.1)
+	# The perfect-parry beat: a frozen instant, then a short slow-motion breath to riposte in.
+	Juice.flash(sprite, 0.06, Color(0.85, 0.92, 1.0))
+	ShakeCamera.add_trauma(0.3)
+	ShakeCamera.punch(0.07, 0.35)
+	_parry_beat()
 	return true
+
+
+func _parry_beat() -> void:
+	await Juice.freeze(get_tree(), 0.09)
+	Juice.slowmo(get_tree(), 0.3, 0.35)
 
 
 func _start_dodge(dir: Vector2) -> void:
@@ -401,6 +464,9 @@ func _start_dodge(dir: Vector2) -> void:
 	_invuln = 0.25
 	_cool.dodge = 0.55
 	Sfx.play("dodge", null, -8.0)
+	life.squash(Vector2(1.25, 0.82))
+	if room:
+		Fx.dust(room.world, global_position + Vector2(0, -elev), 5, 7.0)
 
 
 func _dodging(_delta: float) -> void:
@@ -473,6 +539,10 @@ func take_hit(damage: int, from_pos: Vector2, knockback_tiles: float) -> bool:
 	_knock = away * knockback_tiles * 6.0
 	_set_state(S.HURT)
 	sprite.modulate = Color(1.0, 0.35, 0.35)
+	Juice.flash(sprite, 0.08, Color(1.0, 0.35, 0.3))
+	Juice.freeze(get_tree(), 0.08)
+	ShakeCamera.add_trauma(0.5)
+	life.squash(Vector2(1.25, 0.8))
 	if Game.hp <= 0:
 		_die()
 	return true
@@ -491,6 +561,7 @@ func _start_jump() -> void:
 	_jump_from = global_position
 	_jump_to = room.cell_center(to_c) if ok else global_position
 	_set_state(S.JUMP)
+	life.squash(Vector2(0.78, 1.25))
 	Sfx.play("jump", null, -6.0)
 
 
@@ -505,6 +576,9 @@ func _jumping() -> void:
 		_set_state(S.NORMAL)
 		Sfx.play("land", null, -8.0)
 		NoiseBus.emit_noise(global_position, 2.0, self)
+		life.squash(Vector2(1.32, 0.74))
+		Fx.dust(room.world, global_position + Vector2(0, -room.elevation_px(cell())), 6, 8.0)
+		ShakeCamera.add_trauma(0.1)
 		if room.is_hazard(cell()):
 			fall()
 
@@ -513,6 +587,7 @@ func fall() -> void:
 	if state == S.FALL or state == S.DEAD:
 		return
 	_set_state(S.FALL)
+	life.shadow.visible = false
 	Sfx.play("fall")
 	var tw := create_tween()
 	tw.tween_property(body_node, "position:y", body_node.position.y + 18.0, 0.5)
@@ -528,6 +603,7 @@ func _after_fall() -> void:
 	room.on_player_fell()
 	global_position = room.respawn_point()
 	body_node.modulate.a = 1.0
+	life.shadow.visible = true
 	camera.reset_smoothing()
 	_invuln = 1.2
 	_set_state(S.NORMAL)
@@ -550,10 +626,17 @@ func _update_visuals(delta: float) -> void:
 		var k := clampf(_state_t / JUMP_TIME, 0.0, 1.0)
 		var e0 := room.elevation_px(Iso.cell_of_screen(_jump_from))
 		elev = e0 + sin(k * PI) * 14.0
+		life.ground_y = e0
+		life.air = sin(k * PI)
 	else:
 		elev = move_toward(elev, target_elev, delta * 90.0)
+		life.ground_y = elev
+		life.air = 0.0
 	if state != S.FALL:
 		body_node.position.y = -roundf(elev)
+	# Lean the view toward where he is heading.
+	if camera:
+		camera.look = Iso.grid_to_screen(_gvel) * 0.3 if state == S.NORMAL else camera.look * 0.92
 
 	var sd := Iso.screen_dir(facing)
 	var front := sd.y >= -0.01

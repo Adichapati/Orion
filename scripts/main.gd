@@ -106,7 +106,7 @@ func _set_screen(c: Control) -> void:
 
 
 func _clear_room() -> void:
-	Engine.time_scale = 1.0
+	Juice.reset()
 	Game.clear_attack_token()
 	if room and is_instance_valid(room):
 		world_viewport.remove_child(room)

@@ -67,7 +67,10 @@ var cone: Polygon2D
 var mark: Sprite2D
 var meter: AwarenessMeter
 var glint: Sprite2D
+var life: Life
+var daze: DazeStars
 var _shape: CollisionShape2D
+var _shake_t := 0.0
 
 
 ## Reads one guard entry of rooms.json: {id, type, at, face, path}.
@@ -116,6 +119,14 @@ func _ready() -> void:
 	sprite = Art.feet_sprite(type.sprite_se)
 	body_node.add_child(sprite)
 	var h := sprite.texture.get_height() if sprite.texture else 40
+	life = Life.new()
+	add_child(life)
+	life.setup(body_node, sprite, int(h * 0.4))
+	daze = DazeStars.new()
+	daze.position = Vector2(0, -h + 2)
+	daze.z_index = 60
+	daze.visible = false
+	body_node.add_child(daze)
 
 	lantern_pivot = Node2D.new()
 	lantern_pivot.scale = Vector2(1.0, 0.5)
@@ -631,6 +642,8 @@ func _stun(t: float) -> void:
 	var was_alert := state == S.ALERT
 	_set_state(S.STUNNED)
 	_stun_t = t
+	_shake_t = 0.18
+	life.squash(Vector2(1.16, 0.86))
 	if was_alert:
 		awareness = ALERT_AT
 
@@ -646,18 +659,19 @@ func _stunned(delta: float) -> void:
 
 # ============================================================== being hit
 
-func take_damage(dmg: int, from_screen_pos: Vector2) -> void:
+## `force` scales the knockback (ripostes, backstabs and combo finishers hit harder).
+func take_damage(dmg: int, from_screen_pos: Vector2, force := 1.0) -> void:
 	if not is_hittable():
 		return
 	hp -= dmg
-	var tw := create_tween()
-	sprite.modulate = Color(2.0, 2.0, 2.0)
-	tw.tween_property(sprite, "modulate", Color.WHITE, 0.15)
+	Juice.flash(sprite, 0.07)
+	_shake_t = 0.14
+	life.squash(Vector2(0.84, 1.12) if force > 1.0 else Vector2(0.9, 1.07))
 	var away := (grid_pos() - Iso.screen_to_grid(from_screen_pos)).normalized()
 	if hp <= 0:
 		knock_out(false, null)
 		return
-	_knock = away * 0.3 * 6.0
+	_knock = away * 0.45 * force * 6.0
 	if state == S.ALERT:
 		_last_known = from_screen_pos
 		if _phase == "":
@@ -717,6 +731,7 @@ func fall() -> void:
 		return
 	_release()
 	_set_state(S.FALLING)
+	life.shadow.visible = false
 	_shape.set_deferred("disabled", true)
 	Sfx.play("fall", global_position)
 	var tw := create_tween()
@@ -741,10 +756,21 @@ func knock_out(env: bool, _by: Node) -> void:
 	cone.visible = false
 	mark.visible = false
 	meter.visible = false
+	daze.visible = false
 	if not fell:
-		sprite.modulate = Color(0.55, 0.55, 0.6)
-		sprite.rotation = deg_to_rad(-80.0 if sprite.flip_h else 80.0)
-		sprite.position = Vector2(0, -4)
+		# Topple: a beat of stagger, then down with a thud and a puff of dust.
+		life.enabled = false
+		body_node.scale = Vector2.ONE
+		Juice.flash(sprite, 0.09)
+		var tw := create_tween()
+		tw.tween_property(sprite, "rotation", deg_to_rad(-12.0 if sprite.flip_h else 12.0), 0.08)
+		tw.tween_property(sprite, "rotation", deg_to_rad(-84.0 if sprite.flip_h else 84.0), 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		tw.parallel().tween_property(sprite, "position", Vector2(0, -4), 0.2)
+		tw.tween_property(sprite, "rotation", deg_to_rad(-78.0 if sprite.flip_h else 78.0), 0.08)
+		tw.tween_callback(func():
+			Fx.dust(room.world, global_position, 8, 11.0)
+			ShakeCamera.add_trauma(0.16))
+		tw.parallel().tween_property(sprite, "modulate", Color(0.55, 0.55, 0.62), 0.4)
 		Sfx.play("ko", global_position)
 	var drop := randi_range(type.drop_min, type.drop_max)
 	if env:
@@ -767,6 +793,11 @@ func _update_visuals(delta: float) -> void:
 	elev = move_toward(elev, target_elev, delta * 90.0)
 	if state != S.FALLING:
 		body_node.position.y = -roundf(elev)
+	life.ground_y = elev
+	# Stagger: a short horizontal shudder when hit or stunned.
+	_shake_t = maxf(0.0, _shake_t - delta)
+	sprite.position.x = roundf(sin(_shake_t * 110.0) * 1.4) if _shake_t > 0.0 else 0.0
+	daze.visible = state == S.STUNNED and _stun_t > 0.5
 
 	var sd := Iso.screen_dir(facing)
 	var front := sd.y >= -0.01
@@ -823,6 +854,25 @@ func _update_cone() -> void:
 	elif state == S.STUNNED:
 		c.a = 0.06
 	cone.color = c
+
+
+## Three little stars circling a stunned guard's head.
+class DazeStars extends Node2D:
+	var _t := 0.0
+
+	func _process(delta: float) -> void:
+		if not visible:
+			return
+		_t += delta
+		queue_redraw()
+
+	func _draw() -> void:
+		for i in 3:
+			var a := _t * 5.0 + i * TAU / 3.0
+			var p := Vector2(cos(a) * 6.0, sin(a) * 2.5).round()
+			var c := Color(1.0, 0.85, 0.35) if sin(a) > 0.0 else Color(0.8, 0.6, 0.25)
+			draw_rect(Rect2(p, Vector2(1, 1)), c)
+			draw_rect(Rect2(p + Vector2(-1, 0), Vector2(3, 1)), Color(c, 0.5))
 
 
 ## The thin bar under the mark that fills as a guard grows suspicious.

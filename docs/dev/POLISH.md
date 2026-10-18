@@ -6,8 +6,8 @@ sound and tuning. The checklist is in priority order; the dated log is at the bo
 ## Checklist
 
 - [x] Character sprites from `art/generated/` via `tools/process_generated.py` → `art/final/`
-- [ ] Procedural character life: walk bob, squash and stretch, lean, blob shadows
-- [ ] Game feel: input buffering, acceleration, trauma screen shake, hit-stop, hit flash,
+- [x] Procedural character life: walk bob, step squash, breathing idle, blob shadows
+- [x] Game feel: input buffering, acceleration, trauma screen shake, hit-stop, hit flash,
       knockback, jump/land squash, dust, camera look-ahead, perfect-parry zoom and slow-mo,
       clearer stagger and KO, obol pickups
 - [ ] Atmosphere: night sky with Orion, dust motes, embers, animated water, vignette, light
@@ -41,3 +41,18 @@ sound and tuning. The checklist is in priority order; the dated log is at the bo
   The Hoplite excludes the skin ramp so his bronze stays bronze. Cedalion's torch is in his right
   hand, so the torch light now sits on the screen-left side when he faces SE. New test: every
   final sprite has its placeholder's size.
+- 2026-10-19: Game feel. Researched the usual sources first (Celeste's forgiveness article on
+  buffering; the trauma model of screen shake: trauma 0..1, offset ∝ trauma², linear decay).
+  New `scripts/core/`: `ShakeCamera` (trauma shake rounded to whole pixels, zoom punch,
+  look-ahead toward Cedalion's velocity), `Juice` (hit-stop and slow-motion holds where the
+  slowest active hold wins; an unshaded flash material), `Life` (walk bob, step squash, breathing
+  idle, spring-back squash and stretch, two-tone blob shadow that shrinks in the air). Player:
+  0.15 s input buffer for attack, parry, dodge, jump, shove, thrust; attacks chain from the
+  follow-through and a dodge cancels the recovery; acceleration 26 and deceleration 20 tiles/s²
+  with a faster turnaround; squash on jump, land, dodge, swing and hurt; dust on runs, dodges and
+  landings; hits freeze 65 ms (100 ms for ripostes, backstabs and the third combo swing, which
+  also knock back 1.8×); a successful parry flashes, rings, punches the zoom, freezes 90 ms and
+  then plays 300 ms at 35% speed. Guards: white hit flash, knockback 0.45 tiles, a stagger
+  shudder, dazed stars on long stuns, and a KO that topples with dust and a thud. Obols are drawn
+  to Cedalion within 1.8 tiles once landed, glitter, and ring higher in a quick streak. Pause menu
+  has a "Screen shake" toggle (`Game.screen_shake`). Tests: 118 pass.

@@ -58,7 +58,7 @@ func _stream(name: String) -> AudioStream:
 
 
 ## Plays an effect. With a world position, the volume falls off with distance from the player.
-func play(name: String, world_pos: Variant = null, volume_db := 0.0, pitch_jitter := 0.06) -> void:
+func play(name: String, world_pos: Variant = null, volume_db := 0.0, pitch_jitter := 0.06, pitch := 1.0) -> void:
 	var s := _stream(name)
 	if s == null:
 		return
@@ -72,7 +72,7 @@ func play(name: String, world_pos: Variant = null, volume_db := 0.0, pitch_jitte
 	_next = (_next + 1) % _players.size()
 	p.stream = s
 	p.volume_db = vol
-	p.pitch_scale = 1.0 + randf_range(-pitch_jitter, pitch_jitter)
+	p.pitch_scale = pitch * (1.0 + randf_range(-pitch_jitter, pitch_jitter))
 	p.play()
 
 

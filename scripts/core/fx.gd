@@ -44,7 +44,8 @@ static func swing(parent: Node, pos: Vector2, grid_dir: Vector2, reach_tiles: fl
 	parent.add_child(arc)
 
 
-static func dust(parent: Node, pos: Vector2) -> void:
+## A puff of floor dust that spreads along the ground and drifts up (footfalls, landings, KOs).
+static func dust(parent: Node, pos: Vector2, count := 6, spread := 9.0) -> void:
 	if parent == null or not parent.is_inside_tree():
 		return
 	var holder := Node2D.new()
@@ -52,15 +53,90 @@ static func dust(parent: Node, pos: Vector2) -> void:
 	holder.z_index = 20
 	parent.add_child(holder)
 	var tw := holder.create_tween().set_parallel(true)
-	for i in 6:
+	for i in count:
 		var s := Sprite2D.new()
-		s.texture = Art.tex("spark")
-		s.modulate = Color(0.75, 0.72, 0.66, 0.9)
+		s.texture = _dot()
+		s.modulate = Color(0.72, 0.7, 0.66, 0.75)
 		holder.add_child(s)
 		var a := randf() * TAU
-		tw.tween_property(s, "position", Vector2(cos(a) * 9.0, sin(a) * 4.0 - 3.0), 0.4)
-		tw.tween_property(s, "modulate:a", 0.0, 0.45)
+		var r := spread * randf_range(0.5, 1.0)
+		var t := randf_range(0.3, 0.5)
+		tw.tween_property(s, "position", Vector2(cos(a) * r, sin(a) * r * 0.45 - randf_range(2.0, 5.0)).round(), t).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		tw.tween_property(s, "modulate:a", 0.0, t + 0.05)
 	tw.chain().tween_callback(holder.queue_free)
+
+
+## An expanding bright ring, flattened to the floor plane (perfect parries).
+static func ring(parent: Node, pos: Vector2, color := Color(0.9, 0.95, 1.0)) -> void:
+	if parent == null or not parent.is_inside_tree():
+		return
+	var r := Ring.new()
+	r.position = pos
+	r.color = color
+	r.z_index = 45
+	parent.add_child(r)
+
+
+## Gold glints rising from a collected obol.
+static func glitter(parent: Node, pos: Vector2) -> void:
+	if parent == null or not parent.is_inside_tree():
+		return
+	var holder := Node2D.new()
+	holder.position = pos
+	holder.z_index = 45
+	var mat := CanvasItemMaterial.new()
+	mat.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+	parent.add_child(holder)
+	var tw := holder.create_tween().set_parallel(true)
+	for i in 4:
+		var s := Sprite2D.new()
+		s.texture = _dot()
+		s.material = mat
+		s.modulate = Color(1.0, 0.85, 0.35)
+		holder.add_child(s)
+		var x := randf_range(-5.0, 5.0)
+		tw.tween_property(s, "position", Vector2(x, -randf_range(8.0, 15.0)).round(), 0.35).set_ease(Tween.EASE_OUT)
+		tw.tween_property(s, "modulate:a", 0.0, 0.4).set_delay(0.1)
+	tw.chain().tween_callback(holder.queue_free)
+
+
+static var _dot_tex: Texture2D
+
+
+static func _dot() -> Texture2D:
+	if _dot_tex == null:
+		var img := Image.create(1, 1, false, Image.FORMAT_RGBA8)
+		img.set_pixel(0, 0, Color.WHITE)
+		_dot_tex = ImageTexture.create_from_image(img)
+	return _dot_tex
+
+
+class Ring extends Node2D:
+	var color := Color.WHITE
+	var _t := 0.0
+
+	func _ready() -> void:
+		var mat := CanvasItemMaterial.new()
+		mat.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+		mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+		material = mat
+
+	func _process(delta: float) -> void:
+		_t += delta / maxf(0.05, Engine.time_scale) * 0.6
+		queue_redraw()
+		if _t > 0.3:
+			queue_free()
+
+	func _draw() -> void:
+		var k := _t / 0.3
+		var r := 4.0 + k * 22.0
+		var pts := PackedVector2Array()
+		for i in 25:
+			var a := TAU * i / 24.0
+			pts.append(Vector2(cos(a) * r, sin(a) * r * 0.5).round())
+		var c := color
+		c.a = 1.0 - k
+		draw_polyline(pts, c, 1.0)
 
 
 class SwingArc extends Node2D:

@@ -12,6 +12,11 @@ var _height := 0.0
 var _vz := 0.0
 var _settled := false
 var _life := 0.0
+var _pull := 0.0
+
+## Obols picked up in quick succession ring a little higher each time.
+static var _streak := 0
+static var _streak_ms := 0
 
 
 func setup(p_room: Node, p_kind: String, p_amount: int, launch_dir: Vector2) -> Pickup:
@@ -44,14 +49,23 @@ func _physics_process(delta: float) -> void:
 		_sprite.position.y = -_height
 	if _life < 0.35 or room == null or room.player == null:
 		return
-	if Iso.tiles_between(global_position, room.player.global_position) < 0.75:
+	var d := Iso.tiles_between(global_position, room.player.global_position)
+	if kind == "obol" and _life > 0.5 and d < 1.8:
+		# Drawn to Cedalion once it has landed and he is close: no fiddly pixel-hunting.
+		_pull = minf(1.0, _pull + delta * 3.0)
+		position = position.move_toward(room.player.global_position, (40.0 + 220.0 * _pull) * delta)
+	if d < 0.75:
 		_collect()
 
 
 func _collect() -> void:
 	if kind == "obol":
 		Game.add_obols(amount, global_position + Vector2(0, -12))
-		Sfx.play("coin", null, -4.0, 0.12)
+		var now := Time.get_ticks_msec()
+		_streak = mini(_streak + 1, 8) if now - _streak_ms < 700 else 0
+		_streak_ms = now
+		Sfx.play("coin", null, -4.0, 0.02, 1.0 + _streak * 0.06)
+		Fx.glitter(get_parent(), global_position + Vector2(0, -4))
 	elif kind == "sword":
 		if Game.weapon_id == "":
 			Game.give_weapon("xiphos")

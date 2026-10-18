@@ -44,6 +44,8 @@ var stats := {}
 var debug_overlay := false
 ## Multiplies every room's ambient light (the pause menu's brightness slider).
 var brightness := 1.0
+## Screen shake and zoom punches (the pause menu can turn them off).
+var screen_shake := true
 
 var _token_holder: Node = null
 

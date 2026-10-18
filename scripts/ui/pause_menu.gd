@@ -40,6 +40,12 @@ func _ready() -> void:
 	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	slider.value_changed.connect(func(x: float): Game.set_brightness(x))
 	row.add_child(slider)
+	var shake := CheckButton.new()
+	shake.text = "Screen shake"
+	shake.button_pressed = Game.screen_shake
+	shake.add_theme_font_size_override("font_size", 15)
+	shake.toggled.connect(func(on: bool): Game.screen_shake = on)
+	v.add_child(shake)
 	var restart := UiKit.button("Restart room")
 	restart.pressed.connect(func(): restart_room.emit())
 	v.add_child(restart)
