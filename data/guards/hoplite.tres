@@ -42,5 +42,5 @@ drop_min = 10
 drop_max = 20
 sprite_se = "hoplite_se"
 sprite_ne = "hoplite_ne"
-lantern_color = Color(1, 0.85, 0.55, 1)
+lantern_color = Color(1, 0.7, 0.46, 1)
 thrust_stun = 2.0

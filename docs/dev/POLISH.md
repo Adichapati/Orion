@@ -10,8 +10,9 @@ sound and tuning. The checklist is in priority order; the dated log is at the bo
 - [x] Game feel: input buffering, acceleration, trauma screen shake, hit-stop, hit flash,
       knockback, jump/land squash, dust, camera look-ahead, perfect-parry zoom and slow-mo,
       clearer stagger and KO, obol pickups
-- [ ] Atmosphere: night sky with Orion, dust motes, embers, animated water, vignette, light
-      contrast; star shrine inner corners; statue court portico height
+- [x] Atmosphere: night sky with Orion, dust motes, embers, animated water, vignette, light
+      contrast
+- [ ] Star shrine inner wall corners (dark blocks); statue court portico height (not started)
 - [ ] UI: in-repo pixel font, first-time control hints, objective line, title constellation,
       HUD, shop and end card polish
 - [ ] Sound: better effects and music, footstep variety, alert stinger, parry ring, smoother
@@ -56,3 +57,13 @@ sound and tuning. The checklist is in priority order; the dated log is at the bo
   shudder, dazed stars on long stuns, and a KO that topples with dust and a thud. Obols are drawn
   to Cedalion within 1.8 tiles once landed, glitter, and ring higher in a quick streak. Pause menu
   has a "Screen shake" toggle (`Game.screen_shake`). Tests: 118 pass.
+- 2026-10-19: Atmosphere (`scripts/world/atmosphere.gd`, added by `Room.build`): a night sky
+  on a canvas layer behind each open-air room (dithered bands, 150 twinkling stars with slight
+  parallax, a haloed moon, and Orion drawn from his eight main stars with dotted lines; he moves
+  from high in the east to low in the west with `Atmosphere.orion_progress()`, so the sky is the
+  clock); the storerooms and cistern are roofed and stay dark. A 480×270 vignette with Bayer
+  dithered alpha. Embers rise from Cedalion's torch (they follow the flame pixel per facing),
+  wall lamps and braziers. Dust motes drift in every moonlight pool. Water tiles share a shader
+  that runs glints and crests across them in screen pixels. Moonlight is a little stronger (0.9)
+  and guard lanterns are redder (and turn red when a guard is alert), so warm torch, cool moon
+  and red enemy light read apart.

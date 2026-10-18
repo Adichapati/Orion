@@ -41,5 +41,5 @@ drop_min = 5
 drop_max = 10
 sprite_se = "spearman_se"
 sprite_ne = "spearman_ne"
-lantern_color = Color(1, 0.72, 0.4, 1)
+lantern_color = Color(1, 0.55, 0.36, 1)
 thrust_stun = 1.2

@@ -116,6 +116,7 @@ func build(room_data: Dictionary) -> void:
 	rebuild_paths()
 	player_spawn = _step_inside(player_spawn)
 	checkpoint = player_spawn
+	Atmosphere.dress(self, id)
 
 
 ## The entrance door sits in the wall line, where walls hide the player; start one tile inside.
@@ -175,15 +176,15 @@ func _build_floor(c: Vector2i) -> void:
 			_add_floor_sprite(c, Art.tile_sprite("pit"))
 			_add_hazard(c)
 		"W":
-			_add_floor_sprite(c, Art.tile_sprite("water_deep"))
+			_add_floor_sprite(c, _water("water_deep"))
 			_add_hazard(c)
 		"p":
-			_add_floor_sprite(c, Art.tile_sprite("water_deep"))
+			_add_floor_sprite(c, _water("water_deep"))
 			var stone := Art.block_sprite("stepping_stone")
 			stone.position = cell_center(c)
 			floor_layer.add_child(stone)
 		"~":
-			_add_floor_sprite(c, Art.tile_sprite("water_shallow"))
+			_add_floor_sprite(c, _water("water_shallow"))
 		"x":
 			var s := Art.tile_sprite("floor_cracked_%d" % _rng.randi_range(0, 2))
 			_add_floor_sprite(c, s)
@@ -200,6 +201,12 @@ func _build_floor(c: Vector2i) -> void:
 				_add_floor_sprite(c, Art.block_sprite("raised"))
 			else:
 				_add_floor_sprite(c, Art.tile_sprite("floor_marble_dark" if _rng.randf() < 0.14 else "floor_marble"))
+
+
+func _water(name: String) -> Sprite2D:
+	var s := Art.tile_sprite(name)
+	s.material = Atmosphere.water_material()
+	return s
 
 
 func _wall_is_tall(c: Vector2i) -> bool:
@@ -244,6 +251,9 @@ func _build_solid(c: Vector2i) -> void:
 				lamp.position = Vector2(-6, -22 if tall else -8)
 				body.add_child(lamp)
 				_add_light(body, Vector2(-3, -24 if tall else -10), Color(1.0, 0.62, 0.3), 0.95, 76.0)
+				var sparks := Atmosphere.embers(3, 1.0)
+				sparks.position = Vector2(-5, -30 if tall else -16)
+				body.add_child(sparks)
 		"o":
 			var col := Art.feet_sprite("column", 4)
 			col.position.y = -lift
@@ -274,6 +284,9 @@ func _build_solid(c: Vector2i) -> void:
 		"B":
 			body.add_child(Art.feet_sprite("brazier", 2))
 			_add_light(body, Vector2(0, -16), Color(1.0, 0.6, 0.28), 1.05, 88.0)
+			var sparks := Atmosphere.embers(6, 3.0)
+			sparks.position = Vector2(0, -18)
+			body.add_child(sparks)
 		"K":
 			var rack := Art.feet_sprite("weapon_rack", 3)
 			body.add_child(rack)
@@ -435,8 +448,12 @@ func _build_moonlight() -> void:
 			var holder := Node2D.new()
 			holder.position = centre
 			add_child(holder)
-			var l := _add_light(holder, Vector2.ZERO, Color(0.55, 0.68, 1.0), 0.75, 22.0 + 12.0 * sqrt(group.size()))
+			var l := _add_light(holder, Vector2.ZERO, Color(0.55, 0.68, 1.0), 0.9, 22.0 + 12.0 * sqrt(group.size()))
 			l.scale = Vector2(1.0, 0.5)
+			var r := sqrt(group.size()) * 9.0
+			var dust := Atmosphere.motes(Vector2(r, r * 0.5 + 6.0), 4 + group.size())
+			dust.position = Vector2(0, -10)
+			holder.add_child(dust)
 
 
 ## One Guard per entry in rooms.json's "guards" list. Counts them once per visit for Dawn Rank.

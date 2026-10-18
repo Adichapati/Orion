@@ -57,6 +57,7 @@ var _buf := {}
 var body_node: Node2D
 var sprite: Sprite2D
 var torch: PointLight2D
+var torch_embers: CPUParticles2D
 var camera: ShakeCamera
 var life: Life
 
@@ -87,6 +88,8 @@ func _ready() -> void:
 	torch.scale = Vector2(1.0, 0.72)
 	torch.position = Vector2(6, -16)
 	body_node.add_child(torch)
+	torch_embers = Atmosphere.embers(5, 1.0)
+	body_node.add_child(torch_embers)
 	_flicker.frequency = 9.0
 	_flicker.seed = 3
 
@@ -645,6 +648,8 @@ func _update_visuals(delta: float) -> void:
 	# The torch is in his right hand: screen left when he faces SE, screen right when he faces NE.
 	var torch_x := -6.0 if front else 4.0
 	torch.position = Vector2(-torch_x if sprite.flip_h else torch_x, -16)
+	var flame := Vector2(-7, -23) if front else Vector2(3, -25)
+	torch_embers.position = Vector2(-flame.x if sprite.flip_h else flame.x, flame.y)
 
 	_noise_t += delta
 	var n := _flicker.get_noise_1d(_noise_t * 60.0)

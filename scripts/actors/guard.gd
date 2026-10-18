@@ -805,7 +805,10 @@ func _update_visuals(delta: float) -> void:
 	sprite.flip_h = sd.x < 0.0
 	lantern_rot.rotation = atan2(sd.y * 2.0, sd.x)
 	lantern.texture_scale = sight_range() * 22.6 / 64.0
-	lantern.energy = 1.0 if state != S.STUNNED else 0.5
+	lantern.energy = 0.9 if state != S.STUNNED else 0.45
+	# Red is the enemy: an alert guard's lantern burns red.
+	var lc := type.lantern_color.lerp(Color(1.0, 0.28, 0.22), 0.6) if state == S.ALERT else type.lantern_color
+	lantern.color = lantern.color.lerp(lc, clampf(delta * 6.0, 0.0, 1.0))
 
 	var side := -1.0 if sprite.flip_h else 1.0
 	glint.position = Vector2(8.0 * side, -22.0 + sin(_phase_t * 30.0))
