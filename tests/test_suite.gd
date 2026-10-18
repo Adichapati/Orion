@@ -12,6 +12,7 @@ func run() -> void:
 	_host = self
 	await get_tree().process_frame
 	test_iso_round_trip()
+	test_final_art_matches_placeholders()
 	await test_rooms_build_and_connect()
 	await test_guard_sees_player()
 	await test_noise_makes_guard_suspicious()
@@ -73,6 +74,28 @@ func test_iso_round_trip() -> void:
 	check(ok, "grid → screen → grid round-trips")
 	check(Iso.cell_of_screen(Iso.cell_to_screen(Vector2i(5, 9))) == Vector2i(5, 9), "cell → screen → cell round-trips")
 	check(Iso.grid_to_screen(Vector2(1, 0)) == Vector2(16, 8), "cell (1, 0) sits 16 px right, 8 px down")
+
+
+## Final art replaces a placeholder by name, so it must keep the placeholder's size (the pivot is
+## the bottom-centre pixel, so the same size means the same pivot).
+func test_final_art_matches_placeholders() -> void:
+	print("Final art")
+	var dir := DirAccess.open("res://art/final")
+	if dir == null:
+		check(true, "no art/final folder yet")
+		return
+	var count := 0
+	for f in dir.get_files():
+		if not f.ends_with(".png"):
+			continue
+		var ph := "res://art/placeholders/" + f
+		if not ResourceLoader.exists(ph):
+			continue
+		var a: Texture2D = load("res://art/final/" + f)
+		var b: Texture2D = load(ph)
+		check(a.get_size() == b.get_size(), "%s is %s like its placeholder" % [f, b.get_size()])
+		count += 1
+	check(count > 0, "art/final has character sprites")
 
 
 func test_rooms_build_and_connect() -> void:

@@ -559,7 +559,9 @@ func _update_visuals(delta: float) -> void:
 	var front := sd.y >= -0.01
 	sprite.texture = Art.tex("cedalion_se" if front else "cedalion_ne")
 	sprite.flip_h = sd.x < 0.0
-	torch.position = Vector2(-6 if sprite.flip_h else 6, -16) if front else Vector2(6 if sprite.flip_h else -6, -16)
+	# The torch is in his right hand: screen left when he faces SE, screen right when he faces NE.
+	var torch_x := -6.0 if front else 4.0
+	torch.position = Vector2(-torch_x if sprite.flip_h else torch_x, -16)
 
 	_noise_t += delta
 	var n := _flicker.get_noise_1d(_noise_t * 60.0)
