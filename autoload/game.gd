@@ -88,6 +88,7 @@ func reset_run() -> void:
 		"damage_taken": 0,
 		"obols_found": 0,
 		"guards_total": 0,
+		"rooms_counted": {},
 		"guards_alerted": {},
 		"marks": 0,
 		"falls": 0,

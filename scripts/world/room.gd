@@ -417,6 +417,30 @@ func _build_moonlight() -> void:
 			l.scale = Vector2(1.0, 0.5)
 
 
+## One Guard per entry in rooms.json's "guards" list. Counts them once per visit for Dawn Rank.
+func spawn_guards() -> void:
+	for entry in data.get("guards", []):
+		var g := Guard.new().setup(self, entry)
+		g.name = "Guard_%s" % entry.get("id", "g")
+		world.add_child(g)
+		guards.append(g)
+	if not Game.stats.rooms_counted.has(id):
+		Game.stats.rooms_counted[id] = true
+		Game.stats.guards_total += guards.size()
+
+
+func alive_guards() -> Array:
+	return guards.filter(func(g): return is_instance_valid(g) and not g.is_ko())
+
+
+## Highest awareness among the conscious guards, 0..100 (drives the tension music).
+func max_awareness() -> float:
+	var m := 0.0
+	for g in alive_guards():
+		m = maxf(m, g.awareness)
+	return m
+
+
 # =================================================================== cell queries
 
 func is_walkable(c: Vector2i) -> bool:
