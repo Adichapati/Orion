@@ -118,7 +118,9 @@ def seven_dots(img, d):
 floor_tile(P["marble1"], P["marble0"], "floor_mark", seven_dots)
 
 # ---------------------------------------------------------------- blocks
-WALL_TOP, WALL_L, WALL_R, EDGE = hexc("a39b8c"), hexc("8a8478"), P["night2"], hexc("6f695f")
+# The shadowed (right) face is a blue-grey stone rather than night blue: in the dark rooms night
+# blue went near-black and made cut-away walls and raised floors read as holes.
+WALL_TOP, WALL_L, WALL_R, EDGE = hexc("a39b8c"), hexc("8a8478"), hexc("5a576b"), hexc("6f695f")
 
 
 def wall_joints(img, d, h):
@@ -148,7 +150,8 @@ def ivy(img, d, h):
 
 
 block("wall_tall_ivy", 32, WALL_TOP, WALL_L, WALL_R, EDGE, side_extra=lambda img, d, h: (wall_joints(img, d, h), ivy(img, d, h)))
-block("raised", 16, P["marble1"], WALL_L, WALL_R, EDGE)
+# Raised floor (the portico): a lighter top than the floor below, so the level change reads.
+block("raised", 16, P["marble2"], WALL_L, WALL_R, EDGE)
 
 
 def stair_lines(img, d, h):

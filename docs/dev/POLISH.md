@@ -12,7 +12,7 @@ sound and tuning. The checklist is in priority order; the dated log is at the bo
       clearer stagger and KO, obol pickups
 - [x] Atmosphere: night sky with Orion, dust motes, embers, animated water, vignette, light
       contrast
-- [ ] Star shrine inner wall corners (dark blocks); statue court portico height (not started)
+- [x] Star shrine inner wall corners (dark blocks); statue court portico height
 - [x] UI: in-repo pixel font, first-time control hints, objective line, title constellation,
       obol counter pop (shop and end card only restyled by the font so far)
 - [x] Sound: footstep variety, alert stinger, parry ring, smoother music layers
@@ -82,3 +82,8 @@ sound and tuning. The checklist is in priority order; the dated log is at the bo
   a rising sour call). The tension layer eases in fast (rate 2.2/s) and lingers on the way down
   (0.45/s) with a smoothstep volume curve. The generator is seeded, so re-running it no longer
   changes every file.
+- 2026-10-19: Walls and the portico. The blocks' shadowed (right) face was night blue
+  (#2e3a5c), which went near-black in the dark rooms, so the star shrine's stepped inner walls
+  read as holes and raised floor had no visible side. It is now a blue-grey stone (#5a576b), and
+  raised floor has a lighter marble top (Marble 2) than the floor below. Regenerated
+  `art/greybox/` with `tools/gen_greybox.py`.

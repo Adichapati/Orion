@@ -7,6 +7,9 @@ extends Node
 
 ## Events: [seconds, "press" | "release" | "tap" | "shot" | "call", action, (shot name)].
 const SCRIPTS := {
+	"title": [
+		[3.8, "shot", "", "title"],
+	],
 	"idle": [
 		[1.2, "shot", "", "start"],
 		[3.0, "shot", "", "later"],
