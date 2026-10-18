@@ -505,7 +505,7 @@ func rebuild_paths() -> void:
 			if not _astar.has_point(_pid(c)):
 				continue
 			for n in [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(1, -1)]:
-				var d := c + n
+				var d: Vector2i = c + n
 				if not _astar.has_point(_pid(d)) or not _can_step(c, d):
 					continue
 				if n.x != 0 and n.y != 0:
@@ -701,7 +701,7 @@ func _process(_delta: float) -> void:
 		if not is_instance_valid(body):
 			continue
 		var bp := body.global_position
-		var behind := pp.y < bp.y and pp.y > bp.y - f.height and absf(pp.x - bp.x) < 13.0
+		var behind: bool = pp.y < bp.y and pp.y > bp.y - f.height and absf(pp.x - bp.x) < 13.0
 		(f.node as CanvasItem).modulate.a = 0.45 if behind else 1.0
 
 

@@ -50,7 +50,7 @@ sizes, fuel, exposure maths, relightable lamps, alarm tripods or Ember powers; A
 ## Next steps (in order)
 
 - [x] 1. `controls.gd`: add a `heal` action on KEY_H (player.gd uses it).
-- [ ] 2. Write `scripts/actors/guard.gd` (`class_name Guard`, CharacterBody2D) — spec below.
+- [x] 2. Write `scripts/actors/guard.gd` (`class_name Guard`, CharacterBody2D) — spec below.
 - [ ] 3. `Room.spawn_guards()` (or do it in main): one Guard per `rooms[i].guards` entry, add to
       `room.world` and `room.guards`; set `Game.stats.guards_total += count` once per room visit.
 - [ ] 4. UI in `scripts/ui/`: HUD (stars, obols, gear, toasts, interaction prompt "E — verb" and
@@ -150,3 +150,4 @@ APIs other scripts already call: `grid_pos()`, `facing` (grid unit vector), `gua
   Iso/Art/Fx, Room and props, Player and Knucklebone written (untested). Paused at 85% of the 5-hour
   usage window; scheduled sessions resume from step 1.
 - 2026-10-19: Step 1 done: `heal` action on H (and d-pad up).
+- 2026-10-19: Step 2 done: `guard.gd` per the spec (states, sight, hearing, token combat, shove/torch/KO, cone and lantern). Choices: shoving a guard off raised floor counts as a fall (env KO, per the GDD's "shove him off a ledge"); hits don't interrupt a wind-up; stunned guards count as unaware (torch, then backstab). Fixed two type-inference parse errors in room.gd. Added `tests/check_scripts.gd` (loads every script: `--headless --path . --script res://tests/check_scripts.gd`).
