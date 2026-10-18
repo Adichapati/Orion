@@ -2,7 +2,26 @@
 
 Oct 17, 2026 · @Adithya Raj
 
-ORION keeps the heart of the idea — a small prince, a dark ruined citadel, a torch as the only light — and makes that torch the whole game: light lets you see, but it also lets them see you. This version sets it in mythic Greece, where Orion's own myth becomes the plot. The [Persian version](https://claude.ai/artifact/DkETn7xHUMDvHV2gPv3CLH) is kept only as an archive: Greek is the confirmed direction, decided on 18 Oct 2026.
+ORION keeps the heart of the idea — a small prince, a dark ruined citadel, a torch as the only light — and builds the game around that torch. Version 1, the hackathon demo, uses the torch for atmosphere; in v2 it becomes the core mechanic, because light lets you see and also lets them see you. This version sets it in mythic Greece, where Orion's own myth becomes the plot. The [Persian version](https://claude.ai/artifact/DkETn7xHUMDvHV2gPv3CLH) is kept only as an archive: Greek is the confirmed direction, decided on 18 Oct 2026.
+
+## Releases: v1 and v2
+
+v1 is the hackathon demo: a stealth-and-duel game with a fixed torch and a captive princess. The light system, the Ember and Alcyone fighting back move to v2, decided on 18 Oct 2026. Everything else in this doc is v1 unless it's marked v2.
+
+| Area | v1 — hackathon demo | v2 — next release |
+| --- | --- | --- |
+| Torch | One fixed light, 96 px (3 tiles), for atmosphere | Three sizes (shroud, normal, raise) and olive-oil fuel |
+| Guard sight | Lantern cone, a clear line of sight and a fixed range | Adds exposure: the more lit you are, the further they see you |
+| Lamps | Decorative; checkpoints at room entrances and Phineus's stalls | Vigil lamps you relight: checkpoints that light the area and lure guards |
+| Moonlight | Atmosphere only | Stripes of light that expose you; column shadows hide you |
+| Alarm tripods | — | Alerted guards light them to flood the room with light |
+| The Ember | Only the story's vigil flame, carried in your torch | Plant, recall and Ember Step; later Focus and Flare |
+| Belt Stars | Three keys that unlock the summit | Each also wakes an Ember power |
+| Gear | Trade-offs in damage, speed, noise and weight | Adds shine: the gold blade and Dendra plate raise your exposure |
+| Alcyone | Held captive at the summit; you rescue her | Breaks out, fights her way up, and fights blind beside you in the finale |
+| Extras | — | The Shade enemy, the Moth and Shadow challenge seals, hard mode's oil limit |
+
+Unchanged: the rest of the story, the Orion map, measured movement, duels and telegraphs, noise, cracked marble, fountains, statues, the economy and the art direction.
 
 ## Greek versus Persian
 
@@ -17,7 +36,7 @@ The game underneath is the same; the Greek setting mainly upgrades the story. Or
 | Merchant | Kasib, a blind oil-seller | Phineus, a blind seer | His one prophecy per visit is the tip mechanic |
 | Goal | Light the Hunter's Lamp | Light the Hunter's Beacon to warn the allied islands | Greek beacon-fire chains are a famous real practice |
 | Framing | The longest night | The Long Night Vigil, kept for the blind hunter | The darkness now means something: the enemy breaks a sacred vigil |
-| Finale | Bellatrix fights what you light | Alcyone fights blind and you are her eyes | It acts out the Cedalion myth |
+| Finale | Bellatrix fights what you light | v1: you rescue Alcyone at the summit; v2: she fights blind and you are her eyes | It acts out the Cedalion myth |
 | Architecture | Mud-brick citadel, Isfahan tilework, iwans | Classical temples from your reference board, built on older cyclopean walls | Your references; the Athenian Acropolis really sits on Mycenaean walls |
 | Moonlight | Lattice windows | Collapsed roofs, open courtyards and gaps between columns | Glass windows don't fit; columns give natural stripes of light and shadow |
 | Enemies | Watchman, Lancer, Sentinel | Watchman, Spearman, Hoplite | Greek soldier types; the counters are unchanged |
@@ -33,18 +52,18 @@ Most of the idea stays. The torch is its best part, so it becomes the centre of 
 
 | Original idea | Verdict | What ORION does |
 | --- | --- | --- |
-| Small prince saves a princess from a castle at night | Keep, add a twist | The princess is a warrior who breaks out herself and races you to the summit. You have the light; she has the strength. |
+| Small prince saves a princess from a castle at night | Keep; the twist comes in v2 | v1: she's held captive at the summit and you rescue her, as in the original idea. v2: she breaks out herself and races you to the top. |
 | Prince of Persia theme | Keep as inspiration only | Borrow its measured movement, duels and traps. Build a new world from Greek myth and the Orion story. |
 | Pixel art, isometric view | Keep | 2:1 isometric at 480×270, scaled ×4 to 1080p. Draw two facings per sprite and mirror the other two. |
-| Torch is the only light inside | Keep — make it the core | Light cuts both ways: it shows you the room and shows you to the guards. You control its size, its fuel and where it sits. |
-| 30–40 px light radius | Change | Too tight to see attacks coming, which feels unfair rather than hard. Use three sizes: 48 px shrouded, 96 px normal, 144 px raised. |
+| Torch is the only light inside | Keep; it becomes the core in v2 | v1: a fixed torch sets the mood in the dark. v2: light cuts both ways — it shows you the room and shows you to the guards, and you control its size, its fuel and where it sits. |
+| 30–40 px light radius | Change | Too tight to see attacks coming, which feels unfair rather than hard. v1 uses one 96 px radius; v2 adds 48 px shrouded and 144 px raised. |
 | Start unarmed, take a guard's sword and armour | Keep | The Lion Gate is an unarmed stealth tutorial. Knock out a Watchman to take his short sword and his tunic, which works as a disguise. |
 | Message icon from afar, "Enter" up close | Keep, make it a system | Every interactable uses the same two-range prompt: a glyph at 5 tiles, a button prompt at 1 tile. |
 | Coins in vases, chests and from guards | Keep, add risk | Obols hide in amphorae and giant storage jars. Smashing pottery is loud, so greed versus stealth becomes a real choice. |
 | Three guard tiers, each with its own style and outfit | Keep, sharpen | Each tier asks one question with one answer: parry, sidestep, or flank and stun. You can tell them apart by silhouette and by the light they carry. |
 | Cracked floor tiles | Keep, make them react | Cracked marble and mosaic give way under weight: yours, a heavy guard's, or heavy armour's. They become traps and shortcuts. |
 | Vines from broken glass windows | Keep, give them a job | Ivy and grapevines grow where moonlight gets in, through collapsed roofs and courtyards. Climb them, or burn them to cut a route off. |
-| Merchant sells bronze, silver, gold swords and armour | Change | Good-better-best has one right answer. Make the three tiers sidegrades with weight, noise and shine costs. |
+| Merchant sells bronze, silver, gold swords and armour | Change | Good-better-best has one right answer. Make the three tiers sidegrades with weight and noise costs; shine joins in v2. |
 | Godot, Unity or Android Studio; prototype in a Google playground | Change | Use Godot 4 for everything, including the prototype. Android Studio is an app IDE, not a game engine. |
 
 ## Pitch and pillars
@@ -55,7 +74,7 @@ Most of the idea stays. The torch is its best part, so it becomes the centre of 
 
 Four pillars decide every feature. If a feature serves none of them, cut it.
 
-1. **Light cuts both ways.** Light lets you see, and it lets them see you. Every light in the game is both a tool and a risk.
+1. **Light cuts both ways.** Light lets you see, and it lets them see you. Every light in the game is both a tool and a risk. This pillar is v2; in v1, guards see by their lantern cones alone.
 2. **Every fight is a puzzle.** Attacks are telegraphed clearly. Each enemy type has a counter, and the room itself is a weapon.
 3. **Measured movement.** This is the Prince of Persia DNA: fixed jump lengths, ledges and crumbling floors. Every move is a commitment.
 4. **Small prince, sharp mind.** He wins through choices, not stats. Gear, routes and greed all cost something.
@@ -66,9 +85,9 @@ Prince of Persia is a reference for feel, not a template. Never use its name, lo
 
 | Prince of Persia | ORION's version |
 | --- | --- |
-| A princess waits in a tower | Alcyone breaks out herself and races you to the summit |
+| A princess waits in a tower | v1: Alcyone is held at the summit, as in the original idea; v2: she breaks out and races you there |
 | A 60-minute real-time limit (1989) | The sky is the clock: Orion sinks past the columns as the night goes on |
-| Rewinding time with the Sands of Time | The Ember: drop your flame, call it back, step to it |
+| Rewinding time with the Sands of Time | The Ember (v2): drop your flame, call it back, step to it |
 | Loose floor tiles | Cracked marble that reacts to weight — yours, your armour's, a heavy guard's |
 | Side-view sword duels | Duels you read through light: a white glint means parry, a red glint means dodge |
 | Side-scrolling platforming | Isometric measured movement: fixed jumps, ledges, vines |
@@ -102,7 +121,7 @@ The game acts this out. You are Cedalion, the small one who sees for the strong.
 | Character | Name meaning | Role | Look |
 | --- | --- | --- | --- |
 | Cedalion | The boy who guided blind Orion to the sunrise | Player. Youngest prince, never trained to fight. Wins with wits. | 16×24 px, short tunic, a cloak too big for him, torch in his left hand |
-| Alcyone | The brightest of the Pleiades, the stars that rise just ahead of Orion | The princess and the citadel's best spear. Breaks out in Act I and stays one room ahead of you. | 18×30 px, Aegean blue and white, spear and small round shield |
+| Alcyone | The brightest of the Pleiades, the stars that rise just ahead of Orion | The princess, held captive at the summit beacon. In v2 she's the citadel's best spear, breaks out in Act I and stays one room ahead of you. | 18×30 px, Aegean blue and white; v2 adds a spear and a small round shield |
 | Antares | Greek, "rival of Ares" — the red heart of the Scorpion | Villain. Leads the Scorpion Brotherhood and wants the citadel dark when his fleet lands. | 40×48 px, red-lacquered bronze, scorpion crest, a hooked glaive shaped like a scorpion's tail |
 | Phineus | The blind seer who guided the Argonauts | The merchant. Sells olive oil and gear to anyone and gives one prophecy per visit. | 20×24 px, seated, clouded eyes, a lamp he never lights |
 | Scorpion Brotherhood | — | The guards: Watchmen, Spearmen, Hoplites | A red scorpion painted on every shield and cloak |
@@ -115,15 +134,15 @@ The game acts this out. You are Cedalion, the small one who sees for the strong.
 - **Phineus replaces Kasib.** A blind seer who gave directions suits a merchant who sells tips. Not Charon: Hades already made the ferryman a shopkeeper.
 - **Oenopion stays in the legend** as the king who blinded the hunter. He's a ready-made villain for a later chapter.
 
-### The twist
+### Alcyone in v1 and v2
 
-Alcyone isn't waiting to be saved. She escapes her guards in Act I and fights upward to light the beacon herself, but she has no flame. You follow her trail of knocked-out guards and her mark, seven scratched dots for the Pleiades; the marks also point to secrets.
+**v1: captive.** Antares holds Alcyone at the summit beacon so no one can light it. She can't fight her way out, but as they drag her up she scratches her mark on the walls: seven dots for the Pleiades. The marks show Cedalion the way and point to secrets. In the finale you get past Antares, light the beacon and free her.
 
-In the finale Antares snuffs the summit and Alcyone is fighting blind. You become her eyes: she strikes whatever your light touches, like Cedalion on the hunter's shoulders. Strength without light is blind, and light without strength gets snuffed out.
+**v2: the twist.** Alcyone isn't waiting to be saved. She escapes in Act I and fights upward to light the beacon herself, but she has no flame. In the finale Antares snuffs the summit and she fights blind: you become her eyes, and she strikes whatever your light touches. Strength without light is blind, and light without strength gets snuffed out.
 
 ### Ending
 
-Cedalion lights the beacon as Orion touches the western sea. The sun rises in the east, as it did for the blind hunter, and for the first time the whole citadel is visible in daylight — the sunlit temples of your reference board. Players see how much they crossed in the dark.
+Cedalion lights the beacon as Orion touches the western sea, and Alcyone is free. The sun rises in the east, as it did for the blind hunter, and for the first time the whole citadel is visible in daylight — the sunlit temples of your reference board. Players see how much they crossed in the dark.
 
 ### How the story is told
 
@@ -148,11 +167,11 @@ You start at Rigel, Orion's foot, and finish at Meissa, his head, where the beac
 
 ## Core mechanics
 
-Five systems carry the game, and all of them run through light: how lit you are, where your flame is, how loud you are, how you move, and what you can touch. They're unchanged from the Persian version; the Greek setting adds columns, statues and fountains that feed them.
+In v1, three systems carry the game: stealth and noise, measured movement and interaction prompts, plus the duels below. The light system and the Ember are v2; they're written out here so v1's code leaves room for them. Columns, statues and fountains feed every system.
 
-### Light and visibility
+### Light and visibility (v2)
 
-Your torch has three sizes. Bigger light shows more of the room and makes you visible from further away.
+In v1 the torch is one fixed 96 px light that sets the mood and has no other effect. In v2 it has three sizes: bigger light shows more of the room and makes you visible from further away.
 
 | Torch state | Radius | Fuel burn | Guards spot you from | Use it for |
 | --- | --- | --- | --- | --- |
@@ -166,9 +185,9 @@ Your torch has three sizes. Bigger light shows more of the room and makes you vi
 - **Moonlight** falls through collapsed roofs and open courtyards. Colonnades cut it into stripes: cross a portico in the column shadows and you're hidden; step into a stripe and you're lit.
 - **Alarm tripods.** An alerted guard runs to the nearest bronze tripod brazier. If he lights it, the whole room lights up. Stop him on the way, or snuff it afterwards.
 
-### The Ember
+### The Ember (v2)
 
-The Ember is ORION's signature mechanic and its answer to rewinding time. Your flame can leave your hand.
+The Ember is v2's signature mechanic and ORION's answer to rewinding time: your flame can leave your hand. In v1 the Ember is only the story's vigil flame, carried in your torch to the beacon.
 
 - **Plant (tap F).** Set the flame down. It keeps burning and lights its spot, and you stand in the dark.
 - **Recall (tap F again).** The flame flies back to your hand in a straight line. It lights or ignites what it passes: vines, oil puddles, lamps.
@@ -179,7 +198,7 @@ The Ember is ORION's signature mechanic and its answer to rewinding time. Your f
 ### Stealth and noise
 
 - Every guard has an awareness meter from 0 to 100, shown as a **?** that fills and turns into a **!**. The guard awareness section below shows each state.
-- **Sight.** A guard sees you when you're inside his lantern's cone, nothing blocks the line, and you're lit enough for the distance. Your exposure adds up your torch state, every other light reaching you and your armour's shine.
+- **Sight.** A guard sees you when you're inside his lantern's cone, nothing blocks the line, and you're within his sight range: about 5 tiles for a Watchman, 6 for a Spearman and 4 for a Hoplite, as starting values. In v2 the range depends on exposure: your torch state, every other light reaching you and your armour's shine.
 - **Noise** spreads as rings. Guards inside a ring turn toward it and investigate.
 
 | Action | Noise radius |
@@ -197,7 +216,7 @@ The Ember is ORION's signature mechanic and its answer to rewinding time. Your f
 - **Fountains mask sound.** Within 3 tiles of running water, your footsteps make no noise. Courtyards become safe crossings, if you can stay out of the moonlight.
 - **Knucklebones** are free and unlimited. Toss them to turn a guard's head or walk him onto cracked marble.
 - **Statue or guard?** Courtyards are full of statues. In the dark, a Hoplite standing still looks exactly like one until light touches him. Statues also block sight lines, so they double as hiding spots.
-- **Disguise.** The stolen Watchman tunic and cap fool Watchmen beyond 2 tiles, unless your torch is raised or you attack. Spearmen see through it up close; Hoplites always do.
+- **Disguise.** The stolen Watchman tunic and cap fool Watchmen beyond 2 tiles, unless you attack (in v2, also when your torch is raised). Spearmen see through it up close; Hoplites always do.
 
 ### Movement and traversal
 
@@ -222,7 +241,7 @@ Combat is a short duel you win by reading. Every attack is telegraphed, every en
 
 ### The basics
 
-- **Moves:** a 3-hit sword combo; parry (tap, 120 ms window); dodge (a sidestep with a brief invulnerability window); torch thrust (stuns and ignites, costs 5% fuel); shove (pushes a guard back one tile).
+- **Moves:** a 3-hit sword combo; parry (tap, 120 ms window); dodge (a sidestep with a brief invulnerability window); torch thrust (stuns and ignites; in v2 it also costs 5% fuel); shove (pushes a guard back one tile).
 - **Health:** 4 stars to start, plus 1–3 from armour. Most hits cost 1 star; heavy hits cost 2.
 - **Knock-outs, not kills.** It fits a small prince and keeps the game family-friendly. Knocked-out guards stay down; on hard mode they wake after 2 minutes.
 - **Duel rule:** only one guard attacks at a time while the others circle. Keep encounters to 2–3 guards so isometric fights stay readable.
@@ -243,11 +262,11 @@ The glints differ in shape and sound as well as colour, so they work for colourb
 
 | Enemy | Acts | Outfit and light | Attack style | Counter | HP | Drops |
 | --- | --- | --- | --- | --- | --- | --- |
-| Watchman (*phylax*) | Prologue, I | Undyed wool tunic, felt cap, terracotta hand lantern with a short 60° cone | Slow overhead chop (white) | Parry and riposte, or take him from behind | 3 | 2–5 obols, oil |
+| Watchman (*phylax*) | Prologue, I | Undyed wool tunic, felt cap, terracotta hand lantern with a short 60° cone | Slow overhead chop (white) | Parry and riposte, or take him from behind | 3 | 2–5 obols (plus oil in v2) |
 | Spearman (*doryphoros*) | I, II | Linen corslet, crested leather helmet, red cloak, torch on a tall pole lighting a wide circle | Long thrust (red), wide sweep (white); keeps his distance | Stay outside his circle, sidestep the thrust, then close in | 5 | 5–10 obols |
 | Hoplite | II, III | Bronze cuirass, Corinthian helmet with eye slits, big round shield painted with a red scorpion and a lantern hung from its rim | Shield bash (red), heavy overhead (white); blocks everything from the front | Flank him; thrust the torch into his eye slits for a 2 s stun; lure him onto cracked marble; shove him off a ledge | 8 | 10–20 obols, pomegranate |
-| Shade (stretch) | III | Black wool, carries no light | Snuffs lamps and your planted Ember, strikes from the dark | Visible only in light: raise the torch, fight under lamps, use Flare | 4 | 5 obols |
-| Antares (boss) | Finale | Red-lacquered bronze, scorpion crest, red lantern, a hooked glaive shaped like a scorpion's tail | Long glaive strikes (red) and sweeps (white); snuffs every lamp in phase 2 | Relight lamps between attacks to see him; in phase 3, Alcyone strikes whatever your light touches | 30 | — |
+| Shade (v2) | III | Black wool, carries no light | Snuffs lamps and your planted Ember, strikes from the dark | Visible only in light: raise the torch, fight under lamps, use Flare | 4 | 5 obols |
+| Antares (boss) | Finale | Red-lacquered bronze, scorpion crest, red lantern, a hooked glaive shaped like a scorpion's tail | Long glaive strikes (red) and sweeps (white); in v2, snuffs every lamp in phase 2 | Dodge the red strikes, parry the sweeps, lure him onto cracked marble. v2 adds relighting lamps to see him, and Alcyone fighting beside you in phase 3 | 30 | — |
 
 Each guard's light is its silhouette in the dark: a small cone, a wide circle on a pole, a square of light on a shield. Players know the threat before they see the sprite. The Hoplite's light points forward, so his back is always dark and flanking feels natural.
 
@@ -257,7 +276,7 @@ Antares carries a glaive rather than the Persian version's chain-blade, because 
 
 - Thrust it into a Hoplite's eye slits to stun him.
 - Set fire to oil puddles and vines in the middle of a fight.
-- Relight a nearby lamp mid-fight to see attacks earlier, at the cost of being seen by everyone else.
+- In v2, relight a nearby lamp mid-fight to see attacks earlier, at the cost of being seen by everyone else.
 - In the Prologue you have no sword, so shove and torch are your only tools: guards go off ledges, into the well or onto cracked marble.
 
 ## Guard awareness
@@ -295,7 +314,7 @@ The Prologue holds about 25 obols and Act I about 150 for a thorough player. Tha
 | Watchman's short sword (*xiphos*) | Free (Prologue) | 1 | 0.40 s | 1 tile | — | Plain |
 | Bronze inlaid dagger | 30 | 1 | 0.25 s | 0.75 tile | Silent; instant knock-out from behind | Useless against shields |
 | Silver-hilted *kopis* | 75 | 2 | 0.40 s | 1.1 tiles | 180 ms parry window; ripostes do double damage | None — the all-rounder |
-| Gold-hilted longsword | 150 | 3 | 0.60 s | 1.3 tiles | Breaks shields; perfect parries add 20% fuel | Slow; the blade glints in light (+15% exposure) |
+| Gold-hilted longsword | 150 | 3 | 0.60 s | 1.3 tiles | Breaks shields (v2: perfect parries add 20% fuel) | Slow (v2: the blade glints in light, +15% exposure) |
 
 The dagger and the longsword are heirlooms from the age of the old walls: Mycenaean graves held inlaid bronze daggers and gold-hilted long swords. The xiphos and kopis are the soldiers' blades of the temple age.
 
@@ -306,7 +325,7 @@ The dagger and the longsword are heirlooms from the age of the old walls: Mycena
 | Watchman's tunic and cap | Free (Prologue) | +0 | +0 | Disguise against Watchmen | Paper-thin |
 | Bronze-scaled *linothorax* (layered linen) | 40 | +1 | +1 tile | Light; climbs normally | Little protection |
 | Silvered muscle cuirass | 90 | +2 | +2 tiles | Less stagger | Medium noise |
-| Gilded Dendra plate | 160 | +3 | +3 tiles | Can't be staggered | Breaks cracked marble at once, can't climb vines, shines (+30% exposure) |
+| Gilded Dendra plate | 160 | +3 | +3 tiles | Can't be staggered | Breaks cracked marble at once, can't climb vines (v2: shines, +30% exposure) |
 
 The Dendra armour is a real Mycenaean suit of bronze plates from about 1400 BCE, with a collar up to the ears. It makes the perfect heavy tier.
 
@@ -316,7 +335,7 @@ Dagger plus tunic makes a ghost who avoids fights. Longsword plus Dendra plate m
 
 | Item | Price | Use | Carry limit |
 | --- | --- | --- | --- |
-| Olive-oil flask | 10 | Refill 50% fuel, or throw it to make a fire pool that lights an area for 20 s | 3 |
+| Olive-oil flask | 10 | Throw it to make a fire pool that burns for 20 s, blocking a path and burning vines (v2: also refills 50% fuel) | 3 |
 | Pomegranate | 15 | Restores 2 stars | 2 |
 | Knucklebones | Free | Toss for a 4-tile noise | Unlimited |
 
@@ -326,10 +345,10 @@ Skilled players get depth from freedom, not bigger health bars. Every encounter 
 
 - **Three ways through every room:** ghost past unseen, trick the guards with lures, floors or fire, or duel. When you build a room, write down all three before placing anything.
 - **Dawn Rank** at the end of each act scores time, times spotted, knock-outs versus guards ghosted, obols and damage taken. Ranks run C to S, plus *Orion* for a perfect ghost run under par time.
-- **Challenge seals** are optional and shown on the star map: *Moth* — never let the torch burn out; *Shadow* — never raise the torch; *Hunter* — drop every guard with the environment; *Pilgrim* — buy nothing.
-- **No minimap.** The star map only marks rooms where you've relit a lamp, so mapping costs you exposure.
-- **Systems that talk to each other.** Guards react to lamps changing, alarm tripods light rooms, fountains hide footsteps, sparks feed fuel, armour weight breaks floors. The best "thinking" moments are solutions players find themselves.
-- **Hard mode, "Hunter's Night":** a real-time clock (Orion sets in 15 minutes for the slice, 45 for the full game), half the oil, guards wake after 2 minutes, and awareness never fully resets.
+- **Challenge seals** are optional and shown on the star map: *Moth* — never let the torch burn out (v2); *Shadow* — never raise the torch (v2); *Hunter* — drop every guard with the environment; *Pilgrim* — buy nothing.
+- **No minimap.** The star map only marks rooms you've visited; in v2, only rooms where you've relit a lamp, so mapping costs you exposure.
+- **Systems that talk to each other.** Fountains hide footsteps, statues hide guards and armour weight breaks floors; v2 adds lamps that guards notice, alarm tripods and sparks that feed fuel. The best "thinking" moments are solutions players find themselves.
+- **Hard mode, "Hunter's Night":** a real-time clock (Orion sets in 15 minutes for the slice, 45 for the full game), half the oil (v2), guards wake after 2 minutes, and awareness never fully resets.
 - **Speedrun support:** an on-screen timer and an instant room restart.
 
 ## Art direction
@@ -408,12 +427,12 @@ Size tells the story: Cedalion is two-thirds of a Watchman's height and half a H
 | Vine climb | 4 |
 | Sword combo | 3 × 4 |
 | Parry, dodge | 3, 5 |
-| Torch thrust, torch raise | 4, 2 |
-| Plant Ember, recall Ember | 4, 3 |
+| Torch thrust; torch raise (v2) | 4, 2 |
+| Plant Ember, recall Ember (v2) | 4, 3 |
 | Shove, interact | 4, 3 |
 | Hurt, knocked down | 2, 6 |
 
-That is about 87 frames per facing, so about 170 for Cedalion. Budget about 80 per guard type.
+That is about 87 frames per facing. v1 skips the torch raise and the Ember animations, so about 78 per facing and about 155 for Cedalion. Budget about 80 per guard type.
 
 ### Asset savers
 
@@ -430,12 +449,12 @@ That is about 87 frames per facing, so about 170 for Cedalion. Budget about 80 p
 - **Ruin layer:** fallen column drums, cracked plaster, broken roofs open to the sky, rubble, ivy and grapevines, olive and cypress trees in the courtyards.
 - **Water:** pools and fountains in turquoise; running fountains hide footsteps.
 - **Story props:** vigil lamps still smoking, star frescoes scratched out and painted over with red scorpions, the broken bronze Star Engine, toppled statues, Alcyone's seven-dot marks.
-- **Interactables:** amphorae and giant storage jars, cedar chests, wall lamps (lit and unlit), olive-oil jars, alarm tripods, bronze mirrors (Act II), Phineus's stall.
+- **Interactables:** amphorae and giant storage jars, cedar chests, wall lamps (lit and unlit), olive-oil jars and alarm tripods (v2), bronze mirrors (Act II), Phineus's stall.
 
 ### Cutscenes and UI
 
 - **Black-figure vase style** for the intro and act cards: black silhouettes on terracotta, framed by a meander border, animated as if the vase turns. Two colours and silhouettes only, so it's cheap to draw.
-- **HUD:** health as stars, fuel as the flame of a small terracotta oil lamp, obols as a coin count.
+- **HUD:** health as stars and obols as a coin count; v2 adds fuel as the flame of a small terracotta oil lamp.
 - **Frames and menus** borrow the blue-and-gold meander border from your second reference.
 - **Star map** drawn as the bronze dial of the Star Engine.
 - **Font:** a readable pixel font; no fake Greek letters.
@@ -446,19 +465,19 @@ That is about 87 frames per facing, so about 170 for Cedalion. Budget about 80 p
 - Laigter for normal maps, Lospec for palettes, and Godot's built-in tile editor for levels.
 - A pixel font with a clear licence, such as Daniel Linssen's free m5x7, credited.
 
-Every tool, price and free asset source, with the cheapest pipeline: [Tools and assets](TOOLS.md)
+Every tool, price and free asset source, with the cheapest pipeline: Tools and assets
 
 ## Lighting design
 
-Lighting is Godot 2D lights over a dark base, drawn as banded pixel shapes so the light itself looks hand-made. Exposure is computed in script, never read back from pixels. The rig matches the Persian version; colonnades and marble give it more to work with.
+Lighting is Godot 2D lights over a dark base, drawn as banded pixel shapes so the light itself looks hand-made. In v1 it's atmosphere: a fixed torch, wall lamps, moonlight and the guards' lanterns, with no effect on stealth beyond the guards' cones. The torch states, relightable lamps and exposure maths below are v2.
 
 ### The light rig
 
 | Layer | Godot node | Colour | Notes |
 | --- | --- | --- | --- |
 | Ambient base | CanvasModulate | Interior #1b1834 (about 10% brightness); courtyards #4a5a8a | Tween to dawn (#f0c8a0) for the ending |
-| Player torch | PointLight2D + flicker script | #ffb45a | 48 / 96 / 144 px by torch state; casts shadows; light height set for normal maps |
-| Wall lamps | PointLight2D | #ff9d4a | 64 px; lit and unlit states; one shared texture |
+| Player torch | PointLight2D + flicker script | #ffb45a | 96 px in v1; 48 / 96 / 144 px by torch state in v2; casts shadows; light height set for normal maps |
+| Wall lamps | PointLight2D | #ff9d4a | 64 px; fixed in v1, relightable in v2; one shared texture |
 | Moonlight | PointLight2D through roof gaps and courtyards, an additive shaft sprite and dust particles | #7fa6d8 | Column occluders cut it into stripes |
 | Guard lanterns | PointLight2D with a shaped texture | #ffcf7a | The texture is the vision area: cone (Watchman), circle (Spearman), square (Hoplite) |
 | Scorpion tripods | PointLight2D | #e04a3a | Red always means enemy |
@@ -477,11 +496,11 @@ Lighting is Godot 2D lights over a dark base, drawn as banded pixel shapes so th
 
 - Put LightOccluder2D on column bases, statue plinths and low walls, using footprint polygons. Isometric shadows are cast in screen space, so tall occluders look wrong.
 - Cast shadows only from the player torch, the moonlight in key courtyards and a few set pieces. Shadows are the expensive part, especially in a web build.
-- A column's or statue's shadow hides you from a guard's lantern. That's a free stealth mechanic once occluders exist.
+- In v2, a column's or statue's shadow hides you from a guard's lantern. That's a free stealth mechanic once occluders exist.
 
-### Exposure maths
+### Exposure maths (v2)
 
-Godot can't cheaply read the light at a point, so the player script computes it every 0.1 s. Starting values, to tune in playtests:
+In v1 a guard sees you inside his cone, with a clear line, within a fixed range, and his awareness rises faster the closer you are. In v2 exposure joins in. Godot can't cheaply read the light at a point, so the player script computes it every 0.1 s. Starting values, to tune in playtests:
 
 ```gdscript
 var e: float = TORCH_EXPOSURE[torch_state]  # shrouded 0.2, normal 0.5, raised 1.0, ember 0.05
@@ -536,7 +555,7 @@ Keep exploration sparse and acoustic. Long stretches of drone, sea and room tone
 | Group | Sounds | What it tells the player |
 | --- | --- | --- |
 | Footsteps | Marble, mosaic, sand, packed earth, plus an armour layer (linen rustle, cuirass clank, Dendra plate clatter) | How loud you are; where guards are in the dark |
-| Torch | Ignite whoosh, crackle loop, sputter when low, snuff hiss, Ember flight | Fuel left, without looking at the HUD |
+| Torch | Ignite whoosh, crackle loop, sputter when low, snuff hiss; Ember flight in v2 | Fuel left (v2), without looking at the HUD |
 | Sword | Three swing variants, bronze-on-bronze clash, parry "ting", riposte hit, shield thud | Timing; the parry "ting" must be the brightest sound in the game |
 | Telegraphs | High chime for a white glint, low drum for a red glint | Parry or dodge, by ear |
 | World | Amphora crack, storage-jar boom, obol jingle that rises in pitch along a chain, chest creak, marble groan and collapse, vines burning, fountain splash | Risk and reward |
@@ -548,7 +567,7 @@ The barks are simple Greek words, but ancient and modern Greek differ; check the
 
 ### Mix tricks
 
-- Shrouding the torch puts a low-pass filter on the music and ambience buses, like holding your breath.
+- Sneaking puts a low-pass filter on the music and ambience buses, like holding your breath.
 - A short lyre-and-drum stinger plays the moment a guard goes to alert.
 - A heartbeat layer plays at 1 star.
 - Guard footsteps are positional and audible beyond the light, so players learn to listen.
@@ -574,10 +593,10 @@ Keyboard and mouse is the main scheme for the demo; gamepad support comes almost
 | Sword attack | Left click | X |
 | Parry | Right click | RB |
 | Interact | E | Y |
-| Shroud torch and sneak | Hold Shift | Hold LT |
-| Raise torch | Hold R | Hold LB |
+| Sneak (v2: also shrouds the torch) | Hold Shift | Hold LT |
+| Raise torch (v2) | Hold R | Hold LB |
 | Torch thrust | Q | LB + X |
-| Plant or recall the Ember (hold: Ember Step) | F | RT |
+| Plant or recall the Ember, hold for Ember Step (v2) | F | RT |
 | Toss knucklebones | G, toward the cursor | Flick the right stick |
 | Star map, pause | Tab, Esc | Back, Start |
 | Debug overlay (dev builds) | F3 | — |
@@ -627,18 +646,18 @@ orion/
 
 | System | Built from | Job |
 | --- | --- | --- |
-| Player | CharacterBody2D + state machine | Movement, combat, torch states, the Ember |
+| Player | CharacterBody2D + state machine | Movement and combat; torch states and the Ember in v2 |
 | Guard AI | CharacterBody2D + NavigationAgent2D + state machine | Patrol, react, fight; a shared "attack token" lets only one guard attack at a time |
-| Perception | Script on each guard | Sight from cone + raycast + exposure; hearing from the NoiseBus |
-| LightRegistry | Autoload | Tracks every light for the exposure maths, and tells guards when a lamp changes |
+| Perception | Script on each guard | Sight from cone + raycast + range (exposure in v2); hearing from the NoiseBus |
+| LightRegistry | Autoload | v2 only: tracks every light for the exposure maths, and tells guards when a lamp changes |
 | NoiseBus | Autoload with one signal, `noise(position, radius, source)` | Every loud action calls it; guards in range react |
 | Fountain zones | Area2D on each fountain | Sets the player's footstep noise to 0 inside the zone |
 | Statues | StaticBody2D + LightOccluder2D | Block sight lines; a guard can idle in a statue pose |
 | Interactable | Area2D component with two radii | The notice glyph and button prompt, reused everywhere |
 | Gear and enemy data | Custom Resources (.tres files) | Tune numbers without touching code |
 | AudioDirector | Autoload | Mixes music stems from the highest awareness; plays stingers |
-| Saving | JSON in `user://`, written at relit lamps | Checkpoints |
-| Debug overlay | A scene toggled with F3 | Draws vision cones, noise rings, exposure and AI states — also a demo tool for the technical score |
+| Saving | JSON in `user://`, written at room entrances and Phineus's stalls (relit lamps in v2) | Checkpoints |
+| Debug overlay | A scene toggled with F3 | Draws vision cones, noise rings and AI states (exposure in v2) — also a demo tool for the technical score |
 
 ### Isometric gotchas
 
@@ -662,27 +681,28 @@ Ship one polished 10–15 minute slice — the Lion Gate and the Cistern, ending
 
 | Priority | Features |
 | --- | --- |
-| Must | Isometric movement with fixed jumps and ledges; columns that fade when you're behind them; torch with three sizes; darkness inside; Watchman and Spearman with lantern vision and awareness meters; attack, parry, dodge, shove; telegraph glints; cracked marble; pottery, chests and obols; Phineus selling 2 swords and 2 armour sets; the Ember (plant and recall); interaction prompts; decorative ivy; the Lion Gate and 5 rooms; title screen and end card; core sound effects and one music loop; brightness slider |
-| Should | Hoplite; torch-thrust stun; fuel, with relit lamps as checkpoints; noise rings and knucklebones; fountains that hide footsteps; statues as cover; Ember Step as the end reward; adaptive music stems; normal-mapped marble; Dawn Rank screen; debug overlay |
-| Could | Third sword and armour; disguise; alarm tripods; climbable vines; "statue or guard?"; Alcyone's seven-dot secrets; star map; black-figure vase intro; hard mode |
-| Won't, this hackathon | Acts II and III, mirror puzzles, Shades, Antares, Focus and Flare, mobile controls, a full save system |
+| Must | Isometric movement with fixed jumps and ledges; columns that fade when you're behind them; a fixed torch light in the dark; Watchman and Spearman with lantern cones and awareness meters; attack, parry, dodge, shove; telegraph glints; cracked marble; noise rings and knucklebones; pottery, chests and obols; Phineus selling 2 swords and 2 armour sets; interaction prompts; decorative ivy; the Lion Gate and 5 rooms; title screen and end card; core sound effects and one music loop; brightness slider |
+| Should | Hoplite; torch-thrust stun; checkpoints at room entrances; fountains that hide footsteps; statues as cover; the first Belt Star as the end reward; adaptive music stems; normal-mapped marble; Dawn Rank screen; debug overlay |
+| Could | Third sword and armour; disguise; climbable vines; "statue or guard?"; Alcyone's seven-dot secrets; star map; black-figure vase intro; hard mode |
+| Won't, this hackathon | Acts II and III, mirror puzzles, Antares, mobile controls, a full save system |
+| v2 | The light system (torch sizes, fuel, exposure, relightable lamps, alarm tripods); the Ember with Ember Step, Focus and Flare; the Shade; Alcyone fighting back |
 
 ### The slice, room by room
 
-1. **The Lion Gate** (moonlit cyclopean walls): sneak with the torch shrouded, shove a Watchman into the well, take his short sword and tunic, see the gate's glyph from afar, then "Enter".
-2. **The colonnade:** the screen goes dark except your torch and stripes of moonlight between the columns. Learn the torch sizes, lamps and pottery, and parry your first Watchman.
-3. **Storerooms** (rows of giant storage jars): plant the Ember to light a dark room from a distance, then recall it. Lure a guard across cracked marble.
+1. **The Lion Gate** (moonlit cyclopean walls): sneak past in the dark, shove a Watchman into the well, take his short sword and tunic, see the gate's glyph from afar, then "Enter".
+2. **The colonnade:** the screen goes dark except your torch and stripes of moonlight between the columns. Learn the guards' lantern cones and the noise of pottery, and parry your first Watchman.
+3. **Storerooms** (rows of giant storage jars): toss knucklebones to lure a guard across cracked marble, and find Alcyone's first seven-dot mark.
 4. **Phineus's cistern,** down a stepped tunnel: a safe room — save, shop, choose a loadout, hear a prophecy.
 5. **The statue court:** the exam. Two Watchmen and a Spearman among statues, with a fountain to hide your footsteps. Ghost, trick or duel.
-6. **The star shrine:** take the first Belt Star and gain Ember Step, then use it to escape as the floor collapses behind you. End card in vase-painting style with your Dawn Rank: "Orion is sinking."
+6. **The star shrine:** take the first Belt Star, one of three keys to the summit, then run across collapsing marble to escape. End card in vase-painting style with your Dawn Rank: "Orion is sinking. Alcyone waits at the summit."
 
 ### Who builds what
 
 | Area | Person A: gameplay code | Person B: art, audio, levels, UI |
 | --- | --- | --- |
-| Player | Controller, states, combat, the Ember | Sprites and animations |
+| Player | Controller, states, combat | Sprites and animations |
 | Guards | AI, perception, attack token | Sprites, silhouettes, barks |
-| World | Cracked floors, lamps, noise, fountains, exposure maths | Temple kit, tiles, light textures, normal maps, props |
+| World | Cracked floors, noise, fountains, statues | Temple kit, tiles, light textures, normal maps, props |
 | Levels | Scripted events, triggers | Room layouts built in the editor |
 | UI and audio | Merchant logic, saving, debug overlay | HUD, merchant screen, vase-painting cards, music, sound effects |
 
@@ -698,7 +718,7 @@ If a gate fails, fix that phase before starting the next one: a fun greybox matt
 
 ## Build estimate
 
-The slice as this doc describes it takes about 170–240 hours of work between you: roughly 3–4 weeks at 4 hours a day each. A 48-hour hackathon fits a three-room micro-slice, not the whole thing.
+The v1 slice takes about 160–220 hours of work between you: roughly 3–4 weeks at 4 hours a day each. Moving the light system and the Ember to v2 saves about 15 hours. A 48-hour hackathon fits a three-room micro-slice, not the whole thing.
 
 These are rough estimates. They assume you're new to Godot but not to coding or drawing; if neither of you has drawn pixel art before, add about a third to the art hours. Re-estimate after the greybox phase, because how long it took is your best guide.
 
@@ -708,35 +728,36 @@ These are rough estimates. They assume you're new to Godot but not to coding or 
 | --- | --- | --- | --- |
 | Setup and isometric foundation | A | 6–8 | Project settings, tile layers, Y-sorting, camera, fading columns |
 | Player controller | A | 8–12 | 8-way movement, run and sneak, fixed jumps, ledges, vines |
-| Light and stealth systems | A | 14–18 | Torch sizes, flicker, fuel, exposure maths, lamps, noise, fountains, statues |
+| Torch, stealth and noise | A | 6–8 | Fixed torch with flicker, noise rings, fountains, statues |
 | Guard AI | A | 12–16 | Patrol, sight and hearing, awareness states, navigation, three guard types |
 | Combat | A | 10–14 | Combo, parry, dodge, glints, hit-stop, attack token, shove, torch thrust |
-| World interactions | A | 10–14 | The Ember, cracked floors, prompts, pottery and obols, checkpoints |
+| World interactions | A | 6–9 | Cracked floors, prompts, pottery and obols, checkpoints, the Belt Star |
 | Merchant, gear and game flow | A | 8–10 | Gear data and its effects, the shop, title, end card, Dawn Rank |
 | Debug, builds and bug fixing | A | 8–12 | F3 overlay, desktop and web builds, fixes |
-| **Code subtotal** | A | **76–104** |  |
+| **Code subtotal** | A | **64–89** |  |
 | Tiles and temple kit | B | 18–24 | Marble, mosaic and cracked floors; walls; cyclopean walls; columns, steps, pediments |
 | Props | B | 8–12 | Amphorae, jars, chests, lamps, tripods, fountain, statues, ivy, trees |
-| Cedalion's sprites | B | 18–25 | About 170 frames |
+| Cedalion's sprites | B | 16–23 | About 155 frames |
 | Guards and Phineus | B | 22–30 | About 80 frames per guard type on one shared rig |
 | UI and vase-painting cards | B | 8–12 | HUD, prompts, merchant screen, title, end card |
 | Level building | B | 10–14 | The Lion Gate and 5 rooms, with lights and occluders placed |
 | Music and sound | B | 12–16 | Four music stems, about 40 sound effects |
-| **Art and audio subtotal** | B | **96–133** |  |
-| **Total** | Both | **172–237** |  |
+| **Art and audio subtotal** | B | **94–131** |  |
+| **Total, v1** | Both | **158–220** |  |
+| Later: v2 light system and the Ember | Both | About 20–26 | Torch sizes, fuel, exposure, relightable lamps, alarm tripods, the Ember and its powers, their animations |
 
-Art carries about a third more work than code. Once the core systems are done, move level building or the UI to Person A to even it out.
+Art carries about half again as much work as code. Once the core systems are done, move level building or the UI to Person A to even it out.
 
-Spread over the roadmap, about 200 hours works out to roughly 30 for the greybox, 50 for the core loop, 60 for content, 40 for polish and 20 for demo prep.
+Spread over the roadmap, about 190 hours works out to roughly 30 for the greybox, 45 for the core loop, 55 for content, 40 for polish and 20 for demo prep.
 
 ### What fits in the time you have
 
 | Time you have | Team hours | What fits |
 | --- | --- | --- |
-| A 48-hour hackathon | About 50–60 (sleep, food and judging take the rest) | A micro-slice: the Lion Gate, the colonnade and the statue court; Watchman and Spearman; torch sizes, exposure, the Ember (plant and recall), cracked floors, pottery and obols; simple sprites (about 60 frames for Cedalion); one music loop; no merchant, or a 2-item one |
+| A 48-hour hackathon | About 50–60 (sleep, food and judging take the rest) | A micro-slice: the Lion Gate, the colonnade and the statue court; Watchman and Spearman; a fixed torch, lantern cones and noise, cracked floors, pottery and obols; simple sprites (about 60 frames for Cedalion); one music loop; no merchant, or a 2-item one |
 | 1 week at about 4 h a day each | About 55 | The same micro-slice with more polish |
 | 2 weeks at about 5 h a day each | About 140 | The Must list: all 6 rooms, Phineus and the gear choice, final art for Cedalion and two guard types |
-| 3–4 weeks at about 4 h a day each, or 2–3 weeks full time | About 170–240 | Must plus Should: the slice exactly as this doc describes it |
+| 3–4 weeks at about 4 h a day each, or 2–3 weeks full time | About 160–220 | Must plus Should: the slice exactly as this doc describes it |
 
 ### What to cut first
 
@@ -746,16 +767,16 @@ If time runs short, cut in this order. Agree on it now, not at 3 a.m.
 2. Adaptive music stems (keep one loop).
 3. Normal maps on marble.
 4. Dawn Rank and the debug overlay's extras.
-5. Rooms 3 and 6, and Ember Step.
+5. Rooms 3 and 6.
 6. Phineus's shop (keep the stolen sword and tunic only).
 
-Never cut the torch sizes, the exposure maths, the guard awareness meter or the moment the lights go out. Those are the game.
+Never cut the guard awareness meter, the noise system or the moment the lights go out. Those are the game.
 
 ### What to do before you build
 
 - [ ] Close the remaining open questions.
 - [ ] Read the hackathon rules: its length, whether you can build before it opens, and whether outside or AI assets are allowed.
-- [ ] Install Godot 4.3+, Aseprite or Pixelorama, Git and Laigter, and make a shared GitHub repo.
+- [ ] Install Godot 4.7, Aseprite or Pixelorama, Git and Laigter. The shared GitHub repo is already set up.
 - [ ] Coder: do Godot's official "Your first 2D game" tutorial (about 3–4 hours), then a 2-hour isometric tile test.
 - [ ] Artist: a one-day style test — one floor tile, one column and Cedalion's idle in two facings, lit by a torch inside Godot. It sets the look and proves the pipeline.
 - [ ] Both: draw the rooms on paper, with three ways through each.
@@ -770,20 +791,20 @@ Win the panel in three minutes: show the moment the lights go out, one clever so
 
 | Criterion | What the judges should see | When in the demo |
 | --- | --- | --- |
-| 01 Creativity | Light that cuts both ways; the Ember; you play Cedalion, the eyes of the blind hunter; the castle laid out as Orion; the sky as the clock; a princess who saves herself | 0:00–0:20 and 1:20–1:40 |
+| 01 Creativity | You play Cedalion, the eyes of the blind hunter; the castle laid out as Orion; the sky as the clock; marble that gives way under weight; fountains and statues as stealth tools; vase-painting cutscenes | 0:00–0:20 and 1:20–1:40 |
 | 02 Gameplay experience | A tight loop of read, choose, act; three solutions per room; telegraphs a stranger can read | 0:40–1:40 and the hands-on |
 | 03 Design quality | A palette with meaning (warm, cool, red), marble that takes the torch's colour, readable silhouettes, vase-painting cutscenes, music that reacts | Throughout; point out the music shift |
-| 04 Technical implementation | Light exposure, noise propagation, guard state machines, isometric Y-sorting with fading columns, data-driven gear, a web build | 2:00–2:30 with the F3 overlay |
+| 04 Technical implementation | Sight cones with line of sight, noise propagation, guard state machines, isometric Y-sorting with fading columns, data-driven gear, a web build | 2:00–2:30 with the F3 overlay |
 
 ### Three-minute script
 
-1. **0:00** Title: a black-figure vase turns, showing blind Orion carrying Cedalion toward the sunrise. One line: "Light lets you see. It also lets them see you."
-2. **0:20** The Lion Gate: sneak with the torch shrouded, shove a Watchman into the well, take his sword.
-3. **0:40** "Enter" — the screen goes dark except stripes of moonlight between the columns. Raise and shroud the torch to show the trade-off.
+1. **0:00** Title: a black-figure vase turns, showing blind Orion carrying Cedalion toward the sunrise. One line: "Be the eyes of the hunter."
+2. **0:20** The Lion Gate: sneak through the dark, shove a Watchman into the well, take his sword.
+3. **0:40** "Enter" — the screen goes dark except stripes of moonlight between the columns. Show a Watchman's lantern cone sweeping, and slip past it.
 4. **1:00** Smash an amphora and a guard turns. Parry him, and the sparks light the colonnade.
-5. **1:20** Plant the Ember as a lure, recall it, and walk the Spearman onto cracked marble.
+5. **1:20** Toss knucklebones to walk the Spearman onto cracked marble.
 6. **1:40** At Phineus's stall, hear a prophecy and explain the Dendra plate's trade-offs in one sentence.
-7. **2:00** Press F3: vision cones, noise rings, the exposure value. Explain the system in two sentences.
+7. **2:00** Press F3: vision cones, noise rings, each guard's awareness. Explain the system in two sentences.
 8. **2:30** Hand a judge the controls in the statue court.
 
 ### Demo risks

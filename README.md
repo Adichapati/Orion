@@ -2,7 +2,7 @@
 
 A small prince carries the last flame through a dark temple-citadel. Every light that shows him the way also gives him away. He has until Orion sets.
 
-ORION is an isometric pixel-art game of stealth and sword duels set in mythic Greece, inspired by the feel of Prince of Persia and planned for a hackathon. The engine will be Godot 4.3+. No code yet: the team is still finalising the plan.
+ORION is an isometric pixel-art game of stealth and sword duels set in mythic Greece, inspired by the feel of Prince of Persia and planned for a hackathon. The engine will be Godot 4.3+. No code yet: the team is still finalising the plan. v1, the hackathon demo, leaves the light system, the Ember and a fighting princess for v2.
 
 ## Design
 
