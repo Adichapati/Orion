@@ -753,7 +753,7 @@ Never cut the torch sizes, the exposure maths, the guard awareness meter or the 
 
 ### What to do before you build
 
-- [ ] Pick Greek or Persian, and close the other open questions.
+- [ ] Close the remaining open questions.
 - [ ] Read the hackathon rules: its length, whether you can build before it opens, and whether outside or AI assets are allowed.
 - [ ] Install Godot 4.3+, Aseprite or Pixelorama, Git and Laigter, and make a shared GitHub repo.
 - [ ] Coder: do Godot's official "Your first 2D game" tutorial (about 3–4 hours), then a 2-hour isometric tile test.
