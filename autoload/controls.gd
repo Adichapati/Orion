@@ -17,6 +17,7 @@ const KEYS := {
 	"shove": [KEY_F],
 	"thrust": [KEY_Q],
 	"toss": [KEY_G],
+	"heal": [KEY_H],
 	"pause": [KEY_ESCAPE],
 	"debug_overlay": [KEY_F3],
 	"fullscreen": [KEY_F11],
@@ -36,6 +37,7 @@ const PAD_BUTTONS := {
 	"parry": JOY_BUTTON_RIGHT_SHOULDER,
 	"shove": JOY_BUTTON_LEFT_SHOULDER,
 	"run": JOY_BUTTON_LEFT_STICK,
+	"heal": JOY_BUTTON_DPAD_UP,
 	"pause": JOY_BUTTON_START,
 	"ui_confirm": JOY_BUTTON_A,
 }

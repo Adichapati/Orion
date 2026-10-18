@@ -49,7 +49,7 @@ sizes, fuel, exposure maths, relightable lamps, alarm tripods or Ember powers; A
 
 ## Next steps (in order)
 
-- [ ] 1. `controls.gd`: add a `heal` action on KEY_H (player.gd uses it).
+- [x] 1. `controls.gd`: add a `heal` action on KEY_H (player.gd uses it).
 - [ ] 2. Write `scripts/actors/guard.gd` (`class_name Guard`, CharacterBody2D) — spec below.
 - [ ] 3. `Room.spawn_guards()` (or do it in main): one Guard per `rooms[i].guards` entry, add to
       `room.world` and `room.guards`; set `Game.stats.guards_total += count` once per room visit.
@@ -149,3 +149,4 @@ APIs other scripts already call: `grid_pos()`, `facing` (grid unit vector), `gua
 - 2026-10-18: Branch `v1-prototype` created. Grey-box generator, project settings, autoloads, data,
   Iso/Art/Fx, Room and props, Player and Knucklebone written (untested). Paused at 85% of the 5-hour
   usage window; scheduled sessions resume from step 1.
+- 2026-10-19: Step 1 done: `heal` action on H (and d-pad up).
