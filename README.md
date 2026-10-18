@@ -76,4 +76,4 @@ The suite builds every room, checks reachability, guard sight, hearing, cracked 
 
 ## Status
 
-v1 prototype playable end to end with grey-box art and generated sounds. Next: play-testing and tuning, then final art.
+v1 prototype playable end to end, with AI-generated character sprites over grey-box rooms, generated sounds and an overnight polish pass (game feel, night sky, pixel font, hints); see [docs/dev/POLISH.md](docs/dev/POLISH.md). Next: play-testing and tuning.
