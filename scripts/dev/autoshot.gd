@@ -45,6 +45,15 @@ const SCRIPTS := {
 		[3.7, "call", "death"],
 		[4.4, "shot", "", "death"],
 	],
+	"duel": [
+		[0.6, "call", "near_guard"],
+		[0.9, "shot", "", "duel1"],
+		[1.3, "shot", "", "duel2"],
+		[1.7, "shot", "", "duel3"],
+		[2.1, "shot", "", "duel4"],
+		[2.5, "shot", "", "duel5"],
+		[2.9, "shot", "", "duel6"],
+	],
 	"pause": [
 		[1.0, "tap", "pause"],
 		[1.5, "shot", "", "paused"],
@@ -100,6 +109,13 @@ func _run(e: Array) -> void:
 				Game.set_debug_overlay(true)
 			elif e[2] == "shop" and main.room:
 				main.room.message.emit("shop")
+			elif e[2] == "near_guard" and main.room and not main.room.guards.is_empty():
+				# Arm Cedalion and stand him in front of the first guard.
+				var g: Guard = main.room.guards[0]
+				Game.give_weapon("xiphos")
+				main.player.global_position = g.global_position + Iso.grid_to_screen(g.facing * 1.6)
+				main.player.facing = -g.facing
+				main.player.camera.reset_smoothing()
 			elif e[2] == "begin":
 				main.start_run()
 			elif e[2] == "end":
