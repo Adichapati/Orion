@@ -60,7 +60,7 @@ sizes, fuel, exposure maths, relightable lamps, alarm tripods or Ember powers; A
 - [x] 5. `scenes/main.tscn` + `scripts/main.gd` — spec below. Set `run/main_scene` already points here.
 - [x] 6. First run: `godot_console --headless --path . --import`, then
       `godot_console --headless --path . --quit-after 120` and fix every error/warning that matters.
-- [ ] 7. `tests/run_tests.gd` (extends SceneTree; run with `--headless --script res://tests/run_tests.gd`):
+- [x] 7. `tests/run_tests.gd` (extends SceneTree; run with `--headless --script res://tests/run_tests.gd`):
       every room builds; spawn and every guard spawn are walkable; the exit is reachable from the
       spawn (allow 2-tile jumps over hazards along grid axes for the cistern and star shrine); Iso
       round-trips; a guard facing the player at 3 tiles with clear sight reaches Alert; a noise
@@ -154,3 +154,4 @@ APIs other scripts already call: `grid_pos()`, `facing` (grid unit vector), `gua
 - 2026-10-19: Step 3 done: `Room.spawn_guards()`, `alive_guards()`, `max_awareness()`; guards are counted once per room id (`Game.stats.rooms_counted`), so a death retry doesn't double them.
 - 2026-10-19: Step 4 done: `scripts/ui/` — `UiKit` (shared style), `Hud`, `ShopPanel` (prophecy per next room, Save), `TitleScreen`, `IntroCards`, `PauseMenu` (with the GDD's Must-have brightness slider → `Game.set_brightness`, which scales each room's ambient), `MessageCard` (death), `EndCard` (Dawn Rank), `DebugOverlay` (world-space, F3), `VaseBorder`. Uses Godot's default font (no pixel font in the repo yet). New `class_name`s need `--import` before the script check.
 - 2026-10-19: Steps 5–6 done: `scenes/main.tscn` + `scripts/main.gd` per the spec (title → intro → rooms → end card, death retry, shop, pause, F3, tension). Added `-- --room=<id or index>` to start straight in a room. Import and `--quit-after` runs are clean on the title and in all six rooms. Committed Godot's `.import`/`.uid` files; `docs/dev/.lock` is git-ignored.
+- 2026-10-19: Step 7 done: `tests/run_tests.gd` (runner) + `tests/test_suite.gd` (the tests; the `--script` entry file can't see autoloads at compile time). 78 checks pass. They caught two bugs, now fixed: the statue court's exit door sat at ground height beside the raised portico (unreachable and walled by a ledge) — doors next to raised floor now take its height; and the stationary guard's ±35° glance was a square wave that left a blind spot dead ahead — now a smooth sine. Also tests shoving a guard into a pit.

@@ -390,7 +390,7 @@ func _build_ledges() -> void:
 				continue
 			for n in edges:
 				var nk := ch(c + n)
-				if nk in ".mx*~ED":
+				if nk in ".mx*~" or (nk in "ED" and elevation_px(c + n) < 12.0):
 					var seg := SegmentShape2D.new()
 					seg.a = cell_center(c) + edges[n][0]
 					seg.b = cell_center(c) + edges[n][1]
@@ -478,6 +478,11 @@ func elevation_px(c: Vector2i) -> float:
 			return Iso.LEVEL_PX * 0.5
 		"p":
 			return 4.0
+		"D", "E":
+			# A door in the wall of a raised floor opens at that floor's height.
+			for n in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+				if ch(c + n) == "h":
+					return Iso.LEVEL_PX
 	return 0.0
 
 

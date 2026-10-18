@@ -431,8 +431,7 @@ func _patrol(delta: float) -> void:
 		_stop()
 		_look_t += delta
 		var sway := sin(_look_t / LOOK_PERIOD * TAU)
-		var target := _base_face.rotated(deg_to_rad(LOOK_SWAY) * signf(sway) * minf(1.0, absf(sway) * 3.0))
-		_turn_toward(target, delta, 1.5)
+		_turn_toward(_base_face.rotated(deg_to_rad(LOOK_SWAY) * sway), delta, 1.5)
 		return
 	if _wait > 0.0:
 		_wait -= delta
