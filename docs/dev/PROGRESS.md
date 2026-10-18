@@ -65,7 +65,7 @@ sizes, fuel, exposure maths, relightable lamps, alarm tripods or Ember powers; A
       spawn (allow 2-tile jumps over hazards along grid axes for the cistern and star shrine); Iso
       round-trips; a guard facing the player at 3 tiles with clear sight reaches Alert; a noise
       within range makes an idle guard Suspicious; a cracked tile collapses after 1.2 s of standing.
-- [ ] 8. `tools/gen_audio.py` (Python stdlib `wave` + `math`): short WAVs into `audio/sfx/` named
+- [x] 8. `tools/gen_audio.py` (Python stdlib `wave` + `math`): short WAVs into `audio/sfx/` named
       step, swing, hit, shield, parry, dodge, jump, land, hurt, fall, death, ko, coin, pickup, buy,
       deny, heal, pot_crack, pot_smash, chest, creak, crumble, clack, toss, shove, torch, glint_white,
       glint_red, alert, suspicious, mark, star, ui_move, ui_select; and two 16-second loops in
@@ -155,3 +155,4 @@ APIs other scripts already call: `grid_pos()`, `facing` (grid unit vector), `gua
 - 2026-10-19: Step 4 done: `scripts/ui/` — `UiKit` (shared style), `Hud`, `ShopPanel` (prophecy per next room, Save), `TitleScreen`, `IntroCards`, `PauseMenu` (with the GDD's Must-have brightness slider → `Game.set_brightness`, which scales each room's ambient), `MessageCard` (death), `EndCard` (Dawn Rank), `DebugOverlay` (world-space, F3), `VaseBorder`. Uses Godot's default font (no pixel font in the repo yet). New `class_name`s need `--import` before the script check.
 - 2026-10-19: Steps 5–6 done: `scenes/main.tscn` + `scripts/main.gd` per the spec (title → intro → rooms → end card, death retry, shop, pause, F3, tension). Added `-- --room=<id or index>` to start straight in a room. Import and `--quit-after` runs are clean on the title and in all six rooms. Committed Godot's `.import`/`.uid` files; `docs/dev/.lock` is git-ignored.
 - 2026-10-19: Step 7 done: `tests/run_tests.gd` (runner) + `tests/test_suite.gd` (the tests; the `--script` entry file can't see autoloads at compile time). 78 checks pass. They caught two bugs, now fixed: the statue court's exit door sat at ground height beside the raised portico (unreachable and walled by a ledge) — doors next to raised floor now take its height; and the stationary guard's ±35° glance was a square wave that left a blind spot dead ahead — now a smooth sine. Also tests shoving a guard into a pit.
+- 2026-10-19: Step 8 done: `tools/gen_audio.py` (stdlib only, ~2 s) writes 34 effects to `audio/sfx/` and `explore.wav`/`tension.wav` (16 s, 22050 Hz, 90 BPM) to `audio/music/`. Replace any file with a real one of the same name. Note: the test run ends with a "4 ObjectDB instances leaked / 2 resources in use" warning at exit — harmless, not yet chased.
