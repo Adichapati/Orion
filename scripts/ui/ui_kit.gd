@@ -10,16 +10,33 @@ const GOLD := Color(0.86, 0.68, 0.32)
 const TEXT := Color(0.96, 0.91, 0.8)
 const DIM := Color(0.7, 0.66, 0.6)
 const RED := Color(0.9, 0.32, 0.25)
+const SHADOW := Color(0.03, 0.02, 0.07, 0.9)
+## The pixel font (tools/gen_font.py) is designed at 10 px and drawn at whole multiples of it.
+const FONT_PX := 10
+
+
+## Maps a nominal font size to a crisp pixel-font size: under 16 → 1× (dense detail),
+## 16-29 → 2× (body text, buttons), 30-43 → 3×, then 4× (titles).
+static func px(size: int) -> int:
+	return FONT_PX * clampi(1 + (size - 2) / 14, 1, 6)
+
+
+## A one-pixel (per scale) drop shadow instead of an outline: bitmap fonts can't outline.
+static func shade(c: Control, size: int) -> void:
+	var k := px(size) / FONT_PX
+	c.add_theme_color_override("font_shadow_color", SHADOW)
+	c.add_theme_constant_override("shadow_offset_x", k)
+	c.add_theme_constant_override("shadow_offset_y", k)
+	c.add_theme_constant_override("outline_size", 0)
 
 
 static func label(text: String, size := 16, color := TEXT, align := HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var l := Label.new()
 	l.text = text
 	l.horizontal_alignment = align
-	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_font_size_override("font_size", px(size))
 	l.add_theme_color_override("font_color", color)
-	l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
-	l.add_theme_constant_override("outline_size", 4 if size >= 14 else 3)
+	shade(l, size)
 	return l
 
 
@@ -44,7 +61,8 @@ static func button(text: String, size := 16) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.focus_mode = Control.FOCUS_ALL
-	b.add_theme_font_size_override("font_size", size)
+	b.add_theme_font_size_override("font_size", px(size))
+	shade(b, size)
 	b.add_theme_color_override("font_color", TEXT)
 	b.add_theme_color_override("font_hover_color", GOLD)
 	b.add_theme_color_override("font_focus_color", GOLD)

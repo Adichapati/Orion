@@ -7,6 +7,28 @@ extends Control
 ## follow the camera.
 
 const TOAST_TIME := 4.5
+## Each room's objective line, and the control hints shown the first time each room is entered:
+## [seconds after entering, text].
+const ROOMS := {
+	"lion-gate": ["Slip past the Watchman and through the gate.", [
+		[1.5, "Guards see along their lantern cones. Keep to the dark, and hold Shift to sneak."],
+		[11.0, "No sword yet? Take one from the weapon rack, or shove (F) the Watchman into the well."]]],
+	"colonnade": ["Cross the colonnade to the far door.", [
+		[1.5, "Columns block a guard's sight. Toss knucklebones (G) to lure him away."],
+		[11.0, "Smash an amphora (J) for obols, but the whole hall will hear it."]]],
+	"storerooms": ["Find the way down to the cistern.", [
+		[1.5, "Cracked marble gives way if you stand on it. A guard who stops on it falls too."],
+		[11.0, "Hold E to open a cedar chest."]]],
+	"cistern": ["Find Phineus the seer, then climb to the statue court.", [
+		[1.5, "Space jumps two tiles along the floor lines: over water, gaps and cracks."]]],
+	"statue-court": ["One of the stone men breathes. Reach the portico.", [
+		[1.5, "A white glint can be parried (K). A red glint can't: dodge it (C)."],
+		[11.0, "The fountain's song hides your footsteps."]]],
+	"star-shrine": ["Take the Belt Star, then run.", [
+		[1.5, "A Hoplite's shield stops blows from the front. Get behind him, or thrust your torch (Q)."]]],
+}
+## Rooms whose hints have been shown this session.
+static var _hinted := {}
 ## The UI's fixed design size (project.godot's base viewport).
 const W := 960.0
 const H := 540.0
@@ -25,7 +47,9 @@ var _toast_t := 0.0
 var _prompt: Label
 var _hold: ProgressBar
 var _banner: Label
+var _objective: Label
 var _floaters: Array = []
+var _hint_timer: Tween
 
 
 func _ready() -> void:
@@ -56,15 +80,15 @@ func _ready() -> void:
 	_toast_panel = UiKit.panel(UiKit.INK)
 	_toast_panel.visible = false
 	add_child(_toast_panel)
-	_toast_label = UiKit.label("", 15)
+	_toast_label = UiKit.label("", 16)
 	_toast_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_toast_label.custom_minimum_size = Vector2(520, 0)
 	_toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_toast_panel.add_child(_toast_label)
 
-	_prompt = UiKit.label("", 15, UiKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	_prompt = UiKit.label("", 16, UiKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	_prompt.visible = false
-	_prompt.size = Vector2(240, 22)
+	_prompt.size = Vector2(400, 22)
 	add_child(_prompt)
 	_hold = ProgressBar.new()
 	_hold.show_percentage = false
@@ -84,9 +108,15 @@ func _ready() -> void:
 	_banner.size = Vector2(600, 40)
 	_banner.modulate.a = 0.0
 	add_child(_banner)
+	_objective = UiKit.label("", 13, Color(UiKit.GOLD, 0.85), HORIZONTAL_ALIGNMENT_CENTER)
+	_objective.position = Vector2(W / 2.0 - 300, 16)
+	_objective.size = Vector2(600, 14)
+	add_child(_objective)
 
 	Game.health_changed.connect(func(_h, _m): _refresh())
-	Game.obols_changed.connect(func(_o): _refresh())
+	Game.obols_changed.connect(func(_o):
+		_refresh()
+		_bump(_obols))
 	Game.gear_changed.connect(_refresh)
 	Game.toast.connect(show_toast)
 	Game.floating_text.connect(float_text)
@@ -129,6 +159,34 @@ func float_text(world_pos: Vector2, text: String, color: Color) -> void:
 	l.size = Vector2(160, 20)
 	add_child(l)
 	_floaters.append({"label": l, "pos": world_pos, "t": 0.0})
+
+
+## A quick pop on a HUD number when it changes.
+func _bump(c: Control) -> void:
+	c.pivot_offset = c.size / 2.0
+	var tw := c.create_tween()
+	c.scale = Vector2.ONE * 1.35
+	c.modulate = Color(1.6, 1.5, 1.2)
+	tw.tween_property(c, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(c, "modulate", Color.WHITE, 0.25)
+
+
+## The room banner, its objective line, and (the first time) its control hints.
+func show_room(id: String, display_name: String) -> void:
+	show_banner(display_name)
+	var info: Array = ROOMS.get(id, ["", []])
+	_objective.text = info[0]
+	if _hint_timer:
+		_hint_timer.kill()
+	if _hinted.has(id):
+		return
+	_hinted[id] = true
+	_hint_timer = create_tween()
+	var at := 0.0
+	for h in info[1]:
+		_hint_timer.tween_interval(h[0] - at)
+		_hint_timer.tween_callback(show_toast.bind(h[1]))
+		at = h[0]
 
 
 func show_banner(text: String) -> void:
@@ -175,7 +233,7 @@ func _update_prompt() -> void:
 		return
 	var p: Vector2 = project.call(it.global_position + Vector2(0, -it.glyph_height - 10))
 	_prompt.text = "E — %s" % it.verb + ("  (hold)" if it.hold_time > 0.0 else "")
-	_prompt.position = p + Vector2(-120, -26)
+	_prompt.position = p + Vector2(-200, -26)
 	_prompt.visible = true
 	_hold.visible = player.holding == it and player.hold_progress > 0.0
 	_hold.value = player.hold_progress

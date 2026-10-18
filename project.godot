@@ -33,6 +33,11 @@ window/stretch/mode="canvas_items"
 window/stretch/aspect="keep"
 window/stretch/scale_mode="integer"
 
+[gui]
+
+theme/custom_font="res://art/fonts/orion_pixel.fnt"
+theme/default_font_size=10
+
 [layer_names]
 
 2d_physics/layer_1="solid"

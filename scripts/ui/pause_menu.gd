@@ -43,7 +43,7 @@ func _ready() -> void:
 	var shake := CheckButton.new()
 	shake.text = "Screen shake"
 	shake.button_pressed = Game.screen_shake
-	shake.add_theme_font_size_override("font_size", 15)
+	shake.add_theme_font_size_override("font_size", UiKit.px(15))
 	shake.toggled.connect(func(on: bool): Game.screen_shake = on)
 	v.add_child(shake)
 	var restart := UiKit.button("Restart room")

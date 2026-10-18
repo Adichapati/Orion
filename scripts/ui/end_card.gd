@@ -42,7 +42,8 @@ func _ready() -> void:
 
 func _line(t: String, size: int, col := INK) -> void:
 	var x := UiKit.label(t, size, col, HORIZONTAL_ALIGNMENT_CENTER)
-	x.add_theme_constant_override("outline_size", 0 if col == INK else 4)
+	if col == INK:
+		x.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0))
 	_v.add_child(x)
 
 

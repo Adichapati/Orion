@@ -145,7 +145,7 @@ func load_room(index: int) -> void:
 	hud.player = player
 	hud.clear_transient()
 	hud.visible = true
-	hud.show_banner(room.display_name)
+	hud.show_room(room.id, room.display_name)
 	Sfx.start_music()
 	_fade(false)
 

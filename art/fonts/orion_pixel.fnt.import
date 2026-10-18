@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://cah4e7nlmmbbf"
+path="res://.godot/imported/orion_pixel.fnt-a9977466080dcc41d37b411a9e4ea0ef.fontdata"
+
+[deps]
+
+source_file="res://art/fonts/orion_pixel.fnt"
+dest_files=["res://.godot/imported/orion_pixel.fnt-a9977466080dcc41d37b411a9e4ea0ef.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=1

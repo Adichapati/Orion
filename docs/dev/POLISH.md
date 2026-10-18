@@ -13,8 +13,8 @@ sound and tuning. The checklist is in priority order; the dated log is at the bo
 - [x] Atmosphere: night sky with Orion, dust motes, embers, animated water, vignette, light
       contrast
 - [ ] Star shrine inner wall corners (dark blocks); statue court portico height (not started)
-- [ ] UI: in-repo pixel font, first-time control hints, objective line, title constellation,
-      HUD, shop and end card polish
+- [x] UI: in-repo pixel font, first-time control hints, objective line, title constellation,
+      obol counter pop (shop and end card only restyled by the font so far)
 - [ ] Sound: better effects and music, footstep variety, alert stinger, parry ring, smoother
       music layers
 - [ ] Tuning with timelines and bots
@@ -67,3 +67,12 @@ sound and tuning. The checklist is in priority order; the dated log is at the bo
   that runs glints and crests across them in screen pixels. Moonlight is a little stronger (0.9)
   and guard lanterns are redder (and turn red when a guard is alert), so warm torch, cool moon
   and red enemy light read apart.
+- 2026-10-19: UI. `tools/gen_font.py` draws "Orion 5x7", an original 109-glyph pixel font
+  (caps and digits 5×7, lowercase with ascenders and descenders, plus · — – … “ ” ’ é × and
+  arrows), and writes it as a BMFont (`art/fonts/orion_pixel.fnt` + `.png`); it is the project's
+  default font (`gui/theme/custom_font`) and imports with integer-only scaling. `UiKit.px()`
+  maps nominal sizes to whole multiples of its 10 px design size (under 16 → 1×, body and buttons
+  2×, titles 3–5×), and labels use a 1-pixel drop shadow instead of an outline. The HUD shows each
+  room's objective line at the top and, the first time a room is entered, one or two control
+  hints as toasts (`Hud.ROOMS`); the interaction prompt and toasts are 2×; the obol counter pops
+  when it changes. The title screen draws Orion star by star and line by line over ~3 s.
