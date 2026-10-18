@@ -72,3 +72,15 @@ controls.
 - `tests/run_tests.gd` loads `tests/test_suite.gd` (the entry script of `--script` can't see the
   autoloads when it compiles). `tests/check_scripts.gd` just loads every script.
 - `tools/gen_greybox.py` and `tools/gen_audio.py` regenerate the placeholder art and sounds.
+- `tools/process_generated.py` turns the AI-generated sheets in `art/generated/` into
+  `art/final/` sprites; `tools/gen_font.py` writes the pixel font in `art/fonts/`.
+
+## Polish layer (see docs/dev/POLISH.md)
+
+- `scripts/core/shake_camera.gd` — the player's camera: `ShakeCamera.add_trauma()`,
+  `ShakeCamera.punch()`, look-ahead.
+- `scripts/core/juice.gd` — `Juice.freeze()` (hit-stop), `Juice.slowmo()`, `Juice.flash()`.
+- `scripts/core/life.gd` — procedural walk bob, squash and stretch and blob shadow for actors.
+- `scripts/world/atmosphere.gd` — sky with Orion, vignette, embers, moon motes, water shader;
+  `Room.build()` calls `Atmosphere.dress()`.
+- `Hud.ROOMS` holds each room's objective line and first-visit hints.
