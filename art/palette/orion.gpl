@@ -1,0 +1,41 @@
+GIMP Palette
+Name: ORION
+Columns: 8
+# The 27 colours from the design doc's Art direction section,
+# plus 4 character colours (skin and leather) added in the Characters tab,
+# plus 4 palette-swap key greys that are only ever used on armour layers.
+ 13  11  26	Night 0 #0d0b1a
+ 27  24  52	Night 1 #1b1834
+ 46  58  92	Night 2 #2e3a5c
+127 166 216	Moon 0 #7fa6d8
+207 227 255	Moon 1 #cfe3ff
+122  42  26	Fire 0 #7a2a1a
+224 120  44	Fire 1 #e0782c
+255 200  87	Fire 2 #ffc857
+255 241 193	Fire 3 #fff1c1
+125 119 109	Marble 0 #7d776d
+185 178 163	Marble 1 #b9b2a3
+232 226 212	Marble 2 #e8e2d4
+138  59  34	Clay 0 #8a3b22
+192  96  58	Clay 1 #c0603a
+217 147  95	Clay 2 #d9935f
+ 26  20  18	Black-figure (cutscenes and UI only) #1a1412
+ 43  93 138	Aegean 0 #2b5d8a
+ 79 143 191	Aegean 1 #4f8fbf
+ 95 179 176	Pool #5fb3b0
+ 58  74  42	Olive 0 #3a4a2a
+ 93 107  58	Olive 1 #5d6b3a
+140 154  91	Olive 2 #8c9a5b
+142  27  42	Scorpion 0 #8e1b2a
+194  59  59	Scorpion 1 #c23b3b
+168 105  58	Bronze #a8693a
+183 193 201	Silver #b7c1c9
+217 164  58	Gold #d9a43a
+ 92  59  46	Skin 0 (added for characters) #5c3b2e
+156 106  76	Skin 1 (added for characters) #9c6a4c
+208 154 116	Skin 2 (added for characters) #d09a74
+ 74  51  38	Leather (added for characters) #4a3326
+ 64  64  64	Swap key 1 - armour shadow (never shown in game) #404040
+128 128 128	Swap key 2 - armour mid (never shown in game) #808080
+192 192 192	Swap key 3 - armour light (never shown in game) #c0c0c0
+255 255 255	Swap key 4 - armour glint (never shown in game) #ffffff
