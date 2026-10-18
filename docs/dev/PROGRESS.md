@@ -57,8 +57,8 @@ sizes, fuel, exposure maths, relightable lamps, alarm tripods or Ember powers; A
       hold progress, floating texts/barks projected from world positions), shop panel, title screen,
       intro cards (3 lines of story), room-name banner, pause menu (resume, controls, restart room,
       title), death message, end card with `Game.dawn_rank()`, F3 debug overlay.
-- [ ] 5. `scenes/main.tscn` + `scripts/main.gd` — spec below. Set `run/main_scene` already points here.
-- [ ] 6. First run: `godot_console --headless --path . --import`, then
+- [x] 5. `scenes/main.tscn` + `scripts/main.gd` — spec below. Set `run/main_scene` already points here.
+- [x] 6. First run: `godot_console --headless --path . --import`, then
       `godot_console --headless --path . --quit-after 120` and fix every error/warning that matters.
 - [ ] 7. `tests/run_tests.gd` (extends SceneTree; run with `--headless --script res://tests/run_tests.gd`):
       every room builds; spawn and every guard spawn are walkable; the exit is reachable from the
@@ -153,3 +153,4 @@ APIs other scripts already call: `grid_pos()`, `facing` (grid unit vector), `gua
 - 2026-10-19: Step 2 done: `guard.gd` per the spec (states, sight, hearing, token combat, shove/torch/KO, cone and lantern). Choices: shoving a guard off raised floor counts as a fall (env KO, per the GDD's "shove him off a ledge"); hits don't interrupt a wind-up; stunned guards count as unaware (torch, then backstab). Fixed two type-inference parse errors in room.gd. Added `tests/check_scripts.gd` (loads every script: `--headless --path . --script res://tests/check_scripts.gd`).
 - 2026-10-19: Step 3 done: `Room.spawn_guards()`, `alive_guards()`, `max_awareness()`; guards are counted once per room id (`Game.stats.rooms_counted`), so a death retry doesn't double them.
 - 2026-10-19: Step 4 done: `scripts/ui/` — `UiKit` (shared style), `Hud`, `ShopPanel` (prophecy per next room, Save), `TitleScreen`, `IntroCards`, `PauseMenu` (with the GDD's Must-have brightness slider → `Game.set_brightness`, which scales each room's ambient), `MessageCard` (death), `EndCard` (Dawn Rank), `DebugOverlay` (world-space, F3), `VaseBorder`. Uses Godot's default font (no pixel font in the repo yet). New `class_name`s need `--import` before the script check.
+- 2026-10-19: Steps 5–6 done: `scenes/main.tscn` + `scripts/main.gd` per the spec (title → intro → rooms → end card, death retry, shop, pause, F3, tension). Added `-- --room=<id or index>` to start straight in a room. Import and `--quit-after` runs are clean on the title and in all six rooms. Committed Godot's `.import`/`.uid` files; `docs/dev/.lock` is git-ignored.

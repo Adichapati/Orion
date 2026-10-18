@@ -10,3 +10,6 @@
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Session lock for unattended builds
+docs/dev/.lock
