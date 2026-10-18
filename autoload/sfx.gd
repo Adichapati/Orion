@@ -48,13 +48,17 @@ func _make_music(path: String) -> AudioStreamPlayer:
 	return p
 
 
+## A random take of an effect: <name>.wav plus any <name>_1.wav ... <name>_8.wav variants.
 func _stream(name: String) -> AudioStream:
-	if _cache.has(name):
-		return _cache[name]
-	var path := SFX_DIR + name + ".wav"
-	var s: AudioStream = load(path) if ResourceLoader.exists(path) else null
-	_cache[name] = s
-	return s
+	if not _cache.has(name):
+		var takes: Array = []
+		for i in 9:
+			var path := SFX_DIR + (name if i == 0 else "%s_%d" % [name, i]) + ".wav"
+			if ResourceLoader.exists(path):
+				takes.append(load(path))
+		_cache[name] = takes
+	var all: Array = _cache[name]
+	return null if all.is_empty() else all[randi() % all.size()]
 
 
 ## Plays an effect. With a world position, the volume falls off with distance from the player.
@@ -94,8 +98,11 @@ func set_tension(t: float) -> void:
 
 
 func _process(delta: float) -> void:
-	_tension_level = move_toward(_tension_level, _tension_target, delta * 1.0)
+	# Ease toward the target: the drums swell in quickly and linger after a guard loses you.
+	var rate := 2.2 if _tension_target > _tension_level else 0.45
+	_tension_level = lerpf(_tension_level, _tension_target, 1.0 - exp(-rate * delta))
 	if _tension.playing:
-		_tension.volume_db = linear_to_db(maxf(0.0001, _tension_level)) + music_volume_db
+		var k := smoothstep(0.0, 1.0, _tension_level)
+		_tension.volume_db = linear_to_db(maxf(0.0001, k)) + music_volume_db
 	if _explore.playing:
 		_explore.volume_db = music_volume_db - _tension_level * 4.0

@@ -15,8 +15,8 @@ sound and tuning. The checklist is in priority order; the dated log is at the bo
 - [ ] Star shrine inner wall corners (dark blocks); statue court portico height (not started)
 - [x] UI: in-repo pixel font, first-time control hints, objective line, title constellation,
       obol counter pop (shop and end card only restyled by the font so far)
-- [ ] Sound: better effects and music, footstep variety, alert stinger, parry ring, smoother
-      music layers
+- [x] Sound: footstep variety, alert stinger, parry ring, smoother music layers
+- [ ] Sound: better music (the two loops are unchanged)
 - [ ] Tuning with timelines and bots
 
 ## Notes
@@ -76,3 +76,9 @@ sound and tuning. The checklist is in priority order; the dated log is at the bo
   room's objective line at the top and, the first time a room is entered, one or two control
   hints as toasts (`Hud.ROOMS`); the interaction prompt and toasts are 2×; the obol counter pops
   when it changes. The title screen draws Orion star by star and line by line over ~3 s.
+- 2026-10-19: Sound. `Sfx` now picks a random take of an effect from `<name>.wav` and
+  `<name>_1..8.wav`; `tools/gen_audio.py` adds four footstep takes (grit plus a heel thump), a
+  bronze-bell parry ring (inharmonic partials, long tail), and an alert stinger (frame drum under
+  a rising sour call). The tension layer eases in fast (rate 2.2/s) and lingers on the way down
+  (0.45/s) with a smoothstep volume curve. The generator is seeded, so re-running it no longer
+  changes every file.

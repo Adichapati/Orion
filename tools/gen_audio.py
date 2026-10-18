@@ -128,10 +128,18 @@ def write(path, samples, peak=0.85):
 def effects():
     fx = {
         "step": noise(0.07, 0.5, lp=0.25, curve=7),
+        # Footstep variants (Sfx picks step, step_1 ... at random): grit plus a soft heel thump.
+        "step_1": mix(noise(0.06, 0.5, lp=0.22, curve=7), tone(95, 0.05, "sine", 0.35, slide=-20, curve=6)),
+        "step_2": mix(noise(0.07, 0.45, lp=0.28, curve=8), tone(110, 0.05, "sine", 0.3, slide=-25, curve=6)),
+        "step_3": mix(noise(0.05, 0.5, lp=0.18, curve=6), tone(85, 0.06, "sine", 0.35, slide=-15, curve=6)),
+        "step_4": mix(noise(0.08, 0.4, lp=0.32, curve=9), tone(120, 0.04, "sine", 0.25, slide=-30, curve=6)),
         "swing": noise(0.18, 0.5, lp=0.85, attack=0.04, curve=3),
         "hit": mix(noise(0.12, 0.7, lp=0.4, curve=6), tone(140, 0.12, "sine", 0.5, slide=-60, curve=6)),
         "shield": mix(tone(380, 0.35, "square", 0.25, curve=5), tone(571, 0.3, "tri", 0.25, curve=5), noise(0.05, 0.5, lp=0.9)),
-        "parry": mix(tone(1320, 0.45, "tri", 0.35, curve=4), tone(1980, 0.35, "sine", 0.25, curve=5), noise(0.04, 0.6, lp=0.95)),
+        # A bronze bell ring: inharmonic partials (1, 2.76, 5.4) with a long tail, over a bright click.
+        "parry": mix(tone(1480, 1.1, "sine", 0.3, curve=2.2), tone(1480 * 2.76, 0.6, "sine", 0.14, curve=3),
+                     tone(1480 * 5.4, 0.3, "sine", 0.08, curve=4), tone(740, 0.9, "tri", 0.15, curve=2.5),
+                     noise(0.03, 0.7, lp=0.98)),
         "dodge": noise(0.16, 0.35, lp=0.55, attack=0.03, curve=2.5),
         "jump": tone(220, 0.14, "tri", 0.35, slide=180, curve=3),
         "land": noise(0.09, 0.55, lp=0.2, curve=6),
@@ -156,7 +164,9 @@ def effects():
         "torch": mix(noise(0.35, 0.5, lp=0.45, attack=0.01, curve=3), tone(80, 0.3, "sine", 0.3, curve=4)),
         "glint_white": mix(tone(2637, 0.35, "sine", 0.3, curve=4), tone(3951, 0.25, "sine", 0.15, curve=5)),
         "glint_red": mix(tone(220, 0.4, "square", 0.22, curve=3), tone(233, 0.4, "square", 0.22, curve=3)),
-        "alert": seq(tone(880, 0.09, "square", 0.25, curve=1), tone(1175, 0.25, "square", 0.25, curve=3)),
+        # The stinger when a guard spots you: a frame-drum hit under a rising, sour two-note call.
+        "alert": mix(drum(70, 0.5, 0.8), seq(silence(0.02), tone(587, 0.12, "square", 0.2, curve=1),
+                                              tone(831, 0.5, "square", 0.22, slide=-30, curve=2))),
         "suspicious": tone(660, 0.25, "tri", 0.25, slide=120, curve=3),
         "mark": mix(*[tone(f, 0.9, "sine", 0.18, curve=3) for f in (587, 740, 880, 1175)], offsets=[0, 0.08, 0.16, 0.24]),
         "star": mix(*[tone(f, 1.6, "sine", 0.2, curve=2) for f in (294, 440, 587, 880, 1175)], offsets=[0, 0.1, 0.2, 0.3, 0.45]),
@@ -240,6 +250,7 @@ def tension():
 
 
 if __name__ == "__main__":
+    random.seed(7)  # the same files every run, so regenerating doesn't churn git
     names = effects()
     print("sfx:", len(names), "files in", SFX)
     write(MUSIC / "explore.wav", explore(), peak=0.7)
