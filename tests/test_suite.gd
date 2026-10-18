@@ -17,7 +17,9 @@ func run() -> void:
 	await test_noise_makes_guard_suspicious()
 	await test_cracked_marble_collapses()
 	await test_shove_into_pit()
+	await test_duel_parry_and_hit()
 	await test_shop_buy_and_equip()
+	await test_playthrough()
 	print("
 %d passed, %d failed" % [_passed, _failed])
 	finished.emit(_failed)
@@ -232,6 +234,43 @@ func test_shove_into_pit() -> void:
 	_free_room(r)
 
 
+func test_duel_parry_and_hit() -> void:
+	print("Duel")
+	Game.reset_run()
+	Game.give_weapon("xiphos")
+	var r := _open_room([{"id": "g", "type": "watchman", "at": [5, 2], "face": [-1, 0], "path": [[5, 2]]}])
+	r.spawn_guards()
+	var p := _add_player(r, Vector2i(4, 2))
+	p.facing = Vector2(1, 0)
+	var g: Guard = r.guards[0]
+	await get_tree().physics_frame
+	var t := 0.0
+	while t < 4.0 and g._phase != "windup":
+		await get_tree().physics_frame
+		t += 1.0 / 60.0
+	check(g._phase == "windup", "an alert Watchman at arm's length winds up an attack")
+	check(g.glint.visible, "...showing a glint")
+	var parryable: bool = g._attack.parryable
+	await _seconds(maxf(0.0, g._attack.windup - g._phase_t - 0.06))
+	p._start_parry()
+	await _seconds(0.25)
+	check(parryable and g.state == Guard.S.STUNNED, "a parry in the window stuns him")
+	var hp: int = g.hp
+	p._set_state(Player.S.NORMAL)
+	p._start_attack()
+	await _seconds(0.5)
+	check(g.hp < hp, "Cedalion's riposte lands (%d → %d hp)" % [hp, g.hp])
+	# Let him strike unparried.
+	var stars := Game.hp
+	t = 0.0
+	while t < 6.0 and Game.hp == stars:
+		await get_tree().physics_frame
+		t += 1.0 / 60.0
+	check(Game.hp < stars, "an unparried strike costs a star")
+	_free_room(r)
+	Game.reset_run()
+
+
 func test_shop_buy_and_equip() -> void:
 	print("Shop")
 	Game.reset_run()
@@ -245,3 +284,66 @@ func test_shop_buy_and_equip() -> void:
 	Game.restore_snapshot()
 	check(Game.obols == 10 and Game.weapon_id == "kopis", "restoring the snapshot brings back obols and gear")
 	Game.reset_run()
+
+
+func _door(r: Room, verb: String) -> Interactable:
+	for it in r.interactables:
+		if is_instance_valid(it) and it.verb == verb:
+			return it
+	return null
+
+
+## Drives the real main scene: walks every exit, the shop, the star-shrine escape and a death.
+func test_playthrough() -> void:
+	print("Play-through")
+	var main: Node = load("res://scenes/main.tscn").instantiate()
+	add_child(main)
+	await get_tree().process_frame
+	Game.reset_run()
+	main.load_room(0)
+	for i in Game.rooms.size():
+		var r: Room = main.room
+		check(r != null and r.id == Game.rooms[i].id and main.player != null, "room %d (%s) loads with the player" % [i, Game.rooms[i].id])
+		await get_tree().physics_frame
+		if r.id == "cistern":
+			Game.add_obols(40)
+			r.message.emit("shop")
+			await get_tree().process_frame
+			check(main._menu is ShopPanel and main.player.state == Player.S.LOCKED, "talking to Phineus opens the shop and locks the player")
+			var err := Game.buy("linothorax")
+			check(err == "" and Game.armour_id == "linothorax" and Game.max_hp() == 5, "buying the linothorax equips it (+1 star)")
+			main._menu.close()
+			await get_tree().process_frame
+			check(main._menu == null and main.player.state == Player.S.NORMAL, "leaving the shop unlocks the player")
+		if r.id == "star-shrine":
+			var door := _door(r, "Enter")
+			door.use(main.player)
+			await get_tree().process_frame
+			check(main.room == r, "the shrine door stays sealed before the star is taken")
+			_door(r, "Take the Belt Star").use(main.player)
+			check(not r.exit_locked, "taking the Belt Star unseals the door")
+			await _seconds(2.6)
+			check(r._collapsed.size() > 0, "...and the cracked ring starts to fall")
+		var exit := _door(r, "Enter")
+		check(exit != null, "%s has a usable exit" % r.id)
+		exit.use(main.player)
+		await _seconds(0.6)
+	check(main._screen is EndCard, "the last exit shows the Dawn Rank end card")
+	check(Game.stats.end_msec > 0, "...and the run's clock stops")
+
+	# Death: restart the room from the snapshot taken on entry.
+	Game.reset_run()
+	main.load_room(1)
+	await get_tree().physics_frame
+	var obols_at_entry := Game.obols
+	Game.add_obols(12)
+	Game.hp = 1
+	var p: Player = main.player
+	p.take_hit(1, p.global_position + Vector2(10, 0), 0.2)
+	check(p.state == Player.S.DEAD, "losing the last star kills Cedalion")
+	await _seconds(3.5)
+	check(main.room != null and main.room.id == "colonnade" and main.player != p, "death rebuilds the same room")
+	check(Game.obols == obols_at_entry and Game.hp == Game.max_hp(), "...with the obols and stars from the entry snapshot")
+	main.queue_free()
+	await get_tree().process_frame
+
