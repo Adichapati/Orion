@@ -7,7 +7,7 @@ ORION is an isometric pixel-art game of stealth and sword duels, inspired by the
 ## Design
 
 - [Game Design Document](docs/GDD.md) — Persian-inspired setting. A Markdown snapshot of the live Claude Doc, exported on 2026-10-17. The live doc is the one to edit: <https://claude.ai/artifact/DkETn7xHUMDvHV2gPv3CLH> (ask Adithya for access).
-- A Greek-setting version lives on the `greek-setting` branch. Compare the two with `git diff main greek-setting -- docs/GDD.md`.
+- **Archived.** The team chose the Greek setting on 2026-10-18; the current design is on the `main` branch. Compare the two with `git diff persian-setting main -- docs/GDD.md`.
 
 ## Diagrams
 

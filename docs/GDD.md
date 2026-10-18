@@ -1,6 +1,8 @@
-# ORION — Game Design Document
+# ORION — Game Design Document (Persian, archived)
 
 Oct 17, 2026 · @Adithya Raj
+
+**Archived on 18 Oct 2026.** The team chose the Greek setting, so this doc is kept for reference only. The current design is [ORION — Game Design Document (Greek)](https://claude.ai/artifact/4Xhq62KoBu8QuQ9hXjkRGg).
 
 ORION keeps the heart of the idea — a small prince, a dark ruined castle, a torch as the only light — and makes that torch the whole game: light lets you see, but it also lets them see you. Build a polished 10–15 minute slice in Godot 4 for the hackathon, then grow it act by act.
 
