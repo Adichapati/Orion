@@ -17,7 +17,7 @@ func setup(p_text: String, p_sub := "", p_hold := 1.6) -> MessageCard:
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(UiKit.backdrop(0.85))
 	var c := UiKit.center()

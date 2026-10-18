@@ -36,11 +36,15 @@ func _ready() -> void:
 	ui.add_child(hud)
 	_fader = ColorRect.new()
 	_fader.color = Color(0.02, 0.02, 0.05, 0.0)
-	_fader.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_fader.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_fader.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fader.z_index = 100
 	ui.add_child(_fader)
 	var args := user_args()
+	if args.has("shots"):
+		add_child(Autoshot.new().setup(self, args.shots, args.get("script", "idle")))
+	if args.has("debug"):
+		Game.set_debug_overlay(true)
 	if args.has("room"):
 		Game.reset_run()
 		load_room(room_index_of(args.room))
@@ -49,7 +53,8 @@ func _ready() -> void:
 
 
 ## User arguments after `--`, as {"room": "colonnade", ...}. `--room=<id or index>` skips the
-## title and starts in that room.
+## title and starts in that room; `--shots=<path prefix> --script=<name>` runs an Autoshot
+## timeline (scripts/dev/autoshot.gd); `--debug` turns on the F3 overlay.
 static func user_args() -> Dictionary:
 	var out := {}
 	for a in OS.get_cmdline_user_args():

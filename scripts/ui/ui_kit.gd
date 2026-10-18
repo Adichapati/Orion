@@ -68,7 +68,7 @@ static func button(text: String, size := 16) -> Button:
 static func backdrop(alpha := 0.8) -> ColorRect:
 	var r := ColorRect.new()
 	r.color = Color(0.03, 0.02, 0.07, alpha)
-	r.set_anchors_preset(Control.PRESET_FULL_RECT)
+	r.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	r.mouse_filter = Control.MOUSE_FILTER_STOP
 	return r
 
@@ -76,7 +76,7 @@ static func backdrop(alpha := 0.8) -> ColorRect:
 ## A Control filling its parent, centring one child.
 static func center() -> CenterContainer:
 	var c := CenterContainer.new()
-	c.set_anchors_preset(Control.PRESET_FULL_RECT)
+	c.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	return c
 
 

@@ -7,6 +7,9 @@ extends Control
 ## follow the camera.
 
 const TOAST_TIME := 4.5
+## The UI's fixed design size (project.godot's base viewport).
+const W := 960.0
+const H := 540.0
 
 var project: Callable = func(p: Vector2) -> Vector2: return p
 var player: Node = null
@@ -26,7 +29,7 @@ var _floaters: Array = []
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var top_left := UiKit.vbox(4)
@@ -38,9 +41,8 @@ func _ready() -> void:
 	top_left.add_child(_pom)
 
 	var top_right := UiKit.hbox(6)
-	top_right.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	top_right.position = Vector2(-130, 12)
-	top_right.custom_minimum_size = Vector2(114, 24)
+	top_right.position = Vector2(W - 196, 12)
+	top_right.custom_minimum_size = Vector2(180, 24)
 	top_right.alignment = BoxContainer.ALIGNMENT_END
 	add_child(top_right)
 	top_right.add_child(UiKit.icon("hud_obol", 2))
@@ -48,12 +50,10 @@ func _ready() -> void:
 	top_right.add_child(_obols)
 
 	_gear = UiKit.label("", 13, UiKit.DIM)
-	_gear.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	_gear.position = Vector2(16, -30)
+	_gear.position = Vector2(16, H - 30)
 	add_child(_gear)
 
 	_toast_panel = UiKit.panel(UiKit.INK)
-	_toast_panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	_toast_panel.visible = false
 	add_child(_toast_panel)
 	_toast_label = UiKit.label("", 15)
@@ -80,8 +80,7 @@ func _ready() -> void:
 	add_child(_hold)
 
 	_banner = UiKit.label("", 30, UiKit.GOLD, HORIZONTAL_ALIGNMENT_CENTER)
-	_banner.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_banner.position = Vector2(-300, 70)
+	_banner.position = Vector2(W / 2.0 - 300, 70)
 	_banner.size = Vector2(600, 40)
 	_banner.modulate.a = 0.0
 	add_child(_banner)
@@ -121,7 +120,7 @@ func _next_toast() -> void:
 	_toast_label.text = _toasts.pop_front()
 	_toast_panel.visible = true
 	_toast_panel.reset_size()
-	_toast_panel.position = Vector2(-_toast_panel.size.x / 2.0, -_toast_panel.size.y - 52)
+	_toast_panel.position = Vector2((W - _toast_panel.size.x) / 2.0, H - _toast_panel.size.y - 48)
 	_toast_t = TOAST_TIME + _toast_label.text.length() * 0.02
 
 

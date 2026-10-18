@@ -18,11 +18,11 @@ var _done := false
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var bg := ColorRect.new()
 	bg.color = Color(0.36, 0.17, 0.09)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.show_behind_parent = true
 	add_child(bg)
 	var c := UiKit.center()

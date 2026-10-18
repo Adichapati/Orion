@@ -12,7 +12,7 @@ var _controls: Label
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(UiKit.backdrop(0.6))
 	var c := UiKit.center()

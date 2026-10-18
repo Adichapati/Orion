@@ -114,6 +114,18 @@ func build(room_data: Dictionary) -> void:
 	if id == "star-shrine":
 		exit_locked = true
 	rebuild_paths()
+	player_spawn = _step_inside(player_spawn)
+	checkpoint = player_spawn
+
+
+## The entrance door sits in the wall line, where walls hide the player; start one tile inside.
+func _step_inside(c: Vector2i) -> Vector2i:
+	if not (ch(c) in "ED"):
+		return c
+	for n in [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]:
+		if is_walkable(c + n) and not (ch(c + n) in "ED"):
+			return c + n
+	return c
 
 
 func _apply_brightness(v: float) -> void:

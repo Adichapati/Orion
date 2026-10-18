@@ -9,11 +9,11 @@ var _stars: Array = []
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var bg := ColorRect.new()
 	bg.color = Color(0.03, 0.03, 0.09)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.show_behind_parent = true
 	add_child(bg)
 	var rng := RandomNumberGenerator.new()
@@ -34,6 +34,9 @@ func _ready() -> void:
 	start.pressed.connect(func(): begin.emit())
 	v.add_child(start)
 	var quit := UiKit.button("Quit", 16)
+	for b in [start, quit]:
+		b.custom_minimum_size = Vector2(260, 0)
+		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	quit.pressed.connect(func(): get_tree().quit())
 	v.add_child(quit)
 	var hint := UiKit.label("WASD move · Ctrl run · Shift sneak · Space jump · J / click attack · K / right click parry\nC dodge · F shove · Q torch · G knucklebones · E interact · H pomegranate · Esc pause",
