@@ -2,7 +2,7 @@
 
 Oct 17, 2026 · @Adithya Raj
 
-ORION keeps the heart of the idea — a small prince, a dark ruined citadel, a torch as the only light — and makes that torch the whole game: light lets you see, but it also lets them see you. This version sets it in mythic Greece, where Orion's own myth becomes the plot. The [Persian version](https://claude.ai/artifact/DkETn7xHUMDvHV2gPv3CLH) stays as it is for comparison.
+ORION keeps the heart of the idea — a small prince, a dark ruined citadel, a torch as the only light — and makes that torch the whole game: light lets you see, but it also lets them see you. This version sets it in mythic Greece, where Orion's own myth becomes the plot. The [Persian version](https://claude.ai/artifact/DkETn7xHUMDvHV2gPv3CLH) is kept only as an archive: Greek is the confirmed direction, decided on 18 Oct 2026.
 
 ## Greek versus Persian
 
@@ -446,6 +446,8 @@ That is about 87 frames per facing, so about 170 for Cedalion. Budget about 80 p
 - Laigter for normal maps, Lospec for palettes, and Godot's built-in tile editor for levels.
 - A pixel font with a clear licence, such as Daniel Linssen's free m5x7, credited.
 
+Every tool, price and free asset source, with the cheapest pipeline: [Tools and assets](TOOLS.md)
+
 ## Lighting design
 
 Lighting is Godot 2D lights over a dark base, drawn as banded pixel shapes so the light itself looks hand-made. Exposure is computed in script, never read back from pixels. The rig matches the Persian version; colonnades and marble give it more to work with.
@@ -694,6 +696,72 @@ Art is the bottleneck, and temples are big. Start every system with coloured gre
 
 If a gate fails, fix that phase before starting the next one: a fun greybox matters more than finished art. With 48 hours the phases run in hours; with two weeks, in days. The phases match the Persian version; the art tasks now centre on the modular temple kit.
 
+## Build estimate
+
+The slice as this doc describes it takes about 170–240 hours of work between you: roughly 3–4 weeks at 4 hours a day each. A 48-hour hackathon fits a three-room micro-slice, not the whole thing.
+
+These are rough estimates. They assume you're new to Godot but not to coding or drawing; if neither of you has drawn pixel art before, add about a third to the art hours. Re-estimate after the greybox phase, because how long it took is your best guide.
+
+### Hours by work area
+
+| Work area | Owner | Hours | Includes |
+| --- | --- | --- | --- |
+| Setup and isometric foundation | A | 6–8 | Project settings, tile layers, Y-sorting, camera, fading columns |
+| Player controller | A | 8–12 | 8-way movement, run and sneak, fixed jumps, ledges, vines |
+| Light and stealth systems | A | 14–18 | Torch sizes, flicker, fuel, exposure maths, lamps, noise, fountains, statues |
+| Guard AI | A | 12–16 | Patrol, sight and hearing, awareness states, navigation, three guard types |
+| Combat | A | 10–14 | Combo, parry, dodge, glints, hit-stop, attack token, shove, torch thrust |
+| World interactions | A | 10–14 | The Ember, cracked floors, prompts, pottery and obols, checkpoints |
+| Merchant, gear and game flow | A | 8–10 | Gear data and its effects, the shop, title, end card, Dawn Rank |
+| Debug, builds and bug fixing | A | 8–12 | F3 overlay, desktop and web builds, fixes |
+| **Code subtotal** | A | **76–104** |  |
+| Tiles and temple kit | B | 18–24 | Marble, mosaic and cracked floors; walls; cyclopean walls; columns, steps, pediments |
+| Props | B | 8–12 | Amphorae, jars, chests, lamps, tripods, fountain, statues, ivy, trees |
+| Cedalion's sprites | B | 18–25 | About 170 frames |
+| Guards and Phineus | B | 22–30 | About 80 frames per guard type on one shared rig |
+| UI and vase-painting cards | B | 8–12 | HUD, prompts, merchant screen, title, end card |
+| Level building | B | 10–14 | The Lion Gate and 5 rooms, with lights and occluders placed |
+| Music and sound | B | 12–16 | Four music stems, about 40 sound effects |
+| **Art and audio subtotal** | B | **96–133** |  |
+| **Total** | Both | **172–237** |  |
+
+Art carries about a third more work than code. Once the core systems are done, move level building or the UI to Person A to even it out.
+
+Spread over the roadmap, about 200 hours works out to roughly 30 for the greybox, 50 for the core loop, 60 for content, 40 for polish and 20 for demo prep.
+
+### What fits in the time you have
+
+| Time you have | Team hours | What fits |
+| --- | --- | --- |
+| A 48-hour hackathon | About 50–60 (sleep, food and judging take the rest) | A micro-slice: the Lion Gate, the colonnade and the statue court; Watchman and Spearman; torch sizes, exposure, the Ember (plant and recall), cracked floors, pottery and obols; simple sprites (about 60 frames for Cedalion); one music loop; no merchant, or a 2-item one |
+| 1 week at about 4 h a day each | About 55 | The same micro-slice with more polish |
+| 2 weeks at about 5 h a day each | About 140 | The Must list: all 6 rooms, Phineus and the gear choice, final art for Cedalion and two guard types |
+| 3–4 weeks at about 4 h a day each, or 2–3 weeks full time | About 170–240 | Must plus Should: the slice exactly as this doc describes it |
+
+### What to cut first
+
+If time runs short, cut in this order. Agree on it now, not at 3 a.m.
+
+1. The Hoplite (keep Watchman and Spearman).
+2. Adaptive music stems (keep one loop).
+3. Normal maps on marble.
+4. Dawn Rank and the debug overlay's extras.
+5. Rooms 3 and 6, and Ember Step.
+6. Phineus's shop (keep the stolen sword and tunic only).
+
+Never cut the torch sizes, the exposure maths, the guard awareness meter or the moment the lights go out. Those are the game.
+
+### What to do before you build
+
+- [ ] Pick Greek or Persian, and close the other open questions.
+- [ ] Read the hackathon rules: its length, whether you can build before it opens, and whether outside or AI assets are allowed.
+- [ ] Install Godot 4.3+, Aseprite or Pixelorama, Git and Laigter, and make a shared GitHub repo.
+- [ ] Coder: do Godot's official "Your first 2D game" tutorial (about 3–4 hours), then a 2-hour isometric tile test.
+- [ ] Artist: a one-day style test — one floor tile, one column and Cedalion's idle in two facings, lit by a torch inside Godot. It sets the look and proves the pipeline.
+- [ ] Both: draw the rooms on paper, with three ways through each.
+- [ ] Whoever does music: a 30-second lyre theme in BeepBox to set the mood.
+- [ ] If building early isn't allowed, practise only on throwaway projects. Skills carry over; assets don't.
+
 ## Demo to the panel
 
 Win the panel in three minutes: show the moment the lights go out, one clever solution and the debug overlay, then hand a judge the controls.
@@ -730,7 +798,7 @@ Win the panel in three minutes: show the moment the lights go out, one clever so
 
 ## Open questions
 
-- [ ] Greek or Persian? Compare this doc with the [Persian version](https://claude.ai/artifact/DkETn7xHUMDvHV2gPv3CLH) and pick one.
+- [x] Greek or Persian? Compare this doc with the [Persian version](https://claude.ai/artifact/DkETn7xHUMDvHV2gPv3CLH) and pick one. Decided: Greek, on 18 Oct 2026.
 - [ ] How long is the hackathon, and can you build anything before it opens? That sets the roadmap's real dates.
 - [ ] Are outside assets (fonts, CC0 sounds) or AI-generated assets allowed? Your reference images look like stock pictures, so keep them as mood only.
 - [ ] Who draws and who codes? Has either of you used Godot, Aseprite or a music tool before?
