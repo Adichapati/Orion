@@ -58,6 +58,8 @@ var _escape_clock := 0.0
 var _altar_cell := Vector2i(-1, -1)
 var _floor_sprites := {}
 var _rng := RandomNumberGenerator.new()
+var _ambient: CanvasModulate
+var _ambient_base := Color.WHITE
 
 
 # =================================================================== building
@@ -91,9 +93,11 @@ func build(room_data: Dictionary) -> void:
 	pickups.y_sort_enabled = true
 	world.add_child(pickups)
 
-	var ambient := CanvasModulate.new()
-	ambient.color = Color(0.46, 0.5, 0.74) if is_outdoor else Color(0.27, 0.26, 0.42)
-	add_child(ambient)
+	_ambient = CanvasModulate.new()
+	_ambient_base = Color(0.46, 0.5, 0.74) if is_outdoor else Color(0.27, 0.26, 0.42)
+	add_child(_ambient)
+	_apply_brightness(Game.brightness)
+	Game.brightness_changed.connect(_apply_brightness)
 
 	var order: Array[Vector2i] = []
 	for y in size.y:
@@ -110,6 +114,12 @@ func build(room_data: Dictionary) -> void:
 	if id == "star-shrine":
 		exit_locked = true
 	rebuild_paths()
+
+
+func _apply_brightness(v: float) -> void:
+	var c := _ambient_base * v
+	c.a = 1.0
+	_ambient.color = Color(minf(c.r, 1.0), minf(c.g, 1.0), minf(c.b, 1.0))
 
 
 func ch(c: Vector2i) -> String:

@@ -53,7 +53,7 @@ sizes, fuel, exposure maths, relightable lamps, alarm tripods or Ember powers; A
 - [x] 2. Write `scripts/actors/guard.gd` (`class_name Guard`, CharacterBody2D) — spec below.
 - [x] 3. `Room.spawn_guards()` (or do it in main): one Guard per `rooms[i].guards` entry, add to
       `room.world` and `room.guards`; set `Game.stats.guards_total += count` once per room visit.
-- [ ] 4. UI in `scripts/ui/`: HUD (stars, obols, gear, toasts, interaction prompt "E — verb" and
+- [x] 4. UI in `scripts/ui/`: HUD (stars, obols, gear, toasts, interaction prompt "E — verb" and
       hold progress, floating texts/barks projected from world positions), shop panel, title screen,
       intro cards (3 lines of story), room-name banner, pause menu (resume, controls, restart room,
       title), death message, end card with `Game.dawn_rank()`, F3 debug overlay.
@@ -152,3 +152,4 @@ APIs other scripts already call: `grid_pos()`, `facing` (grid unit vector), `gua
 - 2026-10-19: Step 1 done: `heal` action on H (and d-pad up).
 - 2026-10-19: Step 2 done: `guard.gd` per the spec (states, sight, hearing, token combat, shove/torch/KO, cone and lantern). Choices: shoving a guard off raised floor counts as a fall (env KO, per the GDD's "shove him off a ledge"); hits don't interrupt a wind-up; stunned guards count as unaware (torch, then backstab). Fixed two type-inference parse errors in room.gd. Added `tests/check_scripts.gd` (loads every script: `--headless --path . --script res://tests/check_scripts.gd`).
 - 2026-10-19: Step 3 done: `Room.spawn_guards()`, `alive_guards()`, `max_awareness()`; guards are counted once per room id (`Game.stats.rooms_counted`), so a death retry doesn't double them.
+- 2026-10-19: Step 4 done: `scripts/ui/` — `UiKit` (shared style), `Hud`, `ShopPanel` (prophecy per next room, Save), `TitleScreen`, `IntroCards`, `PauseMenu` (with the GDD's Must-have brightness slider → `Game.set_brightness`, which scales each room's ambient), `MessageCard` (death), `EndCard` (Dawn Rank), `DebugOverlay` (world-space, F3), `VaseBorder`. Uses Godot's default font (no pixel font in the repo yet). New `class_name`s need `--import` before the script check.

@@ -7,6 +7,7 @@ signal gear_changed
 signal toast(text: String)
 signal floating_text(world_pos: Vector2, text: String, color: Color)
 signal debug_overlay_changed(on: bool)
+signal brightness_changed(value: float)
 
 const ROOMS_PATH := "res://art/maps/rooms.json"
 const BASE_HP := 4
@@ -41,6 +42,8 @@ var pomegranates := 0
 var snapshot := {}
 var stats := {}
 var debug_overlay := false
+## Multiplies every room's ambient light (the pause menu's brightness slider).
+var brightness := 1.0
 
 var _token_holder: Node = null
 
@@ -309,3 +312,8 @@ func dawn_rank() -> Dictionary:
 func set_debug_overlay(on: bool) -> void:
 	debug_overlay = on
 	debug_overlay_changed.emit(on)
+
+
+func set_brightness(v: float) -> void:
+	brightness = clampf(v, 0.4, 2.0)
+	brightness_changed.emit(brightness)
