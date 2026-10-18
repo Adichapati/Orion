@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="GuardType" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/guard_type.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/data/attack_data.gd" id="2"]
+
+[sub_resource type="Resource" id="thrust"]
+script = ExtResource("2")
+id = &"thrust"
+windup = 0.75
+recover = 0.8
+reach = 2.2
+half_angle = 20.0
+damage = 1
+parryable = false
+knockback = 0.8
+weight = 1.5
+
+[sub_resource type="Resource" id="sweep"]
+script = ExtResource("2")
+id = &"sweep"
+windup = 0.55
+recover = 0.6
+reach = 1.6
+half_angle = 80.0
+damage = 1
+parryable = true
+knockback = 0.5
+
+[resource]
+script = ExtResource("1")
+id = &"spearman"
+display_name = "Spearman"
+hp = 5
+walk_speed = 1.5
+chase_speed = 3.0
+sight_range = 6.0
+half_angle = 45.0
+keep_distance = 1.8
+attacks = [SubResource("thrust"), SubResource("sweep")]
+drop_min = 5
+drop_max = 10
+sprite_se = "spearman_se"
+sprite_ne = "spearman_ne"
+lantern_color = Color(1, 0.72, 0.4, 1)
+thrust_stun = 1.2

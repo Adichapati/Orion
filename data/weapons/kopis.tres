@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"kopis"
+display_name = "Silver-hilted kopis"
+description = "The all-rounder. A wider parry window, and ripostes hit twice as hard."
+price = 75
+damage = 2
+swing_time = 0.4
+reach = 1.1
+parry_window = 0.18

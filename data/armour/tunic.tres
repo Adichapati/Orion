@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ArmourData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/armour_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"tunic"
+display_name = "Prince's tunic"
+description = "Light as linen. No protection at all."

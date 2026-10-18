@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ArmourData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/armour_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"cuirass"
+display_name = "Silvered muscle cuirass"
+description = "Two extra stars. Every step clanks a little louder."
+price = 90
+hp_bonus = 2
+noise_bonus = 2.0
