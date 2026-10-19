@@ -20,6 +20,7 @@ const ROOFED := ["storerooms", "cistern"]
 static var _dot: Texture2D
 static var _water_mat: ShaderMaterial
 static var _vignette_tex: Texture2D
+static var _danger_tex: Texture2D
 
 
 static func dot() -> Texture2D:
@@ -54,11 +55,21 @@ static func dress(room: Node2D, room_id: String) -> void:
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.size = Vector2(480, 270)
 	front.add_child(v)
+	# The same dithered edge in white, tinted red and faded in by the room as guards grow aware.
+	var danger := TextureRect.new()
+	danger.texture = vignette_texture(true)
+	danger.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	danger.size = Vector2(480, 270)
+	danger.modulate = Color(0.85, 0.16, 0.12, 0.0)
+	front.add_child(danger)
+	room.set("danger_vignette", danger)
 
 
 ## A 480x270 vignette with ordered-dither alpha in three steps, so it stays pixel art.
-static func vignette_texture() -> Texture2D:
-	if _vignette_tex:
+static func vignette_texture(white := false) -> Texture2D:
+	if white and _danger_tex:
+		return _danger_tex
+	if not white and _vignette_tex:
 		return _vignette_tex
 	var w := 480
 	var h := 270
@@ -72,7 +83,10 @@ static func vignette_texture() -> Texture2D:
 			var a := 0.0
 			if k > threshold:
 				a = 0.22 + 0.3 * k
-			img.set_pixel(x, y, Color(NIGHT_0, a))
+			img.set_pixel(x, y, Color(Color.WHITE if white else NIGHT_0, a))
+	if white:
+		_danger_tex = ImageTexture.create_from_image(img)
+		return _danger_tex
 	_vignette_tex = ImageTexture.create_from_image(img)
 	return _vignette_tex
 

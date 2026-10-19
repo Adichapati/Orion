@@ -242,3 +242,7 @@ the title).
   scorpion daubed over a scratched-out star fresco (`wall_scorpion`, drawn and sheared onto the
   lit face in `tools/gen_greybox.py`; mirrored in game for right faces), as the GDD's story-prop
   list asks. `Room._paint_scorpions()` picks faces the player can see with the seeded RNG.
+- 2026-10-19: Danger on screen. The vignette's dithered edge now has a red twin
+  (`Atmosphere.vignette_texture(true)`) that fades in as the most aware guard nears alert (from
+  30% awareness, up to 35% opacity) and pulses slowly while a guard is hunting you, then lingers
+  a little as it fades (`Room.set_danger()`, driven from `main._process` with the music tension).

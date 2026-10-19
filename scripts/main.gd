@@ -243,6 +243,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_pause()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if room and is_instance_valid(room):
 		Sfx.set_tension(room.max_awareness() / 100.0)
+		room.set_danger(room.max_awareness() / 100.0, delta)

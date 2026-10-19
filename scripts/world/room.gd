@@ -58,6 +58,9 @@ var _escape_clock := 0.0
 var _altar_cell := Vector2i(-1, -1)
 var _floor_sprites := {}
 var _rng := RandomNumberGenerator.new()
+## The red edge of the screen (set up by Atmosphere.dress), driven by set_danger().
+var danger_vignette: TextureRect
+var _danger := 0.0
 var _door_lights: Array[PointLight2D] = []
 var _door_motes: Array[CPUParticles2D] = []
 ## Moonlight pools as (x, y, radius in px), so the torch can ease off inside them.
@@ -549,6 +552,18 @@ func _place_vigil_lamps() -> void:
 		curl.position = Vector2(3 if not lamp.flip_h else -3, -4)
 		holder.add_child(curl)
 		world.add_child(holder)
+
+
+## Tints the screen's edge red as the most aware guard nears alert (0..1), and pulses it slowly
+## while someone is hunting you.
+func set_danger(t: float, delta: float) -> void:
+	if danger_vignette == null:
+		return
+	_danger = lerpf(_danger, t, 1.0 - exp(-(4.0 if t > _danger else 1.5) * delta))
+	var a := smoothstep(0.3, 1.0, _danger) * 0.35
+	if _danger > 0.95:
+		a += 0.12 * (0.5 + 0.5 * sin(Time.get_ticks_msec() / 1000.0 * 4.0))
+	danger_vignette.modulate.a = a
 
 
 ## The Brotherhood's mark: red scorpions daubed over scratched-out star frescoes on up to two tall
