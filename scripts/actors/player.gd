@@ -53,6 +53,9 @@ var _noise_t := 0.0
 var _mouse_aim_t := 0.0
 var _gvel := Vector2.ZERO
 var _buf := {}
+var _aiming := false
+var _aim_t := 0.0
+var _aim_preview: AimPreview
 
 var body_node: Node2D
 var sprite: Sprite2D
@@ -90,6 +93,12 @@ func _ready() -> void:
 	body_node.add_child(torch)
 	torch_embers = Atmosphere.embers(5, 1.0)
 	body_node.add_child(torch_embers)
+	_aim_preview = AimPreview.new()
+	_aim_preview.z_index = 50
+	_aim_preview.top_level = true
+	_aim_preview.visible = false
+	_aim_preview.material = Atmosphere.unshaded()
+	add_child(_aim_preview)
 	_flicker.frequency = 9.0
 	_flicker.seed = 3
 
@@ -202,6 +211,8 @@ func _set_state(s: S) -> void:
 		_gvel = Iso.screen_to_grid(velocity).limit_length(RUN) * 0.5
 	state = s
 	_state_t = 0.0
+	if s != S.NORMAL:
+		_aiming = false
 
 
 ## Consumes a buffered press of an action.
@@ -246,6 +257,11 @@ func _normal(delta: float) -> void:
 		_step_t = STEP_TIME[gait] * 0.6
 
 	_update_focus(delta)
+	if _aiming:
+		_aim_t += delta
+		if not Input.is_action_pressed("toss"):
+			_aiming = false
+			_toss()
 	if _buf.get("attack", 0.0) > 0.0 and _cool.attack <= 0.0:
 		_take("attack")
 		_start_attack()
@@ -260,7 +276,9 @@ func _normal(delta: float) -> void:
 	elif _cool.thrust <= 0.0 and _take("thrust"):
 		_start_thrust()
 	elif Input.is_action_just_pressed("toss") and _cool.toss <= 0.0:
-		_toss()
+		# Aim while held (the preview shows the arc and who will hear it); throw on release.
+		_aiming = true
+		_aim_t = 0.0
 	elif Input.is_action_just_pressed("heal"):
 		if not Game.eat_pomegranate():
 			Game.toast.emit("No pomegranates." if Game.pomegranates == 0 else "You're already at full health.")
@@ -503,8 +521,9 @@ func _start_thrust() -> void:
 		near[0].stun_by_torch(self)
 
 
-func _toss() -> void:
-	_cool.toss = 0.6
+## Where a knucklebone thrown now would land: at the mouse if it moved lately, else 4 tiles ahead,
+## never more than 6 tiles away.
+func _toss_target() -> Vector2:
 	var target: Vector2
 	var mouse := get_global_mouse_position()
 	var use_mouse := _mouse_aim_t > 0.0
@@ -517,6 +536,18 @@ func _toss() -> void:
 	if g0.distance_to(g1) > 6.0:
 		g1 = g0 + (g1 - g0).normalized() * 6.0
 		target = Iso.grid_to_screen(g1)
+	# It can't fly through a wall: it drops just short of whatever it hits.
+	if room:
+		var from := global_position + Vector2(0, -4)
+		var hit := room.ray_end(from, target + Vector2(0, -4))
+		if hit.distance_to(target + Vector2(0, -4)) > 1.0:
+			target = from + (hit - from).limit_length(maxf(0.0, from.distance_to(hit) - 6.0)) + Vector2(0, 4)
+	return target
+
+
+func _toss() -> void:
+	_cool.toss = 0.6
+	var target := _toss_target()
 	var k := Knucklebone.new().setup(room, global_position, target)
 	room.world.add_child(k)
 	Sfx.play("toss", null, -10.0)
@@ -528,6 +559,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
+	# A held toss shows its arc once it is clearly a hold, not a tap.
+	_aim_preview.visible = _aiming and _aim_t > 0.1 and state == S.NORMAL
+	if _aim_preview.visible:
+		_aim_preview.start = global_position + Vector2(0, -elev)
+		_aim_preview.target = _toss_target()
+		_aim_preview.queue_redraw()
 	_mouse_aim_t = maxf(0.0, _mouse_aim_t - delta)
 
 
@@ -668,3 +705,31 @@ func _update_visuals(delta: float) -> void:
 		sprite.modulate = Color(1.4, 1.4, 1.6)
 	elif state == S.DODGE:
 		sprite.modulate = Color(1, 1, 1, 0.6)
+
+
+## The aim of a held knucklebone: a dotted arc that marches toward the landing spot, and the
+## 4-tile ring of everyone who will hear it land.
+class AimPreview extends Node2D:
+	var start := Vector2.ZERO
+	var target := Vector2.ZERO
+
+	func _draw() -> void:
+		var t := Time.get_ticks_msec() / 1000.0
+		var dur := clampf(Iso.tiles_between(start, target) * 0.09, 0.25, 0.6)
+		var lift := 22.0 * clampf(dur / 0.45, 0.6, 1.3)
+		var n := 14
+		for i in n:
+			var k := (float(i) + fmod(t * 3.0, 1.0)) / n
+			var p := start.lerp(target, k) + Vector2(0, -8.0 - sin(k * PI) * lift)
+			draw_rect(Rect2(p.round() - Vector2(1, 1), Vector2(2, 2)), Color(1.0, 0.86, 0.55, 0.75))
+		# The hearing ring, as dashes on the floor.
+		var g := Iso.screen_to_grid(target)
+		var steps := 96
+		for i in steps:
+			if (i / 3) % 2 == 1:
+				continue
+			var a := TAU * i / steps + t * 0.3
+			var p := Iso.grid_to_screen(g + Vector2(cos(a), sin(a)) * 4.0)
+			draw_rect(Rect2(p.round(), Vector2(2, 1)), Color(1.0, 0.86, 0.55, 0.7))
+		draw_rect(Rect2(target.round() - Vector2(3, 1), Vector2(6, 2)), Color(1.0, 0.86, 0.55, 0.9))
+		draw_rect(Rect2(target.round() - Vector2(1, 2), Vector2(2, 4)), Color(1.0, 0.86, 0.55, 0.9))

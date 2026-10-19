@@ -37,7 +37,7 @@ The game starts on the title screen. To jump straight into a room, pass its id o
 | Attack / parry | J or left click / K or right click | X / RB |
 | Shove | F | LB |
 | Torch thrust (stun) | Q | RT |
-| Toss knucklebones (toward the mouse) | G | — |
+| Toss a knucklebone: hold to aim (arc and hearing ring), release to throw (toward the mouse if it moved) | G | — |
 | Interact (hold for chests) | E | Y |
 | Eat a pomegranate | H | D-pad up |
 | Pause (controls, brightness, restart) | Esc | Start |

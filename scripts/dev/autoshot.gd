@@ -62,6 +62,14 @@ const SCRIPTS := {
 		[1.0, "shot", "", "death_a"],
 		[2.2, "shot", "", "death_b"],
 	],
+	"aim": [
+		[0.8, "press", "move_right"],
+		[1.3, "release", "move_right"],
+		[1.4, "press", "toss"],
+		[2.0, "shot", "", "aiming"],
+		[2.1, "release", "toss"],
+		[2.4, "shot", "", "thrown"],
+	],
 	"duel": [
 		[0.6, "call", "near_guard"],
 		[0.9, "shot", "", "duel1"],

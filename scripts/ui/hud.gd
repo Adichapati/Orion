@@ -14,7 +14,7 @@ const ROOMS := {
 		[1.5, "Guards see along their lantern cones. Keep to the dark, and hold Shift to sneak."],
 		[11.0, "No sword yet? Take one from the weapon rack, or shove (F) the Watchman into the well."]]],
 	"colonnade": ["Cross the colonnade to the far door.", [
-		[1.5, "Columns block a guard's sight. Toss knucklebones (G) to lure him away."],
+		[1.5, "Columns block a guard's sight. Hold G to aim a knucklebone, let go to throw it and lure him away."],
 		[11.0, "Smash an amphora (J) for obols, but the whole hall will hear it."]]],
 	"storerooms": ["Find the way down to the cistern.", [
 		[1.5, "Cracked marble gives way if you stand on it. A guard who stops on it falls too."],
