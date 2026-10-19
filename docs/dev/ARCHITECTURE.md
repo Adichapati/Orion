@@ -25,7 +25,7 @@ A short map of the prototype's code. Everything is built in code: the only scene
 | `Controls` | Registers every input action in code (keyboard, mouse, gamepad); F11 fullscreen |
 | `Game` | Run state: rooms and data, obols, health, gear and the shop, checkpoint snapshots, the one-attacker-at-a-time token, stats and Dawn Rank, debug and brightness settings |
 | `NoiseBus` | `emit_noise(pos, radius_tiles, source)`; guards listen to its `noise` signal |
-| `Sfx` | Plays `audio/sfx/<name>.wav` with distance falloff; runs the two music layers and mixes them by tension |
+| `Sfx` | Plays `audio/sfx/<name>.wav` with distance falloff; runs the two music layers and mixes them by tension; `set_ambience()` crossfades the room tone (`audio/ambience/`) |
 
 ## Main flow (`scripts/main.gd`)
 
@@ -50,7 +50,10 @@ pauses; UI nodes run with `PROCESS_MODE_ALWAYS`). User args after `--`: `--room=
 - `player.gd` — a state machine (normal, attack, parry, dodge, jump, hurt, shove, thrust, fall,
   dead, locked). Footsteps emit noise by gait and armour. Attacks hit the nearest guard in an arc;
   backstabs, ripostes and shields are resolved here.
-- `guard.gd` — patrol, suspicious, alert, search, return, stunned, shoved, falling, KO. Sight is a
+- `guard.gd` — patrol, suspicious, alert, search, return, stunned, shoved, falling, KO. A guard
+  entry with `"statue": true` starts `dormant` (stone shader, lantern dark, senses off) and
+  `wake()`s when Cedalion comes close, a noise reaches him, an alarm is raised or he is struck.
+  The glint flares `FLASH_LEAD` seconds before a strike (the "parry on the flash" cue). Sight is a
   cone plus a raycast; awareness rises with closeness and decays; noises and other guards' shouts
   make him investigate. In a fight he takes the attack token, winds up behind a glint, strikes,
   recovers; the others circle. All numbers come from a `GuardType` resource.
@@ -71,7 +74,10 @@ controls.
 
 - `tests/run_tests.gd` loads `tests/test_suite.gd` (the entry script of `--script` can't see the
   autoloads when it compiles). `tests/check_scripts.gd` just loads every script.
-- `tools/gen_greybox.py` and `tools/gen_audio.py` regenerate the placeholder art and sounds.
+- `tools/gen_greybox.py` and `tools/gen_audio.py` regenerate the placeholder art, sounds, music
+  and ambience.
+- `scripts/dev/autoshot.gd` timelines: idle, walk, fight, screens, intro, death, duel, flash,
+  aim, noise, sneak, statue, star, pause, title.
 - `tools/process_generated.py` turns the AI-generated sheets in `art/generated/` into
   `art/final/` sprites; `tools/gen_font.py` writes the pixel font in `art/fonts/`.
 
@@ -81,6 +87,12 @@ controls.
   `ShakeCamera.punch()`, look-ahead.
 - `scripts/core/juice.gd` — `Juice.freeze()` (hit-stop), `Juice.slowmo()`, `Juice.flash()`.
 - `scripts/core/life.gd` — procedural walk bob, squash and stretch and blob shadow for actors.
-- `scripts/world/atmosphere.gd` — sky with Orion, vignette, embers, moon motes, water shader;
-  `Room.build()` calls `Atmosphere.dress()`.
+- `scripts/world/atmosphere.gd` — sky with Orion, vignette (and its red danger twin), embers,
+  moon motes, lamp smoke, water shader; `Room.build()` calls `Atmosphere.dress()`.
+- `Room` also places the story props (snuffed vigil lamps, scorpion daubs), the Lion Gate's
+  lintel and relief, door glows and brazier flames; draws noise rings (`Fx.noise_ring()`) for
+  the player's and the world's noises; eases lights off in moonlight (`moonlight_at()`); tints the
+  screen edge by danger (`set_danger()`); and plays the Belt Star beat (`_star_taken_fx()`).
+- `Player` aims knucklebones while G is held (`AimPreview`: arc and hearing ring) and crouches
+  while sneaking (`Life.crouch`).
 - `Hud.ROOMS` holds each room's objective line and first-visit hints.
