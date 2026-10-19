@@ -401,6 +401,14 @@ func _make_door(c: Vector2i) -> void:
 	var holder := Node2D.new()
 	holder.position = cell_center(c)
 	world.add_child(holder)
+	# The Lion Gate itself: lintel and lion relief over the two-cell doorway in the north wall.
+	if id == "lion-gate" and ch(c + Vector2i(1, 0)) == "D" and ch(c - Vector2i(1, 0)) in WALLS:
+		var gate := Sprite2D.new()
+		gate.texture = Art.tex("lion_gate")
+		gate.centered = false
+		gate.offset = Vector2(-4, -59)
+		gate.position = cell_center(c) + Vector2(-16, 0)
+		world.add_child(gate)
 	# Warm light spilling through from the room beyond: the way on, readable from across the hall.
 	var glow := _add_light(holder, Vector2(0, -6 - elevation_px(c)), Color(1.0, 0.7, 0.4), 0.0, 64.0)
 	glow.scale = Vector2(1.0, 0.6)

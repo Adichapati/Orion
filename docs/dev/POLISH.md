@@ -205,3 +205,8 @@ the title).
   you can see which guards will hear it. Throws no longer pass through walls: the bone drops just
   short of the first wall on its line (it still clears pots and columns; `Room.wall_ray_end()`). The colonnade hint and README say so.
   New autoshot timeline `aim`.
+- 2026-10-19: The Lion Gate now has its gate: `lion_gate()` in `tools/gen_greybox.py` draws a
+  lintel across the two-cell exit and the relieving triangle above it (two lions rampant either
+  side of a column on an altar, in a dark frame), flat in the wall's plane and then sheared onto
+  the wall's lit face. `Room._make_door()` places it in the lion-gate room only. At 480×270 the
+  lions are an impression rather than a readable carving.

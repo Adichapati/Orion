@@ -237,6 +237,69 @@ def ivy(img, d, h):
 
 
 block("wall_tall_ivy", 32, WALL_TOP, WALL_L, WALL_R, EDGE, side_extra=lambda img, d, h: (wall_joints(img, d, h), ivy(img, d, h)))
+
+
+def lion_gate():
+    """The Lion Gate over a two-cell doorway in a wall that runs down-right (along grid x): a
+    lintel across the opening and the relieving triangle above it, two lions rampant on either
+    side of a column. Drawn flat in the wall's plane, then sheared half a pixel down per pixel
+    right to lie on the wall's lit face. The pixel at (PAD, H + PAD // 2) sits on the doorway's
+    west ground corner."""
+    pad, open_w, wall_h = 4, 32, 32
+    W, H = open_w + 2 * pad, wall_h + 26
+    flat = Image.new("RGBA", (W, H), CLEAR)
+    f = ImageDraw.Draw(flat)
+    stone, stone_l, carve, deep = hexc("a8a093"), P["marble1"], P["marble0"], hexc("5f5a52")
+
+    def v(y):  # height above the ground -> row
+        return H - 1 - y
+    # lintel: a heavy block across the top of the opening, resting on the jambs
+    f.rectangle([0, v(wall_h + 1), W - 1, v(wall_h - 6)], fill=stone_l)
+    f.line([(0, v(wall_h + 1)), (W - 1, v(wall_h + 1))], fill=P["marble2"])
+    f.line([(0, v(wall_h - 5)), (W - 1, v(wall_h - 5))], fill=carve)
+    f.line([(0, v(wall_h - 6)), (W - 1, v(wall_h - 6))], fill=deep)
+    f.line([(pad, v(wall_h - 7)), (pad + open_w - 1, v(wall_h - 7))], fill=deep)
+    # jamb edges inside the opening
+    for x in (pad - 1, pad + open_w):
+        f.line([(x, v(wall_h - 7)), (x, v(0))], fill=EDGE)
+    # relieving triangle
+    base, top = wall_h + 2, wall_h + 24
+    cx = W // 2
+    # a dark frame (the relieving gap) around the relief slab
+    f.polygon([(cx - 17, v(base)), (cx + 16, v(base)), (cx, v(top + 2))], fill=deep)
+    f.polygon([(cx - 15, v(base)), (cx + 14, v(base)), (cx, v(top))], fill=stone)
+    f.line([(cx - 15, v(base)), (cx, v(top))], fill=stone_l)
+    f.line([(cx + 14, v(base)), (cx, v(top))], fill=carve)
+    # the column between the lions, on a two-step altar
+    f.rectangle([cx - 4, v(base + 2), cx + 3, v(base)], fill=carve)
+    f.rectangle([cx - 1, v(base + 14), cx + 1, v(base + 3)], fill=stone_l)
+    f.point((cx + 1, v(base + 8)), fill=carve)
+    f.rectangle([cx - 3, v(base + 16), cx + 2, v(base + 15)], fill=carve)
+    # two lions rampant, forepaws on the altar, facing the column: carved silhouettes
+    for side in (-1, 1):
+        def px(dx, dy, c=deep):
+            x = cx + side * dx - (1 if side > 0 else 0)
+            flat.putpixel((x, v(base + dy)), c)
+        body = [(5, 3), (6, 3), (7, 4), (6, 4), (7, 5), (8, 5), (6, 5), (7, 6), (8, 6), (6, 6), (7, 7), (8, 7),
+                (6, 7), (6, 8), (7, 8), (5, 8), (5, 9), (6, 9), (4, 9), (4, 10), (5, 10)]
+        legs = [(9, 1), (9, 2), (8, 3), (10, 1), (8, 4), (4, 3), (3, 3), (3, 4)]
+        head = [(3, 10), (3, 11), (4, 11), (2, 11), (3, 12), (4, 12)]
+        tail = [(9, 6), (10, 7), (10, 8), (9, 9)]
+        for dx, dy in body + legs + head + tail:
+            px(dx, dy)
+        for dx, dy in [(5, 4), (5, 5), (5, 6), (5, 7), (4, 8)]:
+            px(dx, dy, carve)
+    # shear onto the face
+    out = Image.new("RGBA", (W, H + W // 2 + 1), CLEAR)
+    for y in range(H):
+        for x in range(W):
+            c = flat.getpixel((x, y))
+            if c[3]:
+                out.putpixel((x, y + x // 2), c)
+    save(out, "lion_gate")
+
+
+lion_gate()
 # Raised floor (the portico): a lighter top than the floor below, so the level change reads.
 block("raised", 16, P["marble2"], WALL_L, WALL_R, EDGE)
 
