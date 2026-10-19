@@ -92,6 +92,8 @@ const SCRIPTS := {
 		[0.75, "shot", "", "burst"],
 		[0.95, "shot", "", "floating"],
 		[2.4, "shot", "", "escape"],
+		[3.6, "shot", "", "collapse"],
+		[4.4, "shot", "", "collapse2"],
 	],
 	"sneak": [
 		[0.8, "shot", "", "stand"],

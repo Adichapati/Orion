@@ -256,3 +256,5 @@ the title).
 - 2026-10-19: Sneaking looked the same as walking. Holding sneak now eases Cedalion into a
   crouch (14% shorter, 6% wider, `Life.crouch`), so the silent gait reads at a glance. Autoshot
   timeline `sneak`.
+- 2026-10-19: During the star-shrine escape the collapsing slabs no longer each draw a noise
+  ring (a dozen overlapping rings cluttered the run); single cracked slabs elsewhere still do.

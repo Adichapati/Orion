@@ -643,6 +643,9 @@ func _body_at(c: Vector2i) -> Node2D:
 func _show_noise(pos: Vector2, radius: float, source: Node) -> void:
 	if source is Guard or not is_inside_tree():
 		return
+	# The shrine's whole floor coming down is loud enough without a ring per slab.
+	if source == self and _escape_active:
+		return
 	Fx.noise_ring(world, pos, radius)
 
 
