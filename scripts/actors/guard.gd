@@ -558,6 +558,11 @@ func _pick_attack(d: float) -> AttackData:
 	return options[-1]
 
 
+## Seconds before the strike that the glint flares: a human reaction time (~0.2 s) plus a
+## little input and display lag, so a press on the flash lands in the 120 ms window.
+const FLASH_LEAD := 0.32
+
+
 func _begin_attack(a: AttackData) -> void:
 	_attack = a
 	_phase = "windup"
@@ -823,6 +828,15 @@ func _update_visuals(delta: float) -> void:
 	var side := -1.0 if sprite.flip_h else 1.0
 	glint.position = Vector2(8.0 * side, -22.0 + sin(_phase_t * 30.0))
 	glint.scale = Vector2.ONE * (1.0 + 0.3 * clampf(_phase_t / maxf(0.01, _attack.windup if _attack else 1.0), 0.0, 1.0))
+	# The flash: one reaction time before the strike the glint flares, so a press on the flash
+	# lands inside the parry window that closes at the strike.
+	if _attack and _phase == "windup":
+		var since := _phase_t - (_attack.windup - FLASH_LEAD)
+		if since >= 0.0:
+			glint.scale = Vector2.ONE * (2.0 if since < 0.1 else 1.5)
+			glint.modulate = Color(1.6, 1.6, 1.6) if since < 0.08 else Color.WHITE
+		else:
+			glint.modulate = Color(1, 1, 1, 0.85)
 
 	match state:
 		S.ALERT:

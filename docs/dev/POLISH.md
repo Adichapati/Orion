@@ -157,3 +157,11 @@ the title).
   passes so the tail wraps across the seam, and the drones use whole cycles per loop (checked:
   the seam's largest sample step is no bigger than any other note onset). Nobody has listened to
   it yet; it was judged by levels and a spectrogram only.
+- 2026-10-19: Tuning, parry timing. The GDD says "parry on the flash" with a 120 ms window, but
+  the glint appeared 0.65 s before the strike and only grew slowly, so there was nothing to time
+  the press against. Now the glint flares (2×, overbright) `Guard.FLASH_LEAD` = 0.32 s before the
+  strike: a reaction time of ~0.2 s plus a little input and display lag puts the press inside the
+  window. A bot test parries at fixed delays after the flash: 0.20, 0.23 and 0.26 s land, 0.05 s
+  (too early) and 0.45 s (too late) miss. In that harness, the effective band is roughly 0.18–0.28
+  s after the flash; widen it with the weapon's `parry_window` if playtesters miss a lot. New
+  autoshot timeline `flash` shoots the flare and the strike.

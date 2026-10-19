@@ -58,6 +58,11 @@ const SCRIPTS := {
 		[2.5, "shot", "", "duel5"],
 		[2.9, "shot", "", "duel6"],
 	],
+	"flash": [
+		[0.6, "call", "near_guard"],
+		[0.7, "call", "wait_flash"],
+		[5.0, "shot", "", "later"],
+	],
 	"pause": [
 		[1.0, "tap", "pause"],
 		[1.5, "shot", "", "paused"],
@@ -120,6 +125,14 @@ func _run(e: Array) -> void:
 				main.player.global_position = g.global_position + Iso.grid_to_screen(g.facing * 1.6)
 				main.player.facing = -g.facing
 				main.player.camera.reset_smoothing()
+			elif e[2] == "wait_flash" and main.room and not main.room.guards.is_empty():
+				# Shoot the moment a guard's glint flares, and again as the blade lands.
+				var g: Guard = main.room.guards[0]
+				while not (g._attack and g._phase == "windup" and g._phase_t >= g._attack.windup - Guard.FLASH_LEAD):
+					await get_tree().process_frame
+				_run([0, "shot", "", "flash"])
+				await get_tree().create_timer(Guard.FLASH_LEAD, true, false, true).timeout
+				_run([0, "shot", "", "strike"])
 			elif e[2] == "begin":
 				main.start_run()
 			elif e[2] == "end":

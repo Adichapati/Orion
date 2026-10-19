@@ -292,6 +292,33 @@ func test_duel_parry_and_hit() -> void:
 	check(Game.hp < stars, "an unparried strike costs a star")
 	_free_room(r)
 	Game.reset_run()
+	await _test_parry_on_the_flash()
+
+
+## A bot that waits for the glint's flash and parries after a human reaction time. Typical
+## reactions (0.2-0.26 s) should land; a press right on the flash is too early (the window has
+## closed before the blade arrives) and one long after it is too late.
+func _test_parry_on_the_flash() -> void:
+	for reaction in [0.05, 0.2, 0.23, 0.26, 0.45]:
+		Game.reset_run()
+		Game.give_weapon("xiphos")
+		var r := _open_room([{"id": "g", "type": "watchman", "at": [5, 2], "face": [-1, 0], "path": [[5, 2]]}])
+		r.spawn_guards()
+		var p := _add_player(r, Vector2i(4, 2))
+		p.facing = Vector2(1, 0)
+		var g: Guard = r.guards[0]
+		var t := 0.0
+		while t < 4.0 and not (g._phase == "windup" and g._phase_t >= g._attack.windup - Guard.FLASH_LEAD):
+			await get_tree().physics_frame
+			t += 1.0 / 60.0
+		await _seconds(reaction)
+		p._start_parry()
+		await _seconds(0.5)
+		var ok := g.state == Guard.S.STUNNED
+		var should: bool = reaction > 0.1 and reaction < 0.35
+		check(ok == should, "a parry %.2f s after the flash %s" % [reaction, "lands" if should else "misses"])
+		_free_room(r)
+	Game.reset_run()
 
 
 func test_shop_buy_and_equip() -> void:
