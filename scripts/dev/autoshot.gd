@@ -49,6 +49,14 @@ const SCRIPTS := {
 		[5.5, "call", "death"],
 		[6.2, "shot", "", "death"],
 	],
+	"intro": [
+		[0.5, "call", "begin"],
+		[1.8, "shot", "", "intro1"],
+		[1.9, "call", "next"],
+		[5.3, "shot", "", "intro2"],
+		[5.4, "call", "next"],
+		[7.2, "shot", "", "intro3"],
+	],
 	"duel": [
 		[0.6, "call", "near_guard"],
 		[0.9, "shot", "", "duel1"],
@@ -133,6 +141,10 @@ func _run(e: Array) -> void:
 				_run([0, "shot", "", "flash"])
 				await get_tree().create_timer(Guard.FLASH_LEAD, true, false, true).timeout
 				_run([0, "shot", "", "strike"])
+			elif e[2] == "next":
+				for c in main.ui.get_children():
+					if c is IntroCards:
+						c._advance()
 			elif e[2] == "begin":
 				main.start_run()
 			elif e[2] == "end":

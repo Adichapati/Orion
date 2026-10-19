@@ -177,3 +177,9 @@ the title).
   the amphora are redrawn by one `vessel()` painter from a row profile: lit from the left with
   dithered steps between three clay tones, black-figure bands (the pithos has reserved dots), a
   lit rim, a dark outline on the shadow side, and proper loop handles on the amphora.
+- 2026-10-19: Intro cards. Same vase ground as the end card (`VaseBorder.draw_ground()`, now
+  shared), and a black glaze band above the words that tells the story in nine clay oil lamps:
+  card 1 the vigil burning with flickering flames; card 2 the lamps snuffed one by one from the
+  right with curls of smoke, then Antares rising red; card 3 every lamp dark but the middle one,
+  Cedalion's, with the three Belt Stars appearing over it. Lamps are drawn in 2× pixels. New
+  autoshot timeline `intro`.

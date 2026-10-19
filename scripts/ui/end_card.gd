@@ -110,15 +110,7 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	# Terracotta, lighter where the vase swells: dithered steps rather than a smooth gradient.
-	draw_rect(Rect2(0, 0, 960, 540), CLAY_DARK)
-	for y in range(0, 540, 2):
-		var k := 1.0 - absf(y - 250.0) / 300.0
-		# Quantised into a few bands, with a checker of the next band at each edge.
-		var lv := clampf(k * 1.5, 0.0, 1.0) * 4.0
-		var step := floorf(lv) + (1.0 if fmod(lv, 1.0) > 0.5 and (y / 2) % 2 == 0 else 0.0)
-		var c := CLAY_DARK.lerp(CLAY, minf(step, 4.0) / 4.0)
-		draw_rect(Rect2(0, y, 960, 2), c)
+	VaseBorder.draw_ground(self)
 	VaseBorder.draw_on(self, INK)
 	# The black glaze band, with a thin reserved line above and below.
 	draw_rect(BAND, INK)
