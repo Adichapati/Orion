@@ -6,7 +6,7 @@ sound and tuning. The checklist is in priority order; the dated log is at the bo
 ## Morning summary (2026-10-19, second session; stopped at about 55% of the 5-hour window)
 
 Two sessions ran overnight. The first (8 commits) did the sprites, game feel, atmosphere, the
-pixel font and new sounds. The second (32 commits, ending with this one) worked down the rest of
+pixel font and new sounds. The second (36 commits, ending with this one) worked down the rest of
 the list and then polished whatever looked weakest in screenshots. All 127 tests pass.
 
 **Second session, in order of how much you'll notice:**
@@ -20,6 +20,8 @@ the list and then polished whatever looked weakest in screenshots. All 127 tests
    (the GDD's "noise spreads as rings"; before, rings only showed in F3). Holding G aims a
    knucklebone with an arc and its 4-tile hearing ring, and releasing throws it. The screen's
    edge reddens as guards grow aware and pulses while you're hunted. Sneaking crouches Cedalion.
+   When a wall hides Cedalion or a guard, a faint outline shows through (blue for him, red for
+   them); before, both could vanish behind the cistern's walls.
 3. **Parry on the flash.** The glint now flares 0.32 s before the strike, so a press on the flash
    (about 0.2 s of reaction time) lands in the 120 ms window. A bot test checks it: presses 0.20 to
    0.26 s after the flash land, and presses at 0.05 s or 0.45 s miss.
@@ -305,3 +307,5 @@ a parry bell and an alert stinger.
   player's `_ghost` sprite), the usual isometric fix. Checked in four rooms for false positives.
 - 2026-10-19: Guards get the same treatment: a faint red outline while a wall hides them (not
   while posing as a statue or knocked out), so a guard behind a wall is never invisible.
+- 2026-10-19: Stopped at 55% of the 5-hour window (49% of the week) after the silhouettes, to
+  leave weekly usage for the hackathon. Nothing is half-done; next steps are in the summary.
