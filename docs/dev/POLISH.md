@@ -148,3 +148,12 @@ the title).
   slot and says "Worn" / "In hand"; owned items' names are gold; Phineus's portrait is 3× in a
   frame; the purse sits under his words. Also: guard lanterns ease off inside moonlight pools too
   (`Room.moonlight_at()`), which fixes the colonnade guard's white spot.
+- 2026-10-19: Music. Both loops rewritten in `tools/gen_audio.py`: 16 bars at 80 BPM (48 s,
+  was 16 s at 90). Explore: a dark detuned-saw chord pad (Dm, C, G, Dm / Dm, C, Am, Dm), a D drone,
+  bass plucks on each bar, the lyre phrasing A A' B A'' with slight human timing and fifths under
+  the B phrase, and an aulos-like reed answering in bars 9–16. Tension, on the same bars: frame
+  drums with a fill every fourth bar, a low plucked D ostinato, and a tremolo drone that swells
+  every four bars. Both run through a small Freeverb-style reverb that is computed over two
+  passes so the tail wraps across the seam, and the drones use whole cycles per loop (checked:
+  the seam's largest sample step is no bigger than any other note onset). Nobody has listened to
+  it yet; it was judged by levels and a spectrogram only.

@@ -2,8 +2,8 @@
 
     python tools/gen_audio.py
 
-Writes short effects to audio/sfx/<name>.wav and two 16-second loops to audio/music/:
-explore.wav (a plucked lyre in D Dorian over a drone) and tension.wav (a frame-drum pattern).
+Writes short effects to audio/sfx/<name>.wav and two 48-second loops to audio/music/:
+explore.wav (a lyre, pad and aulos in D Dorian) and tension.wav (frame drums and an ostinato).
 Both loops share length and sample rate, so the game can start them together and cross-fade
 them by the guards' awareness. Replace any file with a real recording of the same name.
 """
@@ -179,74 +179,184 @@ def effects():
 
 
 # ---------------------------------------------------------------- music
+#
+# Both loops are 16 bars of 4/4 at 80 BPM (48 s), so the game starts them together and fades the
+# tension layer in and out. Explore is a night piece in D Dorian: a soft chord pad, a lyre that
+# phrases A A' B A'', an aulos answering in the B section, bass plucks. Tension keeps the same
+# bars: frame drums with fills, a low plucked ostinato on D and a tremolo drone that swells every
+# four bars. Everything goes through a small reverb that wraps around the loop seam.
 
-LOOP = 16.0
-BPM = 90
+BPM = 80
 BEAT = 60.0 / BPM
+BARS = 16
+LOOP = BARS * 4 * BEAT
 
 
 def hz(semitones_from_d3):
     return 146.83 * 2 ** (semitones_from_d3 / 12)
 
 
-def explore():
-    """Lyre phrases in D Dorian (D E F G A B C) over a soft D-A drone."""
-    n = int(LOOP * RATE)
-    out = [0.0] * n
-    # Drone: D2 and A2, slowly breathing so the loop seam is smooth.
+def seamless(freq):
+    """The nearest frequency that fits a whole number of cycles into the loop."""
+    return round(freq * LOOP) / LOOP
+
+
+def place(out, part, at_sec, gain=1.0):
+    """Adds part into out at at_sec, wrapping around the end of the loop."""
+    n = len(out)
+    s = int(at_sec * RATE)
+    for i, v in enumerate(part):
+        out[(s + i) % n] += v * gain
+
+
+def reverb(samples, mix_=0.3, room=0.84, damp=0.35):
+    """A Schroeder/Freeverb-style reverb: parallel damped combs into series all-passes. Runs the
+    loop twice and keeps the second pass, so the tail wraps around the seam."""
+    n = len(samples)
+    src = samples + samples
+    wet = [0.0] * len(src)
+    for d in (1116, 1188, 1277, 1356, 1422, 1491):
+        d = int(d * RATE / 44100)
+        buf, j, f = [0.0] * d, 0, 0.0
+        for i, x in enumerate(src):
+            y = buf[j]
+            f = y * (1 - damp) + f * damp
+            buf[j] = x + f * room
+            wet[i] += y
+            j = (j + 1) % d
+    for d in (556, 441, 341, 225):
+        d = int(d * RATE / 44100)
+        buf, j = [0.0] * d, 0
+        for i, x in enumerate(wet):
+            b = buf[j]
+            buf[j] = x + b * 0.5
+            wet[i] = b - x
+            j = (j + 1) % d
+    return [samples[i] * (1 - mix_) + wet[n + i] * mix_ * 0.18 for i in range(n)]
+
+
+def pad_note(freq, sec, vol):
+    """Two detuned saws, darkened, with a slow swell in and out (a bowed or breathed chord)."""
+    n = int(sec * RATE)
+    out, p1, p2, y = [], 0.0, 0.0, 0.0
+    for i in range(n):
+        p1 += freq * 0.997 / RATE
+        p2 += freq * 1.003 / RATE
+        v = (p1 % 1.0) + (p2 % 1.0) - 1.0
+        y += 0.06 * (v - y)
+        t = i / n
+        e = min(1.0, t / 0.3) * min(1.0, (1 - t) / 0.35)
+        out.append(y * vol * e * e)
+    return out
+
+
+def reed(freq, sec, vol):
+    """An aulos-like reed: a few odd-heavy harmonics, a breathy attack, vibrato that grows."""
+    n = int(sec * RATE)
+    out, ph = [], 0.0
     for i in range(n):
         t = i / RATE
-        breath = 0.75 + 0.25 * math.sin(2 * math.pi * t / LOOP)
-        out[i] += breath * (0.07 * math.sin(2 * math.pi * 73.42 * t) + 0.045 * math.sin(2 * math.pi * 110.0 * t)
-                            + 0.02 * math.sin(2 * math.pi * 146.83 * t))
-    dorian = [0, 2, 3, 5, 7, 9, 10, 12, 14, 15, 17]
-    phrase = [  # (beat, scale degree, length in beats)
-        (0, 7, 1), (1, 9, 0.5), (1.5, 8, 0.5), (2, 7, 1), (3, 4, 1),
-        (4, 5, 1.5), (5.5, 4, 0.5), (6, 3, 1), (7, 4, 1),
-        (8, 7, 1), (9, 10, 1), (10, 9, 0.5), (10.5, 8, 0.5), (11, 7, 1),
-        (12, 5, 1), (13, 6, 0.5), (13.5, 5, 0.5), (14, 4, 2),
-        (16, 0, 1), (17, 2, 1), (18, 4, 1), (19, 3, 0.5), (19.5, 2, 0.5),
-        (20, 4, 2), (22, 5, 1), (23, 6, 1),
-    ]
-    for beat, deg, length in phrase:
-        start = int(beat * BEAT * RATE)
-        if start >= n:
-            continue
-        note = pluck(hz(dorian[deg]), min(length * BEAT + 1.2, LOOP - beat * BEAT), 0.32)
-        for i, v in enumerate(note):
-            out[(start + i) % n] += v
-    # Bass plucks on the bar.
-    for bar in range(int(LOOP / (BEAT * 4))):
-        start = int(bar * 4 * BEAT * RATE)
-        root = [0, 0, -2, 3][bar % 4]
-        note = pluck(hz(root - 12), 2.5, 0.25, damp=0.993)
-        for i, v in enumerate(note):
-            out[(start + i) % n] += v
+        vib = 1 + 0.006 * min(1.0, t / 0.6) * math.sin(2 * math.pi * 5.2 * t)
+        ph += freq * vib / RATE
+        x = 2 * math.pi * ph
+        v = math.sin(x) + 0.45 * math.sin(3 * x) + 0.22 * math.sin(2 * x) + 0.12 * math.sin(5 * x)
+        e = min(1.0, t / 0.12) * min(1.0, (sec - t) / 0.4)
+        out.append((v + rng.uniform(-0.15, 0.15) * (1 - min(1.0, t / 0.2))) * vol * max(0.0, e))
     return out
+
+
+# D Dorian as semitones above D3; degree 7 is D4, negative degrees reach below D3.
+DORIAN = [0, 2, 3, 5, 7, 9, 10]
+
+
+def deg(d):
+    return DORIAN[d % 7] + 12 * (d // 7)
+
+
+# Two bars per chord: i, VII, IV, i, i, VII, v, i (D minor, C, G, D minor, D minor, C, A minor, D minor).
+CHORDS = [[0, 2, 4], [-1, 1, 3], [3, 5, 7], [0, 2, 4], [0, 2, 4], [-1, 1, 3], [4, 6, 8], [0, 2, 4]]
+
+# Lyre phrases as (beat, degree, beats), four bars (16 beats) each.
+PHRASE_A = [(0, 7, 1), (1, 9, 0.5), (1.5, 8, 0.5), (2, 7, 1.5), (4, 6, 1), (5, 5, 1), (6, 4, 2),
+            (8, 5, 1), (9, 6, 0.5), (9.5, 5, 0.5), (10, 4, 1), (11, 3, 1), (12, 4, 3)]
+PHRASE_A2 = [(0, 7, 1), (1, 9, 0.5), (1.5, 8, 0.5), (2, 7, 1.5), (4, 9, 1), (5, 10, 1), (6, 9, 2),
+             (8, 8, 1), (9, 7, 0.5), (9.5, 6, 0.5), (10, 5, 1), (11, 6, 1), (12, 7, 3)]
+PHRASE_B = [(0, 11, 2), (2, 10, 1), (3, 9, 1), (4, 8, 2), (6, 9, 2),
+            (8, 11, 1), (9, 12, 1), (10, 11, 1), (11, 9, 1), (12, 8, 3)]
+PHRASE_A3 = [(0, 7, 1), (1, 9, 0.5), (1.5, 8, 0.5), (2, 7, 1.5), (4, 6, 1), (5, 5, 1), (6, 4, 2),
+             (8, 3, 1), (9, 2, 1), (10, 1, 1), (11, -1, 1), (12, 0, 4)]
+# The aulos answers the lyre's B phrase (from bar 9) and holds under the return.
+AULOS = [(2, 4, 2), (6, 5, 2), (10, 6, 1.5), (12, 4, 4), (18, 2, 2), (22, 3, 2), (26, 4, 1.5), (28, 1, 4)]
+
+
+def explore():
+    n = int(LOOP * RATE)
+    out = [0.0] * n
+    bar = 4 * BEAT
+    # Pad: each chord swells over its two bars and overlaps the next a little.
+    for i, chord in enumerate(CHORDS):
+        for d in chord:
+            place(out, pad_note(hz(deg(d) - 12), bar * 2 + 1.0, 0.045), i * bar * 2 - 0.5)
+    # A low drone on D under everything, breathing once per loop (whole cycles, so no seam click).
+    f = seamless(73.42)
+    for i in range(n):
+        t = i / RATE
+        out[i] += (0.05 + 0.02 * math.sin(2 * math.pi * t / LOOP)) * math.sin(2 * math.pi * f * t)
+    # Bass pluck on each bar (the chord's root), and its fifth late in every second bar.
+    for b in range(BARS):
+        root = CHORDS[b // 2][0]
+        place(out, pluck(hz(deg(root) - 12), 2.8, 0.22, damp=0.993), b * bar)
+        if b % 2 == 1:
+            place(out, pluck(hz(deg(root + 4) - 12), 1.5, 0.12, damp=0.99), b * bar + 2.5 * BEAT)
+    # Lyre: A A' B A'', with a little human timing.
+    for k, phrase in enumerate([PHRASE_A, PHRASE_A2, PHRASE_B, PHRASE_A3]):
+        for beat, d, length in phrase:
+            at = (k * 16 + beat) * BEAT + rng.uniform(-0.012, 0.012)
+            vol = 0.3 if beat % 2 == 0 else 0.24
+            place(out, pluck(hz(deg(d)), length * BEAT + 1.4, vol), at)
+            if k == 2 and length >= 2:  # the B phrase's long notes get a fifth below
+                place(out, pluck(hz(deg(d - 4)), length * BEAT + 1.0, 0.12), at + 0.03)
+    for beat, d, length in AULOS:
+        place(out, reed(hz(deg(d)), length * BEAT, 0.05), (32 + beat) * BEAT)
+    return reverb(out, mix_=0.35)
 
 
 def tension():
-    """A frame-drum pattern in the same tempo: doum and tek, with a rattle on the off-beats."""
     n = int(LOOP * RATE)
     out = [0.0] * n
-    pattern = [("D", 0), ("t", 0.75), ("t", 1.5), ("D", 2), ("t", 2.5), ("t", 3.25), ("r", 3.5)]
-    bars = int(LOOP / (BEAT * 4))
-    for bar in range(bars):
-        for kind, beat in pattern:
-            start = int((bar * 4 + beat) * BEAT * RATE)
+    bar = 4 * BEAT
+    main = [("D", 0), ("t", 0.75), ("t", 1.5), ("D", 2), ("t", 2.5), ("t", 3.25), ("r", 3.5)]
+    fill = [("D", 0), ("t", 0.5), ("t", 0.75), ("D", 1.5), ("D", 2), ("t", 2.5), ("t", 3), ("t", 3.25),
+            ("t", 3.5), ("t", 3.75)]
+    for b in range(BARS):
+        for kind, beat in (fill if b % 4 == 3 else main):
+            at = (b * 4 + beat) * BEAT
             if kind == "D":
-                hit = drum(78, 0.5, 0.75, skin=0.2)
+                hit = drum(72, 0.6, 0.7, skin=0.2)
             elif kind == "t":
-                hit = drum(240, 0.12, 0.35, skin=0.9)
+                hit = drum(250 + rng.uniform(-15, 15), 0.12, 0.3 + rng.uniform(0, 0.08), skin=0.6)
             else:
-                hit = noise(0.18, 0.18, lp=0.8, curve=3)
-            for i, v in enumerate(hit):
-                out[(start + i) % n] += v
-    # A low pulse under it all.
-    for i in range(n):
-        t = i / RATE
-        out[i] += 0.05 * math.sin(2 * math.pi * 55.0 * t) * (0.5 + 0.5 * math.sin(2 * math.pi * t / (BEAT * 2)))
-    return out
+                hit = noise(0.2, 0.1, lp=0.7, curve=3)
+            place(out, hit, at)
+    # Ostinato: low plucked eighths on D, lifting to A and C at the end of each bar.
+    figure = [0, 0, 0, 0, 0, 0, 4, 6]
+    for b in range(BARS):
+        for e, d in enumerate(figure):
+            place(out, pluck(hz(deg(d) - 24), 0.5, 0.2 if e % 2 == 0 else 0.13, damp=0.985), (b * 4 + e * 0.5) * BEAT)
+    # A tremolo drone on D, A and D, swelling across each four bars.
+    four = 4 * bar
+    for d, vol in ((0, 0.05), (4, 0.035), (7, 0.02)):
+        f = seamless(hz(deg(d) - 12))
+        ph1 = ph2 = y = 0.0
+        for i in range(n):
+            t = i / RATE
+            ph1 += (f - 12 / LOOP) / RATE
+            ph2 += (f + 12 / LOOP) / RATE
+            y += 0.05 * ((ph1 % 1.0) + (ph2 % 1.0) - 1.0 - y)
+            swell = 0.35 + 0.65 * ((t % four) / four) ** 2
+            trem = 0.6 + 0.4 * math.sin(2 * math.pi * t * 2 / BEAT)
+            out[i] += y * vol * swell * trem
+    return reverb(out, mix_=0.15, room=0.75)
 
 
 if __name__ == "__main__":
