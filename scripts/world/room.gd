@@ -227,6 +227,24 @@ func _plain_floor(c: Vector2i) -> String:
 	return "floor_marble"
 
 
+## A brazier's fire: three hand-drawn frames, unshaded so it burns at full colour in the dark.
+func _flame(at: Vector2) -> AnimatedSprite2D:
+	var frames := SpriteFrames.new()
+	frames.set_animation_speed("default", 9.0)
+	for i in 3:
+		frames.add_frame("default", Art.tex("brazier_flame_%d" % i))
+	var f := AnimatedSprite2D.new()
+	f.sprite_frames = frames
+	f.position = at
+	f.offset = Vector2(0, -4)
+	var mat := CanvasItemMaterial.new()
+	mat.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+	f.material = mat
+	f.frame = _rng.randi_range(0, 2)
+	f.play()
+	return f
+
+
 func _water(name: String) -> Sprite2D:
 	var s := Art.tile_sprite(name)
 	s.material = Atmosphere.water_material()
@@ -307,6 +325,7 @@ func _build_solid(c: Vector2i) -> void:
 			body.set_meta("well", true)
 		"B":
 			body.add_child(Art.feet_sprite("brazier", 2))
+			body.add_child(_flame(Vector2(0, -10)))
 			_add_light(body, Vector2(0, -16), Color(1.0, 0.6, 0.28), 1.05, 88.0)
 			var sparks := Atmosphere.embers(6, 3.0)
 			sparks.position = Vector2(0, -18)

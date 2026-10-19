@@ -191,3 +191,8 @@ the title).
 - 2026-10-19: Death card. A torch above the words gutters and goes out over ~0.9 s, then its
   ember fades and smoke curls away (drawn in 2× pixels on a layer above the card's backdrop); the
   line is 3× and the subtitle 2× (it was 1×). New autoshot timeline `death`.
+- 2026-10-19: Braziers looked like orange jellyfish: the bronze bowl turned flat orange in its
+  own light. The bowl is now dark bronze with a lit rim and glowing coals, and the fire is a
+  separate unshaded `AnimatedSprite2D` (`Room._flame()`) cycling three hand-drawn frames
+  (`brazier_flame_0..2`) at 9 fps, each brazier starting on a random frame. Stain slabs are
+  smaller and paler, so two side by side no longer make a dark blob.

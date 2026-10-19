@@ -155,9 +155,9 @@ def stained(img, d):
     cx, cy = 18, 7
     for y in range(16):
         for x in range(32):
-            r = ((x - cx) / 6.5) ** 2 + ((y - cy) / 3.0) ** 2
-            if (r < 0.55 or (r < 1 and (x + y) % 2 == 0)) and _in_slab(img, x, y):
-                img.putpixel((x, y), hexc("a59d8f"))
+            r = ((x - cx) / 5.0) ** 2 + ((y - cy) / 2.4) ** 2
+            if (r < 0.45 or (r < 1 and (x + y) % 2 == 0)) and _in_slab(img, x, y):
+                img.putpixel((x, y), hexc("aea697"))
 
 
 def moss(img, d):
@@ -455,15 +455,38 @@ prop("well", 28, 32, well)
 
 
 def brazier(img, d, w, h):
+    """A dark bronze bowl on three legs with glowing coals; the flame is a separate, unshaded
+    sprite (brazier_flame_0..2) so the bowl doesn't turn orange in its own light."""
     cx = w // 2
-    for x0, x1 in [(cx - 5, cx - 2), (cx + 4, cx + 1), (cx, cx)]:
-        d.line([(x0, h - 1), (x1, h - 10)], fill=P["bronze"])
-    d.ellipse([cx - 6, h - 14, cx + 5, h - 9], fill=P["bronze"])
-    d.ellipse([cx - 4, h - 19, cx + 3, h - 11], fill=P["fire1"])
-    d.ellipse([cx - 2, h - 18, cx + 1, h - 13], fill=P["fire2"])
+    dark, rim = hexc("3a2a22"), P["bronze"]
+    for x0, x1 in [(cx - 5, cx - 3), (cx + 4, cx + 2), (cx, cx)]:
+        d.line([(x0, h - 1), (x1, h - 9)], fill=dark)
+    d.point((cx - 4, h - 5), fill=rim)
+    d.point((cx + 3, h - 5), fill=rim)
+    d.ellipse([cx - 6, h - 13, cx + 5, h - 8], fill=dark)
+    d.line([(cx - 5, h - 12), (cx + 4, h - 12)], fill=rim)
+    d.line([(cx - 4, h - 13), (cx + 3, h - 13)], fill=P["fire0"])
+    for x in (cx - 3, cx, cx + 2):
+        d.point((x, h - 13), fill=P["fire1"])
+    d.point((cx - 5, h - 10), fill=rim)
 
 
 prop("brazier", 14, 20, brazier)
+
+
+# Three flame frames for the brazier: tongues of fire, outer orange to a pale core.
+FLAMES = [
+    ["....3.....", "...32.....", "...221.3..", "..2221.2..", "..12221...", ".112221...", ".1122211..", "..11111..."],
+    [".....3....", "....23....", "..3.122...", "..2.1222..", "...12221..", "..1122221.", "..1122211.", "...11111.."],
+    ["...3......", "...2..3...", "..12..2...", "..122122..", ".1122221..", ".11222211.", "..1222211.", "...1111..."],
+]
+for _i, _rows in enumerate(FLAMES):
+    _img = Image.new("RGBA", (10, 8), CLEAR)
+    for _y, _row in enumerate(_rows):
+        for _x, _ch in enumerate(_row):
+            if _ch != ".":
+                _img.putpixel((_x, _y), {"1": P["fire1"], "2": P["fire2"], "3": P["fire3"]}[_ch])
+    save(_img, f"brazier_flame_{_i}")
 
 
 def rack(img, d, w, h):
