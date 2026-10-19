@@ -260,3 +260,6 @@ the title).
   ring (a dozen overlapping rings cluttered the run); single cracked slabs elsewhere still do.
 - 2026-10-19: The pause menu has a Volume slider (the master bus, muted at zero) under
   Brightness, with the two labels aligned, for a loud hall or a quiet projector.
+- 2026-10-19: The tree was a green blob on a stick; it is now an old olive: a twisting trunk on
+  flared roots, three limbs, ragged clumps of foliage lit from the upper left with a few silver
+  leaves and a dark outline on the shadow side, and a soft shadow on the ground.

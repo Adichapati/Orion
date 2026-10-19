@@ -325,6 +325,11 @@ func _build_solid(c: Vector2i) -> void:
 		"r":
 			body.add_child(Art.feet_sprite("rubble", 3))
 		"T":
+			var shade := Sprite2D.new()
+			shade.texture = Life.shadow_texture(26)
+			shade.position = Vector2(2, -1)
+			shade.modulate.a = 0.8
+			body.add_child(shade)
 			var tree := Art.feet_sprite("tree", 2)
 			body.add_child(tree)
 			_fading.append({"node": tree, "body": body, "height": 46.0})

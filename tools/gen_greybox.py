@@ -540,12 +540,57 @@ prop("rubble", 24, 12, rubble)
 
 
 def tree(img, d, w, h):
+    """An old olive tree: a gnarled, twisting trunk on flared roots, three limbs, and clumps of
+    silvery foliage lit from the upper left, ragged at the edges, with a dark outline below."""
+    rnd = random.Random(53)
     cx = w // 2
-    d.rectangle([cx - 2, h - 18, cx + 1, h - 1], fill=P["leather"])
-    d.line([(cx, h - 14), (cx - 6, h - 24)], fill=P["leather"], width=2)
-    for x, y, r, c in [(cx - 7, h - 30, 8, "olive0"), (cx + 6, h - 32, 8, "olive0"), (cx, h - 38, 9, "olive1"),
-                       (cx - 4, h - 34, 6, "olive2"), (cx + 5, h - 27, 6, "olive1")]:
-        d.ellipse([x - r, y - r * 3 // 4, x + r, y + r * 3 // 4], fill=P[c])
+    bark, bark_l, bark_d = hexc("5a4030"), hexc("7a5a40"), hexc("33241b")
+    # roots and trunk: two strands that wind around each other
+    for x in range(cx - 4, cx + 4):
+        img.putpixel((x, h - 1), bark_d)
+    for i in range(20):
+        y = h - 2 - i
+        sway = int(round(1.5 * math.sin(i / 4.0)))
+        for dx in range(-2, 2):
+            x = cx + sway + dx
+            c = bark_l if dx == -2 else bark_d if dx == 1 else bark
+            img.putpixel((x, y), c)
+        if i % 5 == 2:  # a knot
+            img.putpixel((cx + sway, y), bark_d)
+    # limbs
+    top = h - 22
+    for (dx, dy) in ((-7, -6), (6, -8), (1, -10)):
+        d.line([(cx, top), (cx + dx, top + dy)], fill=bark, width=2)
+        d.point((cx + dx, top + dy), fill=bark_l)
+    # foliage clumps: (x, y, radius)
+    clumps = [(cx - 8, h - 31, 7), (cx + 7, h - 33, 7), (cx, h - 38, 8), (cx - 3, h - 30, 6), (cx + 4, h - 27, 5),
+              (cx - 10, h - 26, 4), (cx + 11, h - 28, 4)]
+    leaf = Image.new("RGBA", (w, h), CLEAR)
+    for (x0, y0, r) in clumps:
+        for y in range(y0 - r, y0 + r + 1):
+            for x in range(x0 - r - 1, x0 + r + 2):
+                if not (0 <= x < w and 0 <= y < h):
+                    continue
+                dd = ((x - x0) / (r + 0.5)) ** 2 + ((y - y0) / (r * 0.8 + 0.5)) ** 2
+                if dd > 1.0 or (dd > 0.7 and rnd.random() < 0.45):
+                    continue
+                light = -((x - x0) + (y - y0)) / (r * 1.4) + rnd.uniform(-0.35, 0.35)
+                c = P["olive2"] if light > 0.45 else P["olive1"] if light > -0.25 else P["olive0"]
+                if light > 1.0 and rnd.random() < 0.18:
+                    c = P["silver"]
+                leaf.putpixel((x, y), c)
+    # outline the foliage on its shadow side so it reads on pale marble
+    src = leaf.copy()
+    for y in range(h):
+        for x in range(w):
+            if src.getpixel((x, y))[3]:
+                continue
+            for ox, oy in ((-1, 0), (0, -1)):
+                nx, ny = x + ox, y + oy
+                if 0 <= nx < w and 0 <= ny < h and src.getpixel((nx, ny))[3]:
+                    leaf.putpixel((x, y), hexc("232b18"))
+                    break
+    img.alpha_composite(leaf)
 
 
 prop("tree", 32, 50, tree)
