@@ -202,6 +202,6 @@ the title).
 - 2026-10-19: Knucklebone aim. G now aims while held and throws on release (a tap still throws
   at once). After 0.1 s of holding, an unshaded preview shows the dotted arc marching to the
   landing spot, a cross where it lands and a dashed ring of the 4-tile noise it will make, so
-  you can see which guards will hear it. Throws no longer pass through walls or columns: the bone
-  drops just short of the first solid thing on its line. The colonnade hint and README say so.
+  you can see which guards will hear it. Throws no longer pass through walls: the bone drops just
+  short of the first wall on its line (it still clears pots and columns; `Room.wall_ray_end()`). The colonnade hint and README say so.
   New autoshot timeline `aim`.

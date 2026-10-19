@@ -536,10 +536,10 @@ func _toss_target() -> Vector2:
 	if g0.distance_to(g1) > 6.0:
 		g1 = g0 + (g1 - g0).normalized() * 6.0
 		target = Iso.grid_to_screen(g1)
-	# It can't fly through a wall: it drops just short of whatever it hits.
+	# It can't fly through a wall (it clears pots and columns): it drops just short.
 	if room:
 		var from := global_position + Vector2(0, -4)
-		var hit := room.ray_end(from, target + Vector2(0, -4))
+		var hit := room.wall_ray_end(from, target + Vector2(0, -4))
 		if hit.distance_to(target + Vector2(0, -4)) > 1.0:
 			target = from + (hit - from).limit_length(maxf(0.0, from.distance_to(hit) - 6.0)) + Vector2(0, 4)
 	return target

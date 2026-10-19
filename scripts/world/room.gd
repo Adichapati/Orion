@@ -603,6 +603,22 @@ func line_of_sight(a: Vector2, b: Vector2) -> bool:
 	return hit.is_empty()
 
 
+## The first wall hit along a ray, or b if none: a lobbed knucklebone clears pots and columns
+## but not walls.
+func wall_ray_end(a: Vector2, b: Vector2) -> Vector2:
+	var space := get_world_2d().direct_space_state
+	var q := PhysicsRayQueryParameters2D.create(a, b, SOLID_LAYER)
+	for i in 12:
+		var hit := space.intersect_ray(q)
+		if hit.is_empty():
+			return b
+		var kind: String = (hit.collider as Node).get_meta("kind", "") if hit.collider is Node else ""
+		if kind != "" and kind in WALLS:
+			return hit.position
+		q.exclude = q.exclude + [hit.rid]
+	return b
+
+
 ## The first solid hit along a ray, or b if nothing is hit. Used to shape the vision cones.
 func ray_end(a: Vector2, b: Vector2) -> Vector2:
 	var space := get_world_2d().direct_space_state
