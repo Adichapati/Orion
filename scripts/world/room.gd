@@ -58,6 +58,8 @@ var _escape_clock := 0.0
 var _altar_cell := Vector2i(-1, -1)
 var _floor_sprites := {}
 var _rng := RandomNumberGenerator.new()
+var _door_lights: Array[PointLight2D] = []
+var _door_motes: Array[CPUParticles2D] = []
 ## Moonlight pools as (x, y, radius in px), so the torch can ease off inside them.
 var moon_pools: Array[Vector3] = []
 var _ambient: CanvasModulate
@@ -399,6 +401,14 @@ func _make_door(c: Vector2i) -> void:
 	var holder := Node2D.new()
 	holder.position = cell_center(c)
 	world.add_child(holder)
+	# Warm light spilling through from the room beyond: the way on, readable from across the hall.
+	var glow := _add_light(holder, Vector2(0, -6 - elevation_px(c)), Color(1.0, 0.7, 0.4), 0.0, 64.0)
+	glow.scale = Vector2(1.0, 0.6)
+	_door_lights.append(glow)
+	var motes := Atmosphere.embers(3, 1.5)
+	motes.position = Vector2(0, -8 - elevation_px(c))
+	holder.add_child(motes)
+	_door_motes.append(motes)
 	var it := Interactable.new().setup("Enter", "glyph_door", 22.0)
 	holder.add_child(it)
 	interactables.append(it)
@@ -811,6 +821,12 @@ func set_checkpoint(c: Vector2i) -> void:
 # =================================================================== per-frame view helpers
 
 func _process(_delta: float) -> void:
+	# Exit doors breathe a warm glow, but a sealed door stays dark.
+	var t := Time.get_ticks_msec() / 1000.0
+	for l in _door_lights:
+		l.energy = 0.0 if exit_locked else 0.75 + 0.15 * sin(t * 2.2)
+	for m in _door_motes:
+		m.emitting = not exit_locked
 	if player == null or not is_instance_valid(player):
 		return
 	var pp: Vector2 = player.global_position

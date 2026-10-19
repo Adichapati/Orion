@@ -196,3 +196,6 @@ the title).
   separate unshaded `AnimatedSprite2D` (`Room._flame()`) cycling three hand-drawn frames
   (`brazier_flame_0..2`) at 9 fps, each brazier starting on a random frame. Stain slabs are
   smaller and paler, so two side by side no longer make a dark blob.
+- 2026-10-19: Exit doors now spill a warm, slowly breathing light (as if lamps burn in the next
+  room) with a few rising motes, so the way on reads from across a dark hall. The star shrine's
+  sealed door stays dark until the Belt Star is taken.
