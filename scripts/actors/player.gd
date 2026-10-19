@@ -56,6 +56,7 @@ var _buf := {}
 var _aiming := false
 var _aim_t := 0.0
 var _aim_preview: AimPreview
+var _ghost: Sprite2D
 
 var body_node: Node2D
 var sprite: Sprite2D
@@ -93,6 +94,15 @@ func _ready() -> void:
 	body_node.add_child(torch)
 	torch_embers = Atmosphere.embers(5, 1.0)
 	body_node.add_child(torch_embers)
+	# A faint outline of Cedalion drawn over everything, shown only while a wall hides him.
+	_ghost = Sprite2D.new()
+	_ghost.z_as_relative = false
+	_ghost.z_index = 90
+	_ghost.centered = false
+	_ghost.modulate = Color(0.65, 0.8, 1.0, 0.4)
+	_ghost.material = Atmosphere.unshaded()
+	_ghost.visible = false
+	sprite.add_child(_ghost)
 	_aim_preview = AimPreview.new()
 	_aim_preview.z_index = 50
 	_aim_preview.top_level = true
@@ -559,6 +569,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
+	_ghost.visible = room != null and state != S.DEAD and room.wall_covers(global_position + Vector2(0, -elev), 26.0)
+	if _ghost.visible:
+		_ghost.texture = sprite.texture
+		_ghost.flip_h = sprite.flip_h
+		_ghost.offset = sprite.offset
 	# Sneaking crouches him, so the quiet gait reads at a glance.
 	life.crouch = 1.0 if gait == "sneak" and state == S.NORMAL else 0.0
 	# A held toss shows its arc once it is clearly a hold, not a tap.

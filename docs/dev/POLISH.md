@@ -299,3 +299,7 @@ a parry bell and an alert stinger.
 - 2026-10-19: Wrote the morning summary and saved six fresh screenshots (title, Lion Gate,
   colonnade duel, the living statue waking, the Belt Star beat, the end card), replacing the
   first session's set. Usage at this point: 52% of the 5-hour window, 49% of the week.
+- 2026-10-19: Behind walls. In the cistern Cedalion could walk behind the tall wall by Phineus
+  and vanish completely. Now, while a wall drawn in front of him covers his body
+  (`Room.wall_covers()`), a faint unshaded blue outline of him is drawn over everything (the
+  player's `_ghost` sprite), the usual isometric fix. Checked in four rooms for false positives.

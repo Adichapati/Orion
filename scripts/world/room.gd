@@ -654,6 +654,25 @@ func _show_noise(pos: Vector2, radius: float, source: Node) -> void:
 	Fx.noise_ring(world, pos, radius)
 
 
+## True when a wall drawn in front of a figure standing at `pos` (feet, screen space) would cover
+## at least part of a body `height_px` tall, so the player can be shown as a silhouette.
+func wall_covers(pos: Vector2, height_px: float) -> bool:
+	var pc := cell_at(pos)
+	for dy in range(0, 4):
+		for dx in range(0, 4):
+			var c := pc + Vector2i(dx, dy)
+			if (dx == 0 and dy == 0) or c.x >= size.x or c.y >= size.y or not (ch(c) in WALLS):
+				continue
+			var centre := cell_center(c)
+			if centre.y <= pos.y or absf(pos.x - centre.x) > 12.0:
+				continue
+			var h := 32.0 if _wall_is_tall(c) else 8.0
+			var wall_top := centre.y - 8.0 - h
+			if wall_top < pos.y - 4.0 and centre.y + 8.0 > pos.y - height_px:
+				return true
+	return false
+
+
 ## How deep in a moonlight pool a point is: 0 outside, 1 at the centre. Lights add up and pale
 ## marble clips to white, so the torch and lanterns ease off where the moon already falls.
 func moonlight_at(pos: Vector2) -> float:
