@@ -404,6 +404,8 @@ func wake(by_player: bool) -> void:
 	Sfx.play("crumble", global_position, -4.0, 0.05, 0.75)
 	life.squash(Vector2(1.18, 0.86))
 	_shake_t = 0.25
+	if String(type.id) == "hoplite":
+		Game.toast.emit("One of the statues was a Hoplite! His shield stops blows from the front: get behind him, or thrust your torch (Q).")
 	var p := _player()
 	if by_player and p:
 		awareness = ALERT_AT
