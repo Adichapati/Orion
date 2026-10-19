@@ -6,7 +6,7 @@ sound and tuning. The checklist is in priority order; the dated log is at the bo
 ## Morning summary (2026-10-19, second session; stopped at about 55% of the 5-hour window)
 
 Two sessions ran overnight. The first (8 commits) did the sprites, game feel, atmosphere, the
-pixel font and new sounds. The second (36 commits, ending with this one) worked down the rest of
+pixel font and new sounds. The second (about 35 commits) worked down the rest of
 the list and then polished whatever looked weakest in screenshots. All 127 tests pass.
 
 **Second session, in order of how much you'll notice:**
