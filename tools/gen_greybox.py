@@ -336,10 +336,17 @@ block("raised", 16, P["marble2"], WALL_L, WALL_R, EDGE)
 
 
 def stair_lines(img, d, h):
-    for k in (2, 5):
-        for i in range(16):
-            img.putpixel((i, 8 + i // 2 + k), hexc("8a8478"))
-            img.putpixel((16 + i, 15 - i // 2 + k), hexc("3b4870"))
+    """Two steps on the lit face (a bright nose on each tread, a darker riser below it) and their
+    stepped edge on the shaded face."""
+    riser_l, riser_d = WALL_L, hexc("7a7468")
+    for i in range(16):
+        x_l, y_l = i, 8 + i // 2
+        for k, c in ((0, P["marble2"]), (1, riser_l), (2, riser_l), (3, riser_d),
+                     (4, P["marble1"]), (5, riser_l), (6, riser_l), (7, riser_d)):
+            img.putpixel((x_l, y_l + k), c)
+        x_r, y_r = 16 + i, 15 - i // 2
+        img.putpixel((x_r, y_r + 4), EDGE)
+        img.putpixel((x_r, y_r + 3), hexc("6e6a7e"))
 
 
 block("steps", 8, P["marble1"], WALL_L, WALL_R, EDGE, side_extra=stair_lines)
@@ -688,10 +695,21 @@ prop("fountain_spout", 32, 40, fountain_spout)
 
 
 def altar(img, d, w, h):
+    """The star altar: a stepped base, a body with a gold band of stars on its lit face, and an
+    overhanging top slab."""
     cx = w // 2
-    d.rectangle([cx - 10, h - 12, cx - 1, h - 2], fill=WALL_L)
-    d.rectangle([cx, h - 12, cx + 9, h - 2], fill=WALL_R)
-    diamond(d, cx - 11, h - 18, P["marble2"], 22, 11)
+    d.rectangle([cx - 11, h - 4, cx - 1, h - 1], fill=WALL_L)
+    d.rectangle([cx, h - 4, cx + 10, h - 1], fill=WALL_R)
+    d.rectangle([cx - 9, h - 13, cx - 1, h - 4], fill=P["marble1"])
+    d.rectangle([cx, h - 13, cx + 8, h - 4], fill=hexc("8f8aa0"))
+    for x in range(cx - 8, cx - 1, 2):
+        img.putpixel((x, h - 9), P["gold"])
+    d.line([(cx - 9, h - 11), (cx - 1, h - 11)], fill=P["marble0"])
+    d.line([(cx - 9, h - 7), (cx - 1, h - 7)], fill=P["marble0"])
+    for x in range(cx + 1, cx + 8, 2):
+        img.putpixel((x, h - 9), hexc("a8803a"))
+    diamond(d, cx - 11, h - 19, P["marble2"], 22, 11)
+    d.line([(cx - 11, h - 14), (cx - 1, h - 9)], fill=P["marble1"])
 
 
 prop("altar", 24, 22, altar)

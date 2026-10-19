@@ -263,3 +263,6 @@ the title).
 - 2026-10-19: The tree was a green blob on a stick; it is now an old olive: a twisting trunk on
   flared roots, three limbs, ragged clumps of foliage lit from the upper left with a few silver
   leaves and a dark outline on the shadow side, and a soft shadow on the ground.
+- 2026-10-19: Steps show two treads (a bright nose and a darker riser each) on the lit face and
+  a stepped edge on the shaded face, instead of blue stripes; the star altar has a stepped base,
+  a gold band of stars and an overhanging top slab instead of a plain cube.
