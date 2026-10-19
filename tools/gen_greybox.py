@@ -133,6 +133,57 @@ floor_tile(hexc("a8a093"), P["marble0"], "floor_marble_dark")
 for i in range(3):
     floor_tile(P["marble1"], P["marble0"], f"floor_cracked_{i}", lambda img, d, s=i: crack(img, 21 + s, 2 + s))
 floor_tile(P["clay2"], P["clay1"], "floor_door")
+
+# Plain-floor variants so a hall isn't one stamp repeated. None of them may look like a crack:
+# cracked slabs are a hazard and have to stand out.
+def _in_slab(img, x, y):
+    return 1 < x < 30 and 1 < y < 14 and img.getpixel((x, y))[3] > 0 and img.getpixel((x, y))[:3] != P["marble0"][:3]
+
+
+def worn(img, d):
+    """A smoothed, paler patch where feet have polished the slab (checker dither)."""
+    rnd = random.Random(31)
+    cx, cy = rnd.randint(12, 19), rnd.randint(6, 9)
+    for y in range(16):
+        for x in range(32):
+            if ((x - cx) / 7.0) ** 2 + ((y - cy) / 3.2) ** 2 < 1 and (x + y) % 2 == 0 and _in_slab(img, x, y):
+                img.putpixel((x, y), hexc("cbc4b5"))
+
+
+def stained(img, d):
+    """A darker water stain, dithered at its edge."""
+    cx, cy = 18, 7
+    for y in range(16):
+        for x in range(32):
+            r = ((x - cx) / 6.5) ** 2 + ((y - cy) / 3.0) ** 2
+            if (r < 0.55 or (r < 1 and (x + y) % 2 == 0)) and _in_slab(img, x, y):
+                img.putpixel((x, y), hexc("a59d8f"))
+
+
+def moss(img, d):
+    """Moss creeping out of the lower seams."""
+    rnd = random.Random(41)
+    for i in range(16):
+        for (x, y) in ((16 + i, 14 - i // 2), (15 - i, 14 - i // 2)):
+            if rnd.random() < 0.45 and _in_slab(img, x, y):
+                img.putpixel((x, y), P["olive1"] if rnd.random() < 0.7 else P["olive2"])
+                if rnd.random() < 0.3 and _in_slab(img, x, y - 1):
+                    img.putpixel((x, y - 1), P["olive0"])
+
+
+def leaves(img, d):
+    """Two fallen olive leaves."""
+    for (x, y, flip) in ((11, 6, False), (20, 9, True)):
+        pts = [(x, y), (x + 1, y), (x + 2, y + 1), (x + 3, y + 1)] if not flip else [(x, y + 1), (x + 1, y + 1), (x + 2, y), (x + 3, y)]
+        for i, (px, py) in enumerate(pts):
+            if _in_slab(img, px, py):
+                img.putpixel((px, py), P["olive2"] if i < 2 else P["olive1"])
+
+
+floor_tile(P["marble1"], P["marble0"], "floor_marble_worn", worn)
+floor_tile(P["marble1"], P["marble0"], "floor_marble_stain", stained)
+floor_tile(P["marble1"], P["marble0"], "floor_marble_moss", moss)
+floor_tile(P["marble1"], P["marble0"], "floor_marble_leaves", leaves)
 floor_tile(P["aegean0"], P["night2"], "water_deep",
            lambda img, d: [img.putpixel((x, y), P["aegean1"]) for x, y in [(8, 7), (9, 7), (20, 5), (21, 5), (14, 10), (15, 10)]])
 floor_tile(P["aegean1"], P["aegean0"], "water_shallow",
@@ -285,28 +336,61 @@ def statue(img, d, w, h):
 prop("statue", 24, 46, statue)
 
 
+def vessel(img, profile, top, bands=(), dots=(), handles=False):
+    """A turned clay pot from a list of half-widths per row (top row first, starting at row
+    `top`): lit from the left with dithered steps between three clay tones, black-figure bands,
+    reserved dots in a band, a lit rim and a dark inner outline so it reads on the floor."""
+    w = img.width
+    cx = w / 2 - 0.5
+    rows = {top + i: hw for i, hw in enumerate(profile)}
+    for y, hw in rows.items():
+        for x in range(w):
+            u = (x - cx) / max(0.5, hw)
+            if abs(u) > 1.0:
+                continue
+            light = -0.35 + (0.12 if (x + y) % 2 else -0.12)
+            dark = 0.45 + (0.12 if (x + y) % 2 else -0.12)
+            c = P["clay2"] if u < light else P["clay1"] if u < dark else P["clay0"]
+            if y - top in bands:
+                c = P["black"]
+                if y - top in dots and x % 3 == 1 and abs(u) < 0.8:
+                    c = P["clay1"]
+            img.putpixel((x, y), c)
+    # the rim: a lit lip on the top row
+    for x in range(w):
+        if img.getpixel((x, top))[3] and x < cx + rows[top] * 0.4:
+            img.putpixel((x, top), P["clay2"])
+    if handles:
+        # Loops from the neck out to the shoulder: lit on the left, black on the right.
+        for side, col in ((-1, P["clay0"]), (1, P["black"])):
+            for dx, dy in ((2, 1), (3, 2), (4, 3), (4, 4), (4, 5), (3, 6)):
+                x = (w // 2 - 1 - dx) if side < 0 else (w // 2 + dx)
+                if 0 <= x < w:
+                    img.putpixel((x, top + dy), col)
+    src = img.copy()
+    for y in range(img.height):
+        for x in range(w):
+            if src.getpixel((x, y))[3] == 0:
+                continue
+            edge = any(not (0 <= x + ox < w and 0 <= y + oy < img.height) or src.getpixel((x + ox, y + oy))[3] == 0
+                       for ox, oy in ((1, 0), (0, 1), (-1, 0)))
+            if edge and y > top:
+                img.putpixel((x, y), P["black"] if x >= cx or y > top + len(profile) - 3 else P["clay0"])
+
+
 def jar(img, d, w, h):
-    cx = w // 2
-    d.ellipse([cx - 8, h - 22, cx + 7, h - 1], fill=P["clay1"])
-    d.ellipse([cx - 8, h - 22, cx - 2, h - 1], fill=P["clay2"])
-    d.ellipse([cx + 2, h - 20, cx + 7, h - 3], fill=P["clay0"])
-    d.rectangle([cx - 4, h - 25, cx + 3, h - 21], fill=P["clay1"])
-    d.rectangle([cx - 5, h - 26, cx + 4, h - 25], fill=P["clay0"])
-    d.line([(cx - 7, h - 14), (cx + 6, h - 14)], fill=P["black"])
+    # A storage pithos: a narrow neck, a broad shoulder and a long taper to a small foot.
+    profile = [5, 5, 4, 4, 5, 6, 7, 7, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7, 6, 6, 6, 5, 5, 4, 4, 3]
+    vessel(img, profile, h - len(profile), bands=(6, 7, 8, 14), dots=(7,))
 
 
 prop("jar", 18, 28, jar)
 
 
 def amphora(img, d, w, h):
-    cx = w // 2
-    d.ellipse([cx - 5, h - 15, cx + 4, h - 3], fill=P["clay1"])
-    d.ellipse([cx - 5, h - 15, cx - 1, h - 3], fill=P["clay2"])
-    d.rectangle([cx - 1, h - 3, cx, h - 1], fill=P["clay0"])
-    d.rectangle([cx - 2, h - 20, cx + 1, h - 14], fill=P["clay1"])
-    d.line([(cx - 4, h - 19), (cx - 5, h - 14)], fill=P["clay0"])
-    d.line([(cx + 3, h - 19), (cx + 4, h - 14)], fill=P["clay0"])
-    d.line([(cx - 4, h - 9), (cx + 3, h - 9)], fill=P["black"])
+    # A neck amphora with two handles, a wide body and a pointed foot.
+    profile = [2, 2, 1, 1, 1, 2, 3, 4, 5, 5, 5, 5, 5, 4, 4, 3, 3, 2, 1, 1]
+    vessel(img, profile, h - len(profile) - 1, bands=(9, 10), dots=(), handles=True)
 
 
 prop("amphora", 12, 21, amphora)

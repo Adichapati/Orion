@@ -171,3 +171,9 @@ the title).
   was a flat white silhouette; it is now a marble hoplite (crested helmet, round shield with a
   lit rim and boss, spear, chiton and belt) lit from the left with a dark outline, on the same
   24×46 canvas and plinth.
+- 2026-10-19: Floors and pots. Four new plain-marble variants (`floor_marble_worn`, `_stain`,
+  `_moss`, `_leaves`) chosen by `Room._plain_floor()`: moss mostly beside walls, leaves only in
+  the open air, and nothing crack-like so cracked slabs still read as the hazard. The pithos and
+  the amphora are redrawn by one `vessel()` painter from a row profile: lit from the left with
+  dithered steps between three clay tones, black-figure bands (the pithos has reserved dots), a
+  lit rim, a dark outline on the shadow side, and proper loop handles on the amphora.

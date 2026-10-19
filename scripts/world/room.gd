@@ -202,7 +202,29 @@ func _build_floor(c: Vector2i) -> void:
 			if not (k in WALKABLE) and _prop_elevated(c):
 				_add_floor_sprite(c, Art.block_sprite("raised"))
 			else:
-				_add_floor_sprite(c, Art.tile_sprite("floor_marble_dark" if _rng.randf() < 0.14 else "floor_marble"))
+				_add_floor_sprite(c, Art.tile_sprite(_plain_floor(c)))
+
+
+## A plain marble slab with some variety: darker slabs, polished and stained ones, moss along
+## the seams (mostly beside walls) and, in the open air, fallen olive leaves.
+func _plain_floor(c: Vector2i) -> String:
+	var by_wall := false
+	for n in [Vector2i(-1, 0), Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1)]:
+		if ch(c + n) in WALLS:
+			by_wall = true
+	var r := _rng.randf()
+	if r < (0.3 if by_wall else 0.03):
+		return "floor_marble_moss"
+	r = _rng.randf()
+	if r < 0.12:
+		return "floor_marble_dark"
+	if r < 0.2:
+		return "floor_marble_worn"
+	if r < 0.26:
+		return "floor_marble_stain"
+	if is_outdoor and r < 0.3:
+		return "floor_marble_leaves"
+	return "floor_marble"
 
 
 func _water(name: String) -> Sprite2D:
