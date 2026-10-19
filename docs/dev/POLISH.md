@@ -188,3 +188,6 @@ the title).
   faint Milky Way band crosses the sky, and the Star Citadel stands black along the bottom
   (walls, crenellated towers, cypresses, the temple on the summit) with vigil lamps flickering on
   the parapet; the controls line sits on the dark ground.
+- 2026-10-19: Death card. A torch above the words gutters and goes out over ~0.9 s, then its
+  ember fades and smoke curls away (drawn in 2× pixels on a layer above the card's backdrop); the
+  line is 3× and the subtitle 2× (it was 1×). New autoshot timeline `death`.

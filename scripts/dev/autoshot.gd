@@ -57,6 +57,11 @@ const SCRIPTS := {
 		[5.4, "call", "next"],
 		[7.2, "shot", "", "intro3"],
 	],
+	"death": [
+		[0.5, "call", "death"],
+		[1.0, "shot", "", "death_a"],
+		[2.2, "shot", "", "death_b"],
+	],
 	"duel": [
 		[0.6, "call", "near_guard"],
 		[0.9, "shot", "", "duel1"],
