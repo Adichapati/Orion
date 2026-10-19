@@ -72,6 +72,21 @@ var life: Life
 var daze: DazeStars
 var _shape: CollisionShape2D
 var _shake_t := 0.0
+## A guard posing as a statue (rooms.json "statue": true): stone-coloured, lantern dark, senses
+## off, but still breathing (the tell). He wakes when Cedalion comes within WAKE_RANGE tiles,
+## when a noise reaches him, when another guard raises the alarm, or when he is struck.
+var dormant := false
+const WAKE_RANGE := 2.6
+const STONE_SHADER := """
+shader_type canvas_item;
+uniform float amount = 1.0;
+void fragment() {
+	vec4 c = texture(TEXTURE, UV) * COLOR;
+	float l = dot(c.rgb, vec3(0.3, 0.59, 0.11));
+	vec3 stone = vec3(0.88, 0.85, 0.78) * (0.62 + l * 0.75);
+	COLOR = vec4(mix(c.rgb, stone, amount), c.a);
+}
+"""
 
 
 ## Reads one guard entry of rooms.json: {id, type, at, face, path}.
@@ -101,6 +116,7 @@ func setup(p_room: Room, entry: Dictionary) -> Guard:
 	if _waypoints.size() > 1 and best < 4.0:
 		_wp = (_wp + 1) % _waypoints.size()
 	_circle_sign = 1.0 if randf() < 0.5 else -1.0
+	dormant = bool(entry.get("statue", false))
 	return self
 
 
@@ -173,6 +189,12 @@ func _ready() -> void:
 		room.cone_layer.add_child(cone)
 	NoiseBus.noise.connect(_on_noise)
 	_floor_pos = global_position
+	if dormant:
+		var stone := ShaderMaterial.new()
+		var sh := Shader.new()
+		sh.code = STONE_SHADER
+		stone.shader = sh
+		sprite.material = stone
 
 
 func _exit_tree() -> void:
@@ -234,6 +256,13 @@ func blocks_attack_from(player_grid: Vector2) -> bool:
 # ============================================================== frame
 
 func _physics_process(delta: float) -> void:
+	if dormant:
+		var p := _player()
+		if p and p.is_targetable() and p.grid_pos().distance_to(grid_pos()) <= WAKE_RANGE:
+			wake(true)
+		else:
+			_update_visuals(delta)
+			return
 	_state_t += delta
 	_cooldown = maxf(0.0, _cooldown - delta)
 	_update_senses(delta)
@@ -338,6 +367,7 @@ func _on_noise(pos: Vector2, radius: float, source: Node) -> void:
 		return
 	if Iso.tiles_between(pos, global_position) > radius:
 		return
+	wake(false)
 	if state == S.ALERT:
 		if source != null and source.is_in_group("player"):
 			_last_known = pos
@@ -351,10 +381,33 @@ func _on_noise(pos: Vector2, radius: float, source: Node) -> void:
 
 ## Another guard shouted: come and look.
 func hear_alarm(pos: Vector2) -> void:
+	wake(false)
 	if state == S.ALERT or not is_hittable() or state in [S.STUNNED, S.SHOVED]:
 		return
 	awareness = maxf(awareness, 45.0)
 	_investigate(pos)
+
+
+## The statue breathes: stone falls away as dust, colour floods back, the lantern lights. Woken by
+## Cedalion himself, he is alert at once.
+func wake(by_player: bool) -> void:
+	if not dormant:
+		return
+	dormant = false
+	if sprite.material is ShaderMaterial:
+		var mat := sprite.material as ShaderMaterial
+		var tw := create_tween()
+		tw.tween_method(func(v: float): mat.set_shader_parameter("amount", v), 1.0, 0.0, 0.45)
+		tw.tween_callback(func(): sprite.material = null)
+	if room:
+		Fx.dust(room.world, global_position + Vector2(0, -elev - 12), 10, 12.0)
+	Sfx.play("crumble", global_position, -4.0, 0.05, 0.75)
+	life.squash(Vector2(1.18, 0.86))
+	_shake_t = 0.25
+	var p := _player()
+	if by_player and p:
+		awareness = ALERT_AT
+		_enter_alert(p.global_position)
 
 
 func _investigate(pos: Vector2) -> void:
@@ -668,6 +721,7 @@ func _stunned(delta: float) -> void:
 
 ## `force` scales the knockback (ripostes, backstabs and combo finishers hit harder).
 func take_damage(dmg: int, from_screen_pos: Vector2, force := 1.0) -> void:
+	wake(false)
 	if not is_hittable():
 		return
 	hp -= dmg
@@ -851,6 +905,12 @@ func _update_visuals(delta: float) -> void:
 	meter.visible = awareness > 0.5 and state != S.ALERT
 	meter.queue_redraw()
 	_update_cone()
+	if dormant:
+		lantern.energy = 0.0
+		_glow.energy = 0.0
+		cone.polygon = PackedVector2Array()
+		meter.visible = false
+		mark.visible = false
 
 
 func _update_cone() -> void:

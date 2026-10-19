@@ -223,3 +223,13 @@ the title).
   up in `Room._show_noise()`): faint for walking (2 tiles), clear for running (5), strong for
   pots, clashes and knucklebones. Sneaking and fountain-masked steps make none, so their silence
   shows. Guards' own shouts are not drawn. New autoshot timeline `noise`.
+- 2026-10-19: The living statue. The statue court's objective says "One of the stone men
+  breathes" and the GDD describes a Hoplite hiding among the statues, but there was none. Now a
+  guard entry can say `"statue": true`: he stands stone-coloured (a desaturating shader), lantern
+  and cone dark, senses off, and only his breathing gives him away. He wakes when Cedalion comes
+  within 2.6 tiles (alert at once), when a noise reaches him or another guard shouts (he goes to
+  look), or when struck (so a sharp-eyed player can backstab him first); stone falls off as dust
+  with a low crumble and the colour floods back over 0.45 s. The statue court has one, a
+  Hoplite at (11, 4) beside the statue by the main stairs: the right-hand "trick" route passes
+  within reach and wakes him, the quiet left-hand steps don't. Test: a statue guard ignores
+  Cedalion in plain view 4 tiles away and wakes, alert, within reach. Autoshot timeline `statue`.

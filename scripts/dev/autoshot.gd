@@ -80,6 +80,13 @@ const SCRIPTS := {
 		[1.9, "tap", "attack"],
 		[2.0, "shot", "", "swing"],
 	],
+	"statue": [
+		[0.6, "call", "near_statue"],
+		[1.2, "shot", "", "stone"],
+		[1.3, "call", "wake_statue"],
+		[1.45, "shot", "", "waking"],
+		[2.2, "shot", "", "awake"],
+	],
 	"duel": [
 		[0.6, "call", "near_guard"],
 		[0.9, "shot", "", "duel1"],
@@ -170,6 +177,14 @@ func _run(e: Array) -> void:
 						c._advance()
 			elif e[2] == "audio":
 				print("autoshot audio: ambience '%s' playing=%s vol=%.1f dB, music playing=%s" % [Sfx._ambience_name, Sfx._ambience.playing, Sfx._ambience.volume_db, Sfx._explore.playing])
+			elif e[2] in ["near_statue", "wake_statue"] and main.room:
+				# Stand Cedalion 4 tiles (or 2, to wake him) in front of the first statue guard.
+				for g in main.room.guards:
+					if g.dormant:
+						var dist := 4.0 if e[2] == "near_statue" else 2.0
+						main.player.global_position = g.global_position + Iso.grid_to_screen(Vector2(0, 1) * dist + Vector2(-1, 0))
+						main.player.camera.reset_smoothing()
+						break
 			elif e[2] == "begin":
 				main.start_run()
 			elif e[2] == "end":

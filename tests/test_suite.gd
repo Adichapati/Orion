@@ -16,6 +16,7 @@ func run() -> void:
 	await test_rooms_build_and_connect()
 	await test_guard_sees_player()
 	await test_noise_makes_guard_suspicious()
+	await test_statue_guard_wakes()
 	await test_cracked_marble_collapses()
 	await test_shove_into_pit()
 	await test_duel_parry_and_hit()
@@ -218,6 +219,20 @@ func test_noise_makes_guard_suspicious() -> void:
 	NoiseBus.emit_noise(r.cell_center(Vector2i(2, 3)), 4.0, null)
 	await get_tree().physics_frame
 	check(g.state == Guard.S.PATROL, "a noise beyond its radius goes unheard")
+	_free_room(r)
+
+
+func test_statue_guard_wakes() -> void:
+	print("Statue guard")
+	var r := _open_room([{"id": "h", "type": "hoplite", "statue": true, "at": [3, 2], "face": [1, 0], "path": [[3, 2]]}])
+	r.spawn_guards()
+	var p := _add_player(r, Vector2i(7, 2))
+	var g: Guard = r.guards[0]
+	await _seconds(1.5)
+	check(g.dormant and g.awareness == 0.0, "a statue guard ignores Cedalion in plain view 4 tiles away")
+	p.position = r.cell_center(Vector2i(5, 2))
+	await _seconds(0.3)
+	check(not g.dormant and g.is_alert(), "...and wakes, alert, when he comes within reach")
 	_free_room(r)
 
 
