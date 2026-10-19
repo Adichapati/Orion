@@ -246,3 +246,7 @@ the title).
   (`Atmosphere.vignette_texture(true)`) that fades in as the most aware guard nears alert (from
   30% awareness, up to 35% opacity) and pulses slowly while a guard is hunting you, then lingers
   a little as it fades (`Room.set_danger()`, driven from `main._process` with the music tension).
+- 2026-10-19: Taking the Belt Star is now a beat: a 0.12 s freeze, a blue-white light burst that
+  swells and fades over a second, strong sparks and a ring, a camera shake and zoom punch, then
+  the star (unshaded) lifts off the altar and flies into Cedalion's hands while time runs at 40%
+  for 0.6 s (`Room._star_taken_fx()`). The escape starts as before. Autoshot timeline `star`.

@@ -386,9 +386,38 @@ func _build_solid(c: Vector2i) -> void:
 			interactables.append(take)
 			take.used.connect(func(_p):
 				take.enabled = false
-				star.queue_free()
 				glow.energy = 0.3
+				_star_taken_fx(star)
 				_begin_escape())
+
+
+## The climax beat: a frozen instant, a blue-white burst of light and sparks, then the star
+## floats into Cedalion's hands while time runs slow for a breath.
+func _star_taken_fx(star: Sprite2D) -> void:
+	var at := star.global_position
+	var burst := _add_light(world, at, Color(0.7, 0.82, 1.0), 3.0, 60.0)
+	var tw := burst.create_tween().set_parallel()
+	tw.tween_property(burst, "energy", 0.0, 1.1).set_ease(Tween.EASE_OUT)
+	tw.tween_property(burst, "texture_scale", burst.texture_scale * 3.0, 1.1).set_ease(Tween.EASE_OUT)
+	tw.chain().tween_callback(burst.queue_free)
+	Fx.sparks(world, at, 18, true)
+	Fx.ring(world, at, Color(0.7, 0.85, 1.0))
+	ShakeCamera.add_trauma(0.45)
+	ShakeCamera.punch(0.1, 0.5)
+	var mat := CanvasItemMaterial.new()
+	mat.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+	star.material = mat
+	if player and is_instance_valid(player):
+		var to: Vector2 = player.global_position + Vector2(0, -18)
+		var st := star.create_tween()
+		st.tween_property(star, "global_position", at + Vector2(0, -10), 0.25).set_ease(Tween.EASE_OUT)
+		st.tween_property(star, "global_position", to, 0.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		st.parallel().tween_property(star, "scale", Vector2(0.4, 0.4), 0.4)
+		st.tween_callback(star.queue_free)
+	else:
+		star.queue_free()
+	await Juice.freeze(get_tree(), 0.12)
+	Juice.slowmo(get_tree(), 0.6, 0.4)
 
 
 func _add_light(parent: Node2D, pos: Vector2, color: Color, energy: float, radius_px: float) -> PointLight2D:

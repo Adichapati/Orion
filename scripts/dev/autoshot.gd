@@ -87,6 +87,12 @@ const SCRIPTS := {
 		[1.45, "shot", "", "waking"],
 		[2.2, "shot", "", "awake"],
 	],
+	"star": [
+		[0.6, "call", "take_star"],
+		[0.75, "shot", "", "burst"],
+		[0.95, "shot", "", "floating"],
+		[2.4, "shot", "", "escape"],
+	],
 	"duel": [
 		[0.6, "call", "near_guard"],
 		[0.9, "shot", "", "duel1"],
@@ -185,6 +191,13 @@ func _run(e: Array) -> void:
 						main.player.global_position = g.global_position + Iso.grid_to_screen(Vector2(0, 1) * dist + Vector2(-1, 0))
 						main.player.camera.reset_smoothing()
 						break
+			elif e[2] == "take_star" and main.room:
+				# Stand Cedalion by the altar and take the Belt Star.
+				for it in main.room.interactables:
+					if is_instance_valid(it) and it.verb.begins_with("Take the Belt"):
+						main.player.global_position = it.global_position + Iso.grid_to_screen(Vector2(0, 1.2))
+						main.player.camera.reset_smoothing()
+						it.used.emit(main.player)
 			elif e[2] == "begin":
 				main.start_run()
 			elif e[2] == "end":
