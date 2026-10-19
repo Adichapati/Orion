@@ -131,3 +131,8 @@ the title).
   read as holes and raised floor had no visible side. It is now a blue-grey stone (#5a576b), and
   raised floor has a lighter marble top (Marble 2) than the floor below. Regenerated
   `art/greybox/` with `tools/gen_greybox.py`.
+- 2026-10-19 06:10: Second session started (usage 1%). Light blowout: where a moonlight pool,
+  Cedalion's torch and a guard's lantern met (colonnade), the marble clipped to white. The torch
+  now eases off by up to 60% inside a moonlight pool (`Room.moon_pools`), and a guard's lantern
+  and glow dim by up to 45% and 60% when Cedalion is within a few tiles. The spot reads pink-warm
+  instead of white.

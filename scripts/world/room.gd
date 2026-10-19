@@ -58,6 +58,8 @@ var _escape_clock := 0.0
 var _altar_cell := Vector2i(-1, -1)
 var _floor_sprites := {}
 var _rng := RandomNumberGenerator.new()
+## Moonlight pools as (x, y, radius in px), so the torch can ease off inside them.
+var moon_pools: Array[Vector3] = []
 var _ambient: CanvasModulate
 var _ambient_base := Color.WHITE
 
@@ -450,6 +452,7 @@ func _build_moonlight() -> void:
 			add_child(holder)
 			var l := _add_light(holder, Vector2.ZERO, Color(0.55, 0.68, 1.0), 0.9, 22.0 + 12.0 * sqrt(group.size()))
 			l.scale = Vector2(1.0, 0.5)
+			moon_pools.append(Vector3(centre.x, centre.y, 22.0 + 12.0 * sqrt(group.size())))
 			var r := sqrt(group.size()) * 9.0
 			var dust := Atmosphere.motes(Vector2(r, r * 0.5 + 6.0), 4 + group.size())
 			dust.position = Vector2(0, -10)
