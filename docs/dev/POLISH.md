@@ -303,3 +303,5 @@ a parry bell and an alert stinger.
   and vanish completely. Now, while a wall drawn in front of him covers his body
   (`Room.wall_covers()`), a faint unshaded blue outline of him is drawn over everything (the
   player's `_ghost` sprite), the usual isometric fix. Checked in four rooms for false positives.
+- 2026-10-19: Guards get the same treatment: a faint red outline while a wall hides them (not
+  while posing as a statue or knocked out), so a guard behind a wall is never invisible.

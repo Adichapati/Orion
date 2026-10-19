@@ -72,6 +72,7 @@ var life: Life
 var daze: DazeStars
 var _shape: CollisionShape2D
 var _shake_t := 0.0
+var _ghost: Sprite2D
 ## A guard posing as a statue (rooms.json "statue": true): stone-coloured, lantern dark, senses
 ## off, but still breathing (the tell). He wakes when Cedalion comes within WAKE_RANGE tiles,
 ## when a noise reaches him, when another guard raises the alarm, or when he is struck.
@@ -134,6 +135,16 @@ func _ready() -> void:
 	body_node = Node2D.new()
 	add_child(body_node)
 	sprite = Art.feet_sprite(type.sprite_se)
+	# A faint red outline drawn over everything while a wall hides him, so a guard behind a wall
+	# is never invisible.
+	_ghost = Sprite2D.new()
+	_ghost.z_as_relative = false
+	_ghost.z_index = 89
+	_ghost.centered = false
+	_ghost.modulate = Color(1.0, 0.55, 0.5, 0.35)
+	_ghost.material = Atmosphere.unshaded()
+	_ghost.visible = false
+	sprite.add_child(_ghost)
 	body_node.add_child(sprite)
 	var h := sprite.texture.get_height() if sprite.texture else 40
 	life = Life.new()
@@ -881,6 +892,11 @@ func _update_visuals(delta: float) -> void:
 	var lc := type.lantern_color.lerp(Color(1.0, 0.28, 0.22), 0.6) if state == S.ALERT else type.lantern_color
 	lantern.color = lantern.color.lerp(lc, clampf(delta * 6.0, 0.0, 1.0))
 
+	_ghost.visible = room != null and state != S.KO and not dormant and room.wall_covers(global_position + Vector2(0, -elev), 30.0)
+	if _ghost.visible:
+		_ghost.texture = sprite.texture
+		_ghost.flip_h = sprite.flip_h
+		_ghost.offset = sprite.offset
 	var side := -1.0 if sprite.flip_h else 1.0
 	glint.position = Vector2(8.0 * side, -22.0 + sin(_phase_t * 30.0))
 	glint.scale = Vector2.ONE * (1.0 + 0.3 * clampf(_phase_t / maxf(0.01, _attack.windup if _attack else 1.0), 0.0, 1.0))
