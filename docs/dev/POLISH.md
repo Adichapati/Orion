@@ -165,3 +165,9 @@ the title).
   (too early) and 0.45 s (too late) miss. In that harness, the effective band is roughly 0.18–0.28
   s after the flash; widen it with the weapon's `parry_window` if playtesters miss a lot. New
   autoshot timeline `flash` shoots the flare and the strike.
+- 2026-10-19: Greybox art. Cracked marble read as scattered black music notes; `crack()` now
+  draws one jagged crack along the floor's diagonal with branches, a dark core, a broken lit
+  lower lip and a shadowed upper edge, and the third variant has a chipped-out flake. The statue
+  was a flat white silhouette; it is now a marble hoplite (crested helmet, round shield with a
+  lit rim and boss, spear, chiton and belt) lit from the left with a dark outline, on the same
+  24×46 canvas and plinth.

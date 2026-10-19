@@ -80,14 +80,50 @@ def block(name, h, top, left, right, edge=None, top_extra=None, side_extra=None)
 
 
 def crack(img, seed, n=2):
+    """A jagged crack across the slab: a dark core with a lit lower lip and a shadowed upper one,
+    a branch or two, and on the worst slabs a chipped-out flake."""
     rnd = random.Random(seed)
-    for _ in range(n):
-        x, y = rnd.randint(8, 22), rnd.randint(4, 10)
-        for _ in range(rnd.randint(5, 9)):
-            if 0 < x < 31 and 0 < y < 15 and img.getpixel((x, y))[3] > 0:
+    core, lip, shade = hexc("4a4540"), P["marble2"], P["marble0"]
+
+    def inside(x, y):
+        return 1 < x < 30 and 1 < y < 14 and img.getpixel((x, y))[3] > 0 and img.getpixel((x, y))[:3] != shade[:3]
+
+    def walk(x, y, dx, steps, slope):
+        """Steps along x, drifting on the floor's diagonal (slope ±0.5) with a little jitter."""
+        pts, fy, j = [], float(y), 0
+        for _ in range(steps):
+            pts.append((x, int(round(fy)) + j))
+            x += dx
+            fy += slope * dx
+            if rnd.random() < 0.3:
+                j = max(-1, min(1, j + rnd.choice([-1, 1])))
+        return pts
+
+    slope = rnd.choice([-0.5, 0.5])
+    x0 = rnd.randint(7, 10)
+    y0 = 10 if slope < 0 else 4
+    main = walk(x0, y0 + rnd.randint(-1, 1), 1, rnd.randint(12, 15), slope)
+    lines = [main]
+    for _ in range(n - 1):
+        bx, by = main[rnd.randint(3, len(main) - 3)]
+        lines.append(walk(bx, by, rnd.choice([-1, 1]), rnd.randint(3, 5), -slope))
+    for pts in lines:
+        for x, y in pts:
+            if inside(x, y + 1) and rnd.random() < 0.45:
+                img.putpixel((x, y + 1), lip)
+            if inside(x, y - 1) and rnd.random() < 0.3:
+                img.putpixel((x, y - 1), shade)
+        for x, y in pts:
+            if inside(x, y):
+                img.putpixel((x, y), core)
+    if n >= 4:  # a flake has come away
+        fx, fy = main[len(main) // 2]
+        for x, y in [(fx - 1, fy), (fx, fy), (fx + 1, fy), (fx, fy + 1), (fx + 1, fy + 1)]:
+            if inside(x, y):
                 img.putpixel((x, y), P["night1"])
-            x += rnd.choice([-1, 1, 1])
-            y += rnd.choice([-1, 0, 1])
+        for x, y in [(fx - 1, fy + 1), (fx + 2, fy + 1), (fx, fy + 2), (fx + 1, fy + 2)]:
+            if inside(x, y):
+                img.putpixel((x, y), lip)
 
 
 # ---------------------------------------------------------------- floors
@@ -95,7 +131,7 @@ floor_tile(P["marble1"], P["marble0"], "floor_marble")
 floor_tile(P["marble2"], P["marble1"], "floor_moon")
 floor_tile(hexc("a8a093"), P["marble0"], "floor_marble_dark")
 for i in range(3):
-    floor_tile(P["marble1"], P["marble0"], f"floor_cracked_{i}", lambda img, d, s=i: crack(img, 11 + s, 2 + s))
+    floor_tile(P["marble1"], P["marble0"], f"floor_cracked_{i}", lambda img, d, s=i: crack(img, 21 + s, 2 + s))
 floor_tile(P["clay2"], P["clay1"], "floor_door")
 floor_tile(P["aegean0"], P["night2"], "water_deep",
            lambda img, d: [img.putpixel((x, y), P["aegean1"]) for x, y in [(8, 7), (9, 7), (20, 5), (21, 5), (14, 10), (15, 10)]])
@@ -189,18 +225,61 @@ prop("column", 16, 60, column)
 
 
 def statue(img, d, w, h):
+    """A marble hoplite on a plinth: helmet and crest, round shield on his left arm, spear upright
+    in his right. Lit from the left like everything else, with a dark outline so he reads on
+    marble floors."""
     cx = w // 2
     # plinth
     d.rectangle([cx - 8, h - 12, cx + 7, h - 3], fill=WALL_L)
     d.rectangle([cx, h - 12, cx + 7, h - 3], fill=WALL_R)
     diamond(d, cx - 8, h - 16, P["marble1"], 16, 8)
-    # figure (a robed hero, marble)
-    m, s = P["marble2"], P["marble1"]
-    d.rectangle([cx - 4, h - 34, cx + 3, h - 14], fill=m)
-    d.rectangle([cx + 1, h - 34, cx + 3, h - 14], fill=s)
-    d.ellipse([cx - 3, h - 41, cx + 2, h - 35], fill=m)
-    d.line([(cx - 5, h - 32), (cx - 7, h - 22)], fill=s)
-    d.line([(cx + 4, h - 32), (cx + 6, h - 40)], fill=m)  # raised arm
+    fig = Image.new("RGBA", (w, h), CLEAR)
+    f = ImageDraw.Draw(fig)
+    L, M, D = P["marble2"], P["marble1"], P["marble0"]
+    base = h - 13  # feet on the plinth top
+    # spear behind everything, in his right hand (screen right)
+    f.line([(cx + 6, base - 33), (cx + 6, base)], fill=D)
+    f.point((cx + 6, base - 34), fill=M)
+    # legs
+    f.rectangle([cx - 3, base - 9, cx - 2, base - 1], fill=L)
+    f.rectangle([cx + 1, base - 9, cx + 2, base - 1], fill=M)
+    f.point((cx + 2, base - 1), fill=D)
+    # skirt of the chiton
+    f.polygon([(cx - 4, base - 9), (cx + 3, base - 9), (cx + 4, base - 12), (cx - 4, base - 12)], fill=L)
+    f.line([(cx + 2, base - 9), (cx + 3, base - 12)], fill=D)
+    # torso
+    f.rectangle([cx - 4, base - 21, cx + 3, base - 12], fill=L)
+    f.rectangle([cx + 1, base - 21, cx + 3, base - 12], fill=M)
+    f.line([(cx + 3, base - 21), (cx + 3, base - 12)], fill=D)
+    f.line([(cx - 3, base - 15), (cx + 2, base - 15)], fill=M)  # belt
+    # right arm up to the spear
+    f.line([(cx + 4, base - 20), (cx + 5, base - 16)], fill=M)
+    f.point((cx + 5, base - 17), fill=L)
+    # head and helmet with a crest
+    f.rectangle([cx - 2, base - 26, cx + 2, base - 22], fill=L)
+    f.rectangle([cx + 1, base - 26, cx + 2, base - 22], fill=M)
+    f.point((cx - 1, base - 24), fill=D)  # eye slit
+    f.line([(cx - 2, base - 27), (cx + 2, base - 27)], fill=L)
+    f.line([(cx - 3, base - 29), (cx + 1, base - 30)], fill=M)
+    f.line([(cx - 2, base - 28), (cx + 2, base - 29)], fill=L)
+    # round shield on his left arm (screen left), a lit rim and a boss
+    f.ellipse([cx - 10, base - 22, cx - 1, base - 12], fill=M)
+    f.arc([cx - 10, base - 22, cx - 1, base - 12], 150, 300, fill=L)
+    f.arc([cx - 10, base - 22, cx - 1, base - 12], 330, 120, fill=D)
+    f.point((cx - 6, base - 17), fill=L)
+    f.point((cx - 5, base - 17), fill=D)
+    # outline
+    ink = hexc("3b3742")
+    src = fig.copy()
+    for y in range(h):
+        for x in range(w):
+            if src.getpixel((x, y))[3] == 0:
+                for ox, oy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = x + ox, y + oy
+                    if 0 <= nx < w and 0 <= ny < h and src.getpixel((nx, ny))[3] > 0 and y < base:
+                        fig.putpixel((x, y), ink)
+                        break
+    img.alpha_composite(fig)
 
 
 prop("statue", 24, 46, statue)
