@@ -300,6 +300,37 @@ def lion_gate():
 
 
 lion_gate()
+
+
+# The Brotherhood's mark: a red scorpion daubed over a scratched-out star fresco, sheared onto a
+# wall's lit (left) face like the gate. The game mirrors it for right faces.
+SCORPION = [
+    "r..r....r..r",
+    ".rr..s...rr.",
+    "..r.rrrr.r..",
+    ".s..rrrr..s.",
+    "...rrrrrr...",
+    "..s.rrrr.s..",
+    ".....rr.....",
+    "....s.rr....",
+    ".......r.r..",
+    "....d...rr..",
+    "........d...",
+]
+
+
+def wall_scorpion():
+    W, H = len(SCORPION[0]), len(SCORPION)
+    out = Image.new("RGBA", (W, H + W // 2 + 1), CLEAR)
+    cols = {"r": P["scorp1"], "d": P["scorp0"], "s": hexc("c9c2b2")}
+    for y, row in enumerate(SCORPION):
+        for x, ch in enumerate(row):
+            if ch != ".":
+                out.putpixel((x, y + x // 2), cols[ch])
+    save(out, "wall_scorpion")
+
+
+wall_scorpion()
 # Raised floor (the portico): a lighter top than the floor below, so the level change reads.
 block("raised", 16, P["marble2"], WALL_L, WALL_R, EDGE)
 

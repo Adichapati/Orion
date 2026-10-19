@@ -121,6 +121,7 @@ func build(room_data: Dictionary) -> void:
 	player_spawn = _step_inside(player_spawn)
 	checkpoint = player_spawn
 	_place_vigil_lamps()
+	_paint_scorpions()
 	Atmosphere.dress(self, id)
 	NoiseBus.noise.connect(_show_noise)
 
@@ -548,6 +549,49 @@ func _place_vigil_lamps() -> void:
 		curl.position = Vector2(3 if not lamp.flip_h else -3, -4)
 		holder.add_child(curl)
 		world.add_child(holder)
+
+
+## The Brotherhood's mark: red scorpions daubed over scratched-out star frescoes on up to two tall
+## wall faces the player can see (a left face above open floor, or a right face beside it).
+func _paint_scorpions() -> void:
+	var faces: Array = []
+	for y in size.y:
+		for x in size.x:
+			var c := Vector2i(x, y)
+			if not (ch(c) in ["#", "L"]) or not _wall_is_tall(c):
+				continue
+			var below := ch(c + Vector2i(0, 1))
+			var beside := ch(c + Vector2i(1, 0))
+			if below != "" and below in WALKABLE:
+				faces.append([c, false])
+			elif beside != "" and beside in WALKABLE:
+				faces.append([c, true])
+	for i in range(faces.size() - 1, 0, -1):
+		var j := _rng.randi_range(0, i)
+		var tmp = faces[i]
+		faces[i] = faces[j]
+		faces[j] = tmp
+	for k in mini(2, faces.size()):
+		var c: Vector2i = faces[k][0]
+		var right: bool = faces[k][1]
+		var mark := Sprite2D.new()
+		mark.texture = Art.tex("wall_scorpion")
+		mark.centered = false
+		mark.flip_h = right
+		# Top-left of the sheared decal on the face, about 24 px above the ground.
+		mark.position = cell_center(c) + (Vector2(2, -22) if right else Vector2(-14, -23))
+		mark.z_index = 1
+		var body := _body_at(c)
+		if body:
+			body.add_child(mark)
+			mark.position -= body.position
+
+
+func _body_at(c: Vector2i) -> Node2D:
+	for n in world.get_children():
+		if n is StaticBody2D and n.get_meta("cell", Vector2i(-1, -1)) == c:
+			return n
+	return null
 
 
 ## Noise spreads as rings (the design doc): the player's and the world's noises are drawn; the

@@ -238,3 +238,7 @@ the title).
   (`Atmosphere.smoke()`, faint and unshaded so it shows in the dark), echoing the intro card
   where the Brotherhood puts the vigil out. Decorative only (no collision), placed by the room's
   seeded RNG on plain floor away from the entrance.
+- 2026-10-19: Story props: the Brotherhood's mark. Up to two tall wall faces per room carry a red
+  scorpion daubed over a scratched-out star fresco (`wall_scorpion`, drawn and sheared onto the
+  lit face in `tools/gen_greybox.py`; mirrored in game for right faces), as the GDD's story-prop
+  list asks. `Room._paint_scorpions()` picks faces the player can see with the seeded RNG.
