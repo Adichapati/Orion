@@ -120,6 +120,7 @@ func build(room_data: Dictionary) -> void:
 	rebuild_paths()
 	player_spawn = _step_inside(player_spawn)
 	checkpoint = player_spawn
+	_place_vigil_lamps()
 	Atmosphere.dress(self, id)
 	NoiseBus.noise.connect(_show_noise)
 
@@ -517,6 +518,36 @@ func _build_moonlight() -> void:
 			var dust := Atmosphere.motes(Vector2(r, r * 0.5 + 6.0), 4 + group.size())
 			dust.position = Vector2(0, -10)
 			holder.add_child(dust)
+
+
+## The vigil the Brotherhood snuffed: a few clay lamps along the walls, still smoking. Purely
+## decorative (no collision), placed by the room's seeded RNG on plain floor beside a wall.
+func _place_vigil_lamps() -> void:
+	var spots: Array[Vector2i] = []
+	for y in size.y:
+		for x in size.x:
+			var c := Vector2i(x, y)
+			if ch(c) != "." or Vector2(c).distance_to(Vector2(player_spawn)) < 3.0:
+				continue
+			for n in [Vector2i(-1, 0), Vector2i(0, -1)]:
+				if ch(c + n) in WALLS:
+					spots.append(c)
+					break
+	for i in range(spots.size() - 1, 0, -1):
+		var j := _rng.randi_range(0, i)
+		var tmp := spots[i]
+		spots[i] = spots[j]
+		spots[j] = tmp
+	for k in mini(3, spots.size()):
+		var holder := Node2D.new()
+		holder.position = cell_center(spots[k]) + Vector2(_rng.randf_range(-5, 5), _rng.randf_range(-6, -2)).round()
+		var lamp := Art.feet_sprite("vigil_lamp")
+		lamp.flip_h = _rng.randf() < 0.5
+		holder.add_child(lamp)
+		var curl := Atmosphere.smoke()
+		curl.position = Vector2(3 if not lamp.flip_h else -3, -4)
+		holder.add_child(curl)
+		world.add_child(holder)
 
 
 ## Noise spreads as rings (the design doc): the player's and the world's noises are drawn; the

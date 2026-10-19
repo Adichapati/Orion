@@ -128,6 +128,35 @@ static func motes(extent: Vector2, amount := 8) -> CPUParticles2D:
 	return p
 
 
+## A thin curl of smoke from a lamp that has just been put out.
+static func smoke() -> CPUParticles2D:
+	var p := CPUParticles2D.new()
+	p.texture = dot()
+	# Unshaded but faint, so it reads in the dark the way smoke catches what little light there is.
+	p.material = unshaded()
+	p.scale_amount_min = 1.0
+	p.scale_amount_max = 2.0
+	p.amount = 8
+	p.lifetime = 2.6
+	p.preprocess = 2.6
+	p.local_coords = false
+	p.direction = Vector2(0, -1)
+	p.spread = 8.0
+	p.gravity = Vector2(0.6, -4.0)
+	p.initial_velocity_min = 3.0
+	p.initial_velocity_max = 5.0
+	p.tangential_accel_min = -2.0
+	p.tangential_accel_max = 2.0
+	var g := Gradient.new()
+	g.set_color(0, Color(0.75, 0.74, 0.8, 0.0))
+	g.set_color(1, Color(0.6, 0.6, 0.68, 0.0))
+	g.add_point(0.15, Color(0.7, 0.7, 0.78, 0.4))
+	g.add_point(0.6, Color(0.55, 0.55, 0.65, 0.18))
+	p.color_ramp = g
+	p.z_index = 25
+	return p
+
+
 ## A shared material that runs slow glints across water tiles (in screen pixels, so it lines up
 ## across neighbouring tiles).
 static func water_material() -> ShaderMaterial:

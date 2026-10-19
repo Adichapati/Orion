@@ -233,3 +233,8 @@ the title).
   Hoplite at (11, 4) beside the statue by the main stairs: the right-hand "trick" route passes
   within reach and wakes him, the quiet left-hand steps don't. Test: a statue guard ignores
   Cedalion in plain view 4 tiles away and wakes, alert, within reach. Autoshot timeline `statue`.
+- 2026-10-19: Story props: the snuffed vigil. Up to three small clay oil lamps (`vigil_lamp`)
+  sit at the foot of the back walls in every room, each with a thin curl of smoke
+  (`Atmosphere.smoke()`, faint and unshaded so it shows in the dark), echoing the intro card
+  where the Brotherhood puts the vigil out. Decorative only (no collision), placed by the room's
+  seeded RNG on plain floor away from the entrance.

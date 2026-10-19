@@ -459,6 +459,22 @@ def amphora(img, d, w, h):
 prop("amphora", 12, 21, amphora)
 
 
+def vigil_lamp(img, d, w, h):
+    """A snuffed clay oil lamp from the vigil: body, spout and handle, a dark wick hole."""
+    body, light, dark = P["clay1"], P["clay2"], P["clay0"]
+    d.rectangle([1, h - 3, w - 3, h - 1], fill=body)
+    d.rectangle([2, h - 4, w - 4, h - 4], fill=light)
+    d.rectangle([w - 3, h - 3, w - 1, h - 2], fill=body)
+    d.point((w - 1, h - 3), fill=P["black"])
+    d.point((0, h - 4), fill=dark)
+    d.point((0, h - 3), fill=dark)
+    d.point((4, h - 4), fill=P["black"])
+    d.line([(1, h - 1), (w - 3, h - 1)], fill=dark)
+
+
+prop("vigil_lamp", 9, 5, vigil_lamp)
+
+
 def shards(img, d, w, h):
     for x, y, c in [(2, 6, "clay1"), (5, 7, "clay0"), (9, 5, "clay2"), (11, 7, "clay1"), (7, 4, "clay1"), (13, 6, "clay0")]:
         d.rectangle([x, y, x + 1, y + 1], fill=P[c])
