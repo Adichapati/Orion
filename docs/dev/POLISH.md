@@ -250,3 +250,6 @@ the title).
   swells and fades over a second, strong sparks and a ring, a camera shake and zoom punch, then
   the star (unshaded) lifts off the altar and flies into Cedalion's hands while time runs at 40%
   for 0.6 s (`Room._star_taken_fx()`). The escape starts as before. Autoshot timeline `star`.
+  (Fix-up: the star beat's freeze and slow motion delay the first collapse by ~0.5 s of real
+  time, so the play-through test now waits 3.2 s for the ring to start falling; the previous
+  commit went in with that one test failing.)

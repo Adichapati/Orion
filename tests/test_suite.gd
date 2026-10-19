@@ -387,7 +387,9 @@ func test_playthrough() -> void:
 			check(main.room == r, "the shrine door stays sealed before the star is taken")
 			_door(r, "Take the Belt Star").use(main.player)
 			check(not r.exit_locked, "taking the Belt Star unseals the door")
-			await _seconds(2.6)
+			# The ring arms 2 s of game time after the star is taken; the star beat's freeze and slow
+			# motion stretch that by about half a second of real time.
+			await _seconds(3.2)
 			check(r._collapsed.size() > 0, "...and the cracked ring starts to fall")
 		var exit := _door(r, "Enter")
 		check(exit != null, "%s has a usable exit" % r.id)
