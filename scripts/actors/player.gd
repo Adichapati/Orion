@@ -654,11 +654,7 @@ func _update_visuals(delta: float) -> void:
 	_noise_t += delta
 	var n := _flicker.get_noise_1d(_noise_t * 60.0)
 	# Lights add up and marble clips to white, so the torch eases off in a moonlight pool.
-	var moon := 0.0
-	if room:
-		for m in room.moon_pools:
-			var d := (global_position - Vector2(m.x, m.y)) * Vector2(1.0, 2.0)
-			moon = maxf(moon, 1.0 - smoothstep(m.z * 0.5, m.z * 1.4, d.length()))
+	var moon: float = room.moonlight_at(global_position) if room else 0.0
 	torch.energy = (1.05 + n * 0.09) * (1.0 - 0.6 * moon)
 	torch.texture_scale = TORCH_RADIUS / 64.0 * (1.0 + n * 0.04)
 

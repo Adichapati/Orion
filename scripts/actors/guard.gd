@@ -813,7 +813,8 @@ func _update_visuals(delta: float) -> void:
 	var pl := _player()
 	if pl:
 		near = 1.0 - smoothstep(1.5, 5.0, Iso.screen_to_grid(pl.global_position).distance_to(Iso.screen_to_grid(global_position)))
-	lantern.energy = (0.9 if state != S.STUNNED else 0.45) * (1.0 - 0.45 * near)
+	var moon: float = room.moonlight_at(global_position) if room else 0.0
+	lantern.energy = (0.9 if state != S.STUNNED else 0.45) * (1.0 - 0.45 * maxf(near, moon))
 	_glow.energy = 0.7 * (1.0 - 0.6 * near)
 	# Red is the enemy: an alert guard's lantern burns red.
 	var lc := type.lantern_color.lerp(Color(1.0, 0.28, 0.22), 0.6) if state == S.ALERT else type.lantern_color

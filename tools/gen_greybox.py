@@ -419,6 +419,49 @@ icon("glyph_hand", 7, 7, lambda img, d, w, h: (d.rectangle([1, 2, 5, 6], outline
 icon("glyph_star", 9, 9, lambda img, d, w, h: star_shape(d, 4, 4.5, 4.4, P["moon1"]))
 
 
+# Shop item icons, 12x12, drawn pixel by pixel.
+GRID_COLOURS = {"k": "black", "s": "silver", "S": "moon1", "b": "bronze", "g": "gold", "l": "leather",
+                "w": "marble2", "m": "marble1", "r": "scorp1", "R": "scorp0", "o": "olive1"}
+ITEM_ICONS = {
+    "item_dagger": [
+        "..........kk", ".........ksk", "........kSk.", ".......kSk..", "......kSk...", ".....kSk....",
+        "..g.kSk.....", "...gbk......", "...kbg......", "..klk.g.....", ".klk........", ".kk.........",
+    ],
+    "item_kopis": [
+        ".......kkk..", ".....kkSsk..", "....kSssk...", "...kSssk....", "..kSssk.....", "..kSsk......",
+        ".gkSk.......", "..gbk.......", "..kbgg......", ".klk........", "klk.........", "kk..........",
+    ],
+    "item_xiphos": [
+        "..........kk", ".........kSk", "........kSsk", ".......kSsk.", "......kSsk..", ".....kSsk...",
+        "..g.kSsk....", "...gbsk.....", "...kbg......", "..klk.g.....", ".klk........", ".kk.........",
+    ],
+    "item_tunic": [
+        "............", "..kkk..kkk..", ".kwwwkkwwwk.", "kwwwwwwwwwwk", "kmkwwwwwwkmk", ".k.kwwwwk.k.",
+        "...kwwwwk...", "...kwwwwk...", "...kbbbbk...", "...kwwwwk...", "...kmmmmk...", "...kkkkkk...",
+    ],
+    "item_linothorax": [
+        "............", "..kkk..kkk..", ".kwwwkkwwwk.", "kwbwbwwbwbwk", "kmkbwbbwbkmk", ".k.kbwbwk.k.",
+        "...kwbwbk...", "...kbwbwk...", "...kllllk...", "...kwmwmk...", "...kmwmwk...", "...kkkkkk...",
+    ],
+    "item_cuirass": [
+        "............", "..kk....kk..", ".kSsk..ksSk.", "kSSsskksSSsk", "kSsSsSSsSsSk", ".kSsssssSsk.",
+        ".ksSsSSsSsk.", ".kssSssSssk.", "..kssssssk..", "..ksSssSsk..", "..kbbbbbbk..", "..kkkkkkkk..",
+    ],
+    "item_pomegranate": [
+        "....k.k.k...", "....kgkgk...", "...kkrrkk...", "..krrSrrrk..", ".krrSrrrrrk.", ".krrrrrrrrk.",
+        ".krrrrrrrRk.", ".krrrrrrRRk.", "..krrrrRRk..", "...kRRRRk...", "....kkkk....", "............",
+    ],
+}
+for _name, _rows in ITEM_ICONS.items():
+    _img = Image.new("RGBA", (12, 12), CLEAR)
+    for _y, _row in enumerate(_rows):
+        assert len(_row) == 12, (_name, _y)
+        for _x, _ch in enumerate(_row):
+            if _ch != ".":
+                _img.putpixel((_x, _y), P[GRID_COLOURS[_ch]])
+    save(_img, _name)
+
+
 def qmark(img, d, w, h, col):
     for x, y in [(1, 0), (2, 0), (3, 0), (0, 1), (4, 1), (4, 2), (3, 3), (2, 4), (2, 5), (2, 7)]:
         img.putpixel((x, y), col)

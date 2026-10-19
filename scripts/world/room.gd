@@ -459,6 +459,15 @@ func _build_moonlight() -> void:
 			holder.add_child(dust)
 
 
+## How deep in a moonlight pool a point is: 0 outside, 1 at the centre. Lights add up and pale
+## marble clips to white, so the torch and lanterns ease off where the moon already falls.
+func moonlight_at(pos: Vector2) -> float:
+	var moon := 0.0
+	for m in moon_pools:
+		var d := (pos - Vector2(m.x, m.y)) * Vector2(1.0, 2.0)
+		moon = maxf(moon, 1.0 - smoothstep(m.z * 0.5, m.z * 1.4, d.length()))
+	return moon
+
 ## One Guard per entry in rooms.json's "guards" list. Counts them once per visit for Dawn Rank.
 func spawn_guards() -> void:
 	for entry in data.get("guards", []):

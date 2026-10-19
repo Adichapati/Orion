@@ -17,22 +17,34 @@ var _rows: VBoxContainer
 var _status: Label
 var _obols: Label
 var _first: Button = null
+## The obol glyph at 2x for the price buttons (Button icons draw at texture size).
+var _coin: Texture2D
 
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(UiKit.backdrop(0.55))
+	var img := Art.tex("hud_obol").get_image()
+	img.resize(img.get_width() * 2, img.get_height() * 2, Image.INTERPOLATE_NEAREST)
+	_coin = ImageTexture.create_from_image(img)
 	var c := UiKit.center()
 	add_child(c)
 	var p := UiKit.panel()
-	p.custom_minimum_size = Vector2(620, 0)
+	p.custom_minimum_size = Vector2(660, 0)
 	c.add_child(p)
 	var v := UiKit.vbox(8)
 	p.add_child(v)
 	var head := UiKit.hbox(12)
 	v.add_child(head)
-	head.add_child(UiKit.icon("phineus_se", 2))
+	var frame := PanelContainer.new()
+	var fs := UiKit.panel_style(Color(0.05, 0.05, 0.12), Color(0.45, 0.38, 0.22))
+	fs.set_content_margin_all(4)
+	fs.shadow_size = 0
+	frame.add_theme_stylebox_override("panel", fs)
+	frame.add_child(UiKit.icon("phineus_se", 3))
+	frame.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	head.add_child(frame)
 	var words := UiKit.vbox(4)
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(words)
@@ -47,8 +59,13 @@ func _ready() -> void:
 	pr.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	words.add_child(pr)
 
-	_obols = UiKit.label("", 15, UiKit.GOLD, HORIZONTAL_ALIGNMENT_RIGHT)
-	v.add_child(_obols)
+	var purse := UiKit.hbox(6)
+	purse.size_flags_vertical = Control.SIZE_SHRINK_END
+	head.add_child(purse)
+	purse.add_child(UiKit.label("Your purse", 12, UiKit.DIM))
+	purse.add_child(UiKit.icon("hud_obol", 2))
+	_obols = UiKit.label("", 16, UiKit.GOLD)
+	purse.add_child(_obols)
 	_rows = UiKit.vbox(4)
 	v.add_child(_rows)
 	_status = UiKit.label("", 14, UiKit.DIM, HORIZONTAL_ALIGNMENT_CENTER)
@@ -82,25 +99,65 @@ func _build_rows() -> void:
 	for c in _rows.get_children():
 		c.queue_free()
 	_first = null
-	_obols.text = "Obols: %d" % Game.obols
+	_obols.text = str(Game.obols)
+	var section := ""
 	for id in _items():
+		var kind := "Swords" if Game.weapons.has(id) else ("Armour" if Game.armours.has(id) else "Supplies")
+		if kind != section:
+			section = kind
+			_rows.add_child(_section(kind))
 		var row := UiKit.hbox(10)
 		_rows.add_child(row)
+		var slot := PanelContainer.new()
+		var ss := UiKit.panel_style(Color(0.05, 0.05, 0.12, 0.9), Color(0.86, 0.68, 0.32) if _is_equipped(id) else Color(0.25, 0.27, 0.42))
+		ss.set_content_margin_all(2)
+		ss.shadow_size = 0
+		slot.add_theme_stylebox_override("panel", ss)
+		slot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		var ic := UiKit.icon(_icon_of(id), 2)
+		slot.add_child(ic)
+		row.add_child(slot)
 		var info := UiKit.vbox(0)
 		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(info)
-		info.add_child(UiKit.label(Game.display_name_of(id), 15))
+		var owned: bool = Game.owned.has(id) and id != "pomegranate"
+		info.add_child(UiKit.label(Game.display_name_of(id), 15, UiKit.GOLD if owned else UiKit.TEXT))
 		var d := UiKit.label(Game.description_of(id), 12, UiKit.DIM)
 		d.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		d.custom_minimum_size = Vector2(380, 0)
 		info.add_child(d)
-		var b := UiKit.button(_action_text(id), 14)
-		b.custom_minimum_size = Vector2(130, 0)
+		var b := UiKit.button(_action_text(id), 16 if _action_text(id).is_valid_int() else 14)
+		b.custom_minimum_size = Vector2(104, 0)
+		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		b.disabled = _is_equipped(id)
+		if _action_text(id).is_valid_int():
+			b.icon = _coin
+			b.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+			if Game.price_of(id) > Game.obols:
+				b.add_theme_color_override("font_color", Color(0.75, 0.45, 0.4))
 		b.pressed.connect(_on_item.bind(id))
 		row.add_child(b)
 		if _first == null and not b.disabled:
 			_first = b
+
+
+## A small caps heading with a gold rule, between groups of goods.
+func _section(t: String) -> Control:
+	var h := UiKit.hbox(8)
+	var l := UiKit.label(t.to_upper(), 12, UiKit.GOLD)
+	h.add_child(l)
+	var rule := ColorRect.new()
+	rule.color = Color(0.86, 0.68, 0.32, 0.35)
+	rule.custom_minimum_size = Vector2(0, 2)
+	rule.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rule.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	h.add_child(rule)
+	return h
+
+
+func _icon_of(id: String) -> String:
+	var name := "item_" + id
+	return name if ResourceLoader.exists("res://art/greybox/%s.png" % name) else "item_xiphos"
 
 
 func _is_equipped(id: String) -> bool:
@@ -109,12 +166,12 @@ func _is_equipped(id: String) -> bool:
 
 func _action_text(id: String) -> String:
 	if id == "pomegranate":
-		return "Buy · %d" % Game.price_of(id)
+		return str(Game.price_of(id))
 	if _is_equipped(id):
-		return "Equipped"
+		return "Worn" if Game.armours.has(id) else "In hand"
 	if Game.owned.has(id):
 		return "Equip"
-	return "Buy · %d" % Game.price_of(id)
+	return str(Game.price_of(id))
 
 
 func _on_item(id: String) -> void:

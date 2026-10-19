@@ -141,3 +141,10 @@ the title).
   clay, the Dawn Rank stamped in gold (scale punch and a low bell) with the score counting up,
   and the night's eight numbers as a frieze (number over name) instead of two dotted lines of
   1× text. The button is black glaze too. Autoshot `screens` now waits for the stamp.
+- 2026-10-19: Shop. Seven 12×12 item icons drawn pixel by pixel in `tools/gen_greybox.py`
+  (`ITEM_ICONS`: dagger, kopis, xiphos, tunic, linothorax, cuirass, pomegranate) sit in framed
+  slots beside each item; goods are grouped under Swords / Armour / Supplies headings; prices are
+  an obol glyph and a 2× number (dull red when you can't afford it); worn or held gear has a gold
+  slot and says "Worn" / "In hand"; owned items' names are gold; Phineus's portrait is 3× in a
+  frame; the purse sits under his words. Also: guard lanterns ease off inside moonlight pools too
+  (`Room.moonlight_at()`), which fixes the colonnade guard's white spot.
