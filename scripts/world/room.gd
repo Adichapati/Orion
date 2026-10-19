@@ -121,6 +121,7 @@ func build(room_data: Dictionary) -> void:
 	player_spawn = _step_inside(player_spawn)
 	checkpoint = player_spawn
 	Atmosphere.dress(self, id)
+	NoiseBus.noise.connect(_show_noise)
 
 
 ## The entrance door sits in the wall line, where walls hide the player; start one tile inside.
@@ -516,6 +517,14 @@ func _build_moonlight() -> void:
 			var dust := Atmosphere.motes(Vector2(r, r * 0.5 + 6.0), 4 + group.size())
 			dust.position = Vector2(0, -10)
 			holder.add_child(dust)
+
+
+## Noise spreads as rings (the design doc): the player's and the world's noises are drawn; the
+## guards' own shouts are not.
+func _show_noise(pos: Vector2, radius: float, source: Node) -> void:
+	if source is Guard or not is_inside_tree():
+		return
+	Fx.noise_ring(world, pos, radius)
 
 
 ## How deep in a moonlight pool a point is: 0 outside, 1 at the centre. Lights add up and pale

@@ -217,3 +217,9 @@ the title).
   join, modulations in whole cycles, events wrapped). `Sfx.set_ambience()` crossfades between
   them; the title and the open-air rooms use night, the storerooms indoor, the cistern its own.
   Autoshot `idle` prints the audio state. Not listened to: levels set by numbers only.
+- 2026-10-19: Noise rings in play. The GDD says "noise spreads as rings" (a v1 must-have), but
+  rings only showed in the F3 overlay. Now every noise the player or the world makes draws a
+  dotted iso ring that spreads to its real radius in 0.6 s and fades (`Fx.noise_ring()`, hooked
+  up in `Room._show_noise()`): faint for walking (2 tiles), clear for running (5), strong for
+  pots, clashes and knucklebones. Sneaking and fountain-masked steps make none, so their silence
+  shows. Guards' own shouts are not drawn. New autoshot timeline `noise`.

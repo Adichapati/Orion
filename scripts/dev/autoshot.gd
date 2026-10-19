@@ -71,6 +71,15 @@ const SCRIPTS := {
 		[2.1, "release", "toss"],
 		[2.4, "shot", "", "thrown"],
 	],
+	"noise": [
+		[0.8, "press", "run"],
+		[0.8, "press", "move_down"],
+		[1.6, "shot", "", "running"],
+		[1.7, "release", "move_down"],
+		[1.7, "release", "run"],
+		[1.9, "tap", "attack"],
+		[2.0, "shot", "", "swing"],
+	],
 	"duel": [
 		[0.6, "call", "near_guard"],
 		[0.9, "shot", "", "duel1"],

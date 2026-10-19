@@ -77,6 +77,18 @@ static func ring(parent: Node, pos: Vector2, color := Color(0.9, 0.95, 1.0)) -> 
 	parent.add_child(r)
 
 
+## Noise made visible: a dotted ring that spreads to the noise's real radius (in tiles) and fades.
+## Footsteps get a faint one; pots, clashes and knucklebones a stronger one.
+static func noise_ring(parent: Node, pos: Vector2, radius_tiles: float) -> void:
+	if parent == null or not parent.is_inside_tree():
+		return
+	var r := NoiseRing.new()
+	r.position = pos
+	r.radius = radius_tiles
+	r.z_index = 44
+	parent.add_child(r)
+
+
 ## Gold glints rising from a collected obol.
 static func glitter(parent: Node, pos: Vector2) -> void:
 	if parent == null or not parent.is_inside_tree():
@@ -137,6 +149,37 @@ class Ring extends Node2D:
 		var c := color
 		c.a = 1.0 - k
 		draw_polyline(pts, c, 1.0)
+
+
+class NoiseRing extends Node2D:
+	var radius := 2.0
+	var _t := 0.0
+	const LIFE := 0.6
+
+	func _ready() -> void:
+		var mat := CanvasItemMaterial.new()
+		mat.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+		mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+		material = mat
+
+	func _process(delta: float) -> void:
+		_t += delta
+		queue_redraw()
+		if _t > LIFE:
+			queue_free()
+
+	func _draw() -> void:
+		var k := _t / LIFE
+		var grow := 1.0 - pow(1.0 - k, 3.0)
+		var r := radius * (0.25 + 0.75 * grow)
+		var strength := clampf(radius / 6.0, 0.25, 1.0)
+		var c := Color(0.75, 0.85, 1.0, (1.0 - k) * 0.5 * strength)
+		# Dots spaced about four pixels apart around an iso ellipse of r tiles.
+		var n := maxi(12, int(r * 22.0))
+		for i in n:
+			var a := TAU * i / n
+			var p := Iso.grid_to_screen(Vector2(cos(a), sin(a)) * r)
+			draw_rect(Rect2(p.round(), Vector2(2, 1)), c)
 
 
 class SwingArc extends Node2D:
