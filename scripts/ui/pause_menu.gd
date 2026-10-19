@@ -1,6 +1,7 @@
 class_name PauseMenu
 extends Control
-## Esc menu: resume, the controls list, a brightness slider, restart the room, back to the title.
+## Esc menu: resume, the controls list, brightness and volume sliders, a screen-shake toggle,
+## restart the room, back to the title.
 
 signal resumed
 signal restart_room
@@ -30,7 +31,9 @@ func _ready() -> void:
 	v.add_child(ctl)
 	var row := UiKit.hbox(10)
 	v.add_child(row)
-	row.add_child(UiKit.label("Brightness", 15))
+	var bl := UiKit.label("Brightness", 15)
+	bl.custom_minimum_size = Vector2(70, 0)
+	row.add_child(bl)
 	var slider := HSlider.new()
 	slider.min_value = 0.6
 	slider.max_value = 1.8
@@ -40,6 +43,23 @@ func _ready() -> void:
 	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	slider.value_changed.connect(func(x: float): Game.set_brightness(x))
 	row.add_child(slider)
+	# Volume for the whole mix (master bus), for a loud hall or a quiet projector.
+	var vrow := UiKit.hbox(10)
+	v.add_child(vrow)
+	var vl := UiKit.label("Volume", 15)
+	vl.custom_minimum_size = Vector2(70, 0)
+	vrow.add_child(vl)
+	var vol := HSlider.new()
+	vol.min_value = 0.0
+	vol.max_value = 1.0
+	vol.step = 0.05
+	vol.value = db_to_linear(AudioServer.get_bus_volume_db(0))
+	vol.custom_minimum_size = Vector2(200, 20)
+	vol.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	vol.value_changed.connect(func(x: float):
+		AudioServer.set_bus_volume_db(0, linear_to_db(maxf(x, 0.0001)))
+		AudioServer.set_bus_mute(0, x <= 0.0))
+	vrow.add_child(vol)
 	var shake := CheckButton.new()
 	shake.text = "Screen shake"
 	shake.button_pressed = Game.screen_shake

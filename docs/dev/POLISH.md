@@ -258,3 +258,5 @@ the title).
   timeline `sneak`.
 - 2026-10-19: During the star-shrine escape the collapsing slabs no longer each draw a noise
   ring (a dozen overlapping rings cluttered the run); single cracked slabs elsewhere still do.
+- 2026-10-19: The pause menu has a Volume slider (the master bus, muted at zero) under
+  Brightness, with the two labels aligned, for a loud hall or a quiet projector.
