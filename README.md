@@ -55,6 +55,10 @@ All textures load by name through `scripts/core/art.gd`, which looks in three fo
 
 To replace something, save a PNG with the same file name into `art/final/` (for example `art/final/column.png` or `art/final/cedalion_se.png`) and keep the same size and pivot: characters and props stand on their bottom-centre pixel, blocks have their 32×16 ground diamond at the bottom, and flat tiles are 32×16. No code changes needed.
 
+### Animations
+
+Cedalion animates from `art/final/cedalion_sheet.png` and `cedalion_sheet.json`, in Aseprite's sprite-sheet export format (File > Export Sprite Sheet, with JSON data and tags). Tags are named `<animation>_<facing>`: `idle`, `look`, `walk`, `attack`, `parry`, `lunge`, `jump` and `dodge`, each as `_se` (front) and `_ne` (back); the game mirrors them for the other two facings, and plays `walk` faster when he runs and slower when he sneaks. An optional per-frame `"torch": {"x", "y"}` (relative to the feet) moves the torch light with the flame. Export a new sheet with the same name and tags to replace the animations; if there is no sheet, the stills are used. The current sheet is built from the hand-made sheet in `art/generated/cedalion_friend_sheet.webp` by `python tools/process_cedalion_sheet.py`. Re-running it overwrites the sheet, so don't run it once a real Aseprite export is in place.
+
 Sounds work the same way: `audio/sfx/<name>.wav` and `audio/music/explore.wav` / `tension.wav`. `python tools/gen_audio.py` regenerates the placeholders; overwrite any file with a real recording of the same name.
 
 ### How rooms.json drives the levels

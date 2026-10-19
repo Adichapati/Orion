@@ -58,6 +58,13 @@ var _aim_t := 0.0
 var _aim_preview: AimPreview
 var _ghost: Sprite2D
 
+## Frame animations from art/final/cedalion_sheet.* (null = the single stills).
+var _anim: SheetAnim
+var _anim_base := ""
+var _anim_t := 0.0
+var _idle_t := 0.0
+var _torch_at := Vector2(-8, -19)
+
 var body_node: Node2D
 var sprite: Sprite2D
 var torch: PointLight2D
@@ -81,6 +88,9 @@ func _ready() -> void:
 	add_child(body_node)
 	sprite = Art.feet_sprite("cedalion_se")
 	body_node.add_child(sprite)
+	_anim = SheetAnim.load_for("cedalion")
+	if _anim:
+		sprite.offset = _anim.sprite_offset()
 	life = Life.new()
 	add_child(life)
 	life.setup(body_node, sprite, 12)
@@ -670,9 +680,79 @@ func _after_fall() -> void:
 func _die() -> void:
 	_set_state(S.DEAD)
 	Sfx.play("death")
+	# He staggers, topples sideways onto the floor (a clean 90°, so the pixels stay crisp), lands in
+	# a puff of dust, lies still while the torch gutters, then fades.
+	var away := 1.0 if sprite.flip_h else -1.0
 	var tw := create_tween()
-	tw.tween_property(body_node, "modulate", Color(0.4, 0.2, 0.2, 0.0), 0.8)
+	tw.tween_property(body_node, "rotation", away * 0.18, 0.1).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(body_node, "rotation", away * -PI / 2.0, 0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tw.tween_callback(func():
+		body_node.position.x = away * -3.0
+		Fx.dust(get_parent(), global_position, 9, 12.0)
+		Sfx.play("land", null, -2.0)
+		ShakeCamera.add_trauma(0.35))
+	tw.tween_property(body_node, "rotation", away * -PI / 2.0 + away * 0.08, 0.08)
+	tw.tween_property(body_node, "rotation", away * -PI / 2.0, 0.1)
+	tw.parallel().tween_property(torch, "energy", 0.35, 0.6)
+	tw.tween_interval(0.3)
+	tw.tween_property(body_node, "modulate", Color(0.4, 0.2, 0.2, 0.0), 0.4)
 	tw.tween_callback(func(): died.emit())
+
+
+## Picks and plays the frame animation for the current state. Returns false when the sheet has
+## no animation for it, so the caller falls back to the stills.
+func _animate(delta: float, sd: Vector2) -> bool:
+	var base := "idle"
+	var loop := true
+	var rate := 1.0
+	var progress := -1.0
+	var moving := _gvel.length() > 0.2
+	match state:
+		S.NORMAL, S.LOCKED:
+			if moving and state == S.NORMAL:
+				base = "walk"
+				rate = clampf(_gvel.length() / WALK, 0.55, 1.7)
+				_idle_t = 0.0
+			else:
+				_idle_t += delta
+				# Every few seconds of standing still he glances around.
+				base = "look" if fmod(_idle_t, 5.5) > 4.2 else "idle"
+		S.ATTACK:
+			base = "attack"
+			var w := Game.weapon()
+			progress = _state_t / (w.swing_time if w else 0.4)
+		S.PARRY:
+			base = "parry"
+		S.DODGE:
+			base = "dodge"
+		S.JUMP, S.FALL:
+			base = "jump"
+		S.SHOVE, S.THRUST:
+			base = "lunge"
+		S.HURT, S.DEAD:
+			base = "idle"
+	if not _anim.has(base):
+		base = "idle"
+	var pick := _anim.pick(base, sd)
+	if pick.is_empty():
+		return false
+	if base != _anim_base:
+		_anim_base = base
+		_anim_t = 0.0
+	else:
+		_anim_t += delta * rate
+	var clip: SheetAnim.Clip = pick.clip
+	var i := clip.index_for_progress(progress) if progress >= 0.0 else clip.index_at(_anim_t, loop)
+	sprite.texture = clip.frames[i]
+	sprite.flip_h = pick.flip
+	sprite.offset = _anim.sprite_offset()
+	var t: Variant = clip.torch[i]
+	if t != null:
+		_torch_at = t
+	var at := Vector2(-_torch_at.x if pick.flip else _torch_at.x, _torch_at.y)
+	torch.position = at + Vector2(0, 2)
+	torch_embers.position = at + Vector2(0, -2)
+	return true
 
 
 # ============================================================== visuals
@@ -697,13 +777,16 @@ func _update_visuals(delta: float) -> void:
 
 	var sd := Iso.screen_dir(facing)
 	var front := sd.y >= -0.01
-	sprite.texture = Art.tex("cedalion_se" if front else "cedalion_ne")
-	sprite.flip_h = sd.x < 0.0
-	# The torch is in his right hand: screen left when he faces SE, screen right when he faces NE.
-	var torch_x := -6.0 if front else 4.0
-	torch.position = Vector2(-torch_x if sprite.flip_h else torch_x, -16)
-	var flame := Vector2(-7, -23) if front else Vector2(3, -25)
-	torch_embers.position = Vector2(-flame.x if sprite.flip_h else flame.x, flame.y)
+	if _anim and _animate(delta, sd):
+		pass
+	else:
+		sprite.texture = Art.tex("cedalion_se" if front else "cedalion_ne")
+		sprite.flip_h = sd.x < 0.0
+		# The torch is in his right hand: screen left when he faces SE, screen right when he faces NE.
+		var torch_x := -6.0 if front else 4.0
+		torch.position = Vector2(-torch_x if sprite.flip_h else torch_x, -16)
+		var flame := Vector2(-7, -23) if front else Vector2(3, -25)
+		torch_embers.position = Vector2(-flame.x if sprite.flip_h else flame.x, flame.y)
 
 	_noise_t += delta
 	var n := _flicker.get_noise_1d(_noise_t * 60.0)

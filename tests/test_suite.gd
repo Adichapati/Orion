@@ -94,6 +94,13 @@ func test_final_art_matches_placeholders() -> void:
 			continue
 		var a: Texture2D = load("res://art/final/" + f)
 		var b: Texture2D = load(ph)
+		# A character with an animation sheet uses its sheet's cell size for the stills too.
+		var base := f.get_basename().rsplit("_", true, 1)[0]
+		if FileAccess.file_exists("res://art/final/%s_sheet.json" % base):
+			var anim := SheetAnim.load_for(base)
+			check(anim != null and a.get_size() == Vector2(anim.cell), "%s matches its animation sheet's cells" % f)
+			count += 1
+			continue
 		check(a.get_size() == b.get_size(), "%s is %s like its placeholder" % [f, b.get_size()])
 		count += 1
 	check(count > 0, "art/final has character sprites")
@@ -408,7 +415,7 @@ func test_playthrough() -> void:
 	var p: Player = main.player
 	p.take_hit(1, p.global_position + Vector2(10, 0), 0.2)
 	check(p.state == Player.S.DEAD, "losing the last star kills Cedalion")
-	await _seconds(3.5)
+	await _seconds(4.5)
 	check(main.room != null and main.room.id == "colonnade" and main.player != p, "death rebuilds the same room")
 	check(Game.obols == obols_at_entry and Game.hp == Game.max_hp(), "...with the obols and stars from the entry snapshot")
 	main.queue_free()
