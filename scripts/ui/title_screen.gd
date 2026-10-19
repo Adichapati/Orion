@@ -1,6 +1,7 @@
 class_name TitleScreen
 extends Control
-## The title: ORION over a night sky with the hunter's belt, and Begin / Quit.
+## The title: ORION and Begin / Quit on the left, the hunter drawing himself on the right, and the
+## Star Citadel black against the sky with its vigil lamps along the walls.
 
 signal begin
 
@@ -20,7 +21,10 @@ func _ready() -> void:
 	rng.seed = 7
 	for i in 90:
 		_stars.append({"p": Vector2(rng.randf() * 960.0, rng.randf() * 540.0), "s": rng.randf_range(0.3, 1.0), "ph": rng.randf() * TAU})
-	var c := UiKit.center()
+	# The menu sits in the left half; Orion stands in the right.
+	var c := CenterContainer.new()
+	c.position = Vector2(30, 40)
+	c.size = Vector2(470, 400)
 	add_child(c)
 	var v := UiKit.vbox(10)
 	v.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -41,7 +45,9 @@ func _ready() -> void:
 	v.add_child(quit)
 	var hint := UiKit.label("WASD move · Ctrl run · Shift sneak · Space jump · J / click attack · K / right click parry\nC dodge · F shove · Q torch · G knucklebones · E interact · H pomegranate · Esc pause",
 			12, UiKit.DIM, HORIZONTAL_ALIGNMENT_CENTER)
-	v.add_child(hint)
+	hint.position = Vector2(0, 500)
+	hint.size = Vector2(960, 0)
+	add_child(hint)
 	start.grab_focus()
 
 
@@ -59,12 +65,20 @@ const ORION := [
 	["Saiph", Vector2(-0.8, 1.6), 2], ["Rigel", Vector2(1.15, 1.35), 3],
 ]
 const LINES := [[3, 4], [4, 5], [0, 3], [1, 5], [0, 2], [2, 1], [3, 6], [5, 7]]
-const CENTRE := Vector2(480, 262)
-const UNIT := 82.0
+const CENTRE := Vector2(690, 214)
+const UNIT := 72.0
+const SKY_INK := Color(0.012, 0.012, 0.035)
+## The citadel's walls and towers: x, width, height above the ground line at y 470.
+const WALLS := [[0, 140, 22], [120, 34, 58], [150, 190, 30], [330, 40, 70], [365, 210, 26], [560, 30, 52], [585, 375, 34]]
 const LINE_TIME := 0.32
 
 
 func _draw() -> void:
+	# A faint band of the Milky Way, then the stars.
+	for i in 60:
+		var x := fmod(i * 97.0, 960.0)
+		var y := 60.0 + x * 0.35 + fmod(i * 53.0, 70.0) - 35.0
+		draw_rect(Rect2(Vector2(x, y).round(), Vector2(2, 2)), Color(0.55, 0.6, 0.85, 0.12 + 0.06 * sin(_t + i)))
 	for s in _stars:
 		var a: float = 0.4 + 0.6 * s.s * (0.75 + 0.25 * sin(_t * 2.0 + s.ph))
 		draw_rect(Rect2(s.p.round(), Vector2(2, 2)), Color(0.85, 0.88, 1.0, a))
@@ -93,3 +107,37 @@ func _draw() -> void:
 		draw_rect(Rect2(p - Vector2(r, r), Vector2(r * 2, r * 2)), col)
 		draw_rect(Rect2(p - Vector2(r * 3, 1), Vector2(r * 6, 2)), Color(col, col.a * 0.3))
 		draw_rect(Rect2(p - Vector2(1, r * 3), Vector2(2, r * 6)), Color(col, col.a * 0.3))
+	_skyline()
+
+
+## The Star Citadel against the sky: walls, towers, cypresses and the temple on the summit, with
+## the vigil lamps flickering along the parapet.
+func _skyline() -> void:
+	draw_rect(Rect2(0, 470, 960, 70), SKY_INK)
+	for w in WALLS:
+		draw_rect(Rect2(w[0], 470 - w[2], w[1], w[2]), SKY_INK)
+		if w[1] < 50:  # towers get crenellations
+			for k in range(0, w[1], 8):
+				draw_rect(Rect2(w[0] + k, 470 - w[2] - 4, 4, 4), SKY_INK)
+	for cx in [70, 260, 520, 640]:
+		for k in 14:
+			var hw := int(5.0 * sin(PI * (k + 1) / 15.0)) + 1
+			draw_rect(Rect2(cx - hw, 446 - k * 4, hw * 2, 4), SKY_INK)
+	var tx := 700.0
+	draw_rect(Rect2(tx, 424, 200, 12), SKY_INK)
+	draw_rect(Rect2(tx + 8, 416, 184, 8), SKY_INK)
+	for k in 8:
+		draw_rect(Rect2(tx + 14 + k * 23, 372, 10, 44), SKY_INK)
+	draw_rect(Rect2(tx + 6, 362, 188, 10), SKY_INK)
+	for k in 18:
+		var hw := 94.0 * (1.0 - k / 18.0)
+		draw_rect(Rect2(tx + 100 - hw, 360 - k * 2, hw * 2, 2), SKY_INK)
+	for i in 14:
+		var x := 40.0 + i * 66.0 + fmod(i * 37.0, 20.0)
+		var top := 470.0
+		for w in WALLS:
+			if x >= w[0] and x < w[0] + w[1]:
+				top = 470.0 - w[2]
+		var f := 0.7 + 0.3 * sin(_t * (5.0 + i) + i * 2.1)
+		draw_rect(Rect2(Vector2(x, top - 4).round(), Vector2(2, 2)), Color(1.0, 0.72, 0.35, f))
+		draw_rect(Rect2(Vector2(x - 2, top - 6).round(), Vector2(6, 6)), Color(1.0, 0.6, 0.3, 0.12 * f))

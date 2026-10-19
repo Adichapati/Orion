@@ -183,3 +183,8 @@ the title).
   right with curls of smoke, then Antares rising red; card 3 every lamp dark but the middle one,
   Cedalion's, with the three Belt Stars appearing over it. Lamps are drawn in 2× pixels. New
   autoshot timeline `intro`.
+- 2026-10-19: Title screen recomposed. Orion's lines ran straight through the title, buttons and
+  controls text. Now the menu sits in the left half, Orion draws himself large on the right, a
+  faint Milky Way band crosses the sky, and the Star Citadel stands black along the bottom
+  (walls, crenellated towers, cypresses, the temple on the summit) with vigil lamps flickering on
+  the parapet; the controls line sits on the dark ground.
