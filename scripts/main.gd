@@ -82,6 +82,7 @@ func show_title() -> void:
 	_close_menu()
 	_clear_room()
 	Sfx.stop_music()
+	Sfx.set_ambience("night")
 	hud.visible = false
 	var t := TitleScreen.new()
 	t.begin.connect(start_run)
@@ -147,6 +148,7 @@ func load_room(index: int) -> void:
 	hud.visible = true
 	hud.show_room(room.id, room.display_name)
 	Sfx.start_music()
+	Sfx.set_ambience({"storerooms": "indoor", "cistern": "cistern"}.get(room.id, "night"))
 	_fade(false)
 
 

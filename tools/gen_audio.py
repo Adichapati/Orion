@@ -3,7 +3,8 @@
     python tools/gen_audio.py
 
 Writes short effects to audio/sfx/<name>.wav and two 48-second loops to audio/music/:
-explore.wav (a lyre, pad and aulos in D Dorian) and tension.wav (frame drums and an ostinato).
+explore.wav (a lyre, pad and aulos in D Dorian) and tension.wav (frame drums and an ostinato),
+and three 24-second room-tone loops to audio/ambience/ (night, cistern, indoor).
 Both loops share length and sample rate, so the game can start them together and cross-fade
 them by the guards' awareness. Replace any file with a real recording of the same name.
 """
@@ -359,6 +360,98 @@ def tension():
     return reverb(out, mix_=0.15, room=0.75)
 
 
+# ---------------------------------------------------------------- ambience
+#
+# Room tone under the music, one loop per kind of room (audio/ambience/<name>.wav): "night" for the
+# open-air rooms and the title (wind and crickets), "cistern" (drips in a stone tank), "indoor"
+# (a low draught through the storerooms). Each is 24 s and seamless: wrapped events, slow
+# modulations with whole cycles per loop, and noise crossfaded across the seam.
+
+AMBIENCE = ROOT / "audio" / "ambience"
+AMB_LOOP = 24.0
+
+
+def loopify(samples, fade_sec=1.5):
+    """Crossfades the tail into the head so filtered noise loops without a seam. The input must be
+    AMB_LOOP + fade_sec long; the result is AMB_LOOP long."""
+    n = int(AMB_LOOP * RATE)
+    f = int(fade_sec * RATE)
+    out = samples[:n]
+    for i in range(f):
+        k = i / f
+        out[i] = samples[n + i] * (1 - k) + samples[i] * k
+    return out
+
+
+def wind(sec, vol, lp, gusts):
+    """Lowpassed noise whose loudness swells with a few slow sines (whole cycles per loop)."""
+    n = int(sec * RATE)
+    out, y, y2 = [], 0.0, 0.0
+    for i in range(n):
+        t = i / RATE
+        y += lp * (rng.uniform(-1, 1) - y)
+        y2 += lp * (y - y2)
+        g = 0.55 + sum(a * math.sin(2 * math.pi * c * t / AMB_LOOP + ph) for c, a, ph in gusts)
+        out.append(y2 * vol * max(0.1, g))
+    return out
+
+
+def chirp(freq, pulses, vol):
+    """One cricket chirp: a few 14 ms pulses of a high tone."""
+    out = []
+    for _ in range(pulses):
+        m = int(0.014 * RATE)
+        for i in range(m):
+            e = math.sin(math.pi * i / m)
+            out.append(math.sin(2 * math.pi * freq * i / RATE) * e * vol)
+        out += [0.0] * int(0.012 * RATE)
+    return out
+
+
+def drip(freq, vol):
+    """A drop into still water: a short sine that leaps up in pitch, then a faint ring."""
+    n = int(0.25 * RATE)
+    out, ph = [], 0.0
+    for i in range(n):
+        t = i / RATE
+        f = freq * (1 + 1.4 * min(1.0, t / 0.02))
+        ph += f / RATE
+        out.append(math.sin(2 * math.pi * ph) * math.exp(-t * 26) * vol)
+    return out
+
+
+def amb_night():
+    n = int(AMB_LOOP * RATE)
+    total = AMB_LOOP + 1.5
+    out = wind(total, 0.5, 0.05, [(1, 0.25, 0.0), (3, 0.15, 1.3), (5, 0.08, 2.1)])
+    out = loopify(out)
+    # Two crickets, each with its own pitch and rhythm, fading in and out of hearing.
+    for freq, period, pulses, vol, cyc in ((4300, 0.62, 3, 0.05, 2), (3800, 0.9, 4, 0.035, 3)):
+        t = rng.uniform(0, period)
+        while t < AMB_LOOP:
+            presence = 0.5 + 0.5 * math.sin(2 * math.pi * cyc * t / AMB_LOOP)
+            if presence > 0.25:
+                place(out, chirp(freq + rng.uniform(-40, 40), pulses, vol * presence), t)
+            t += period * rng.uniform(0.9, 1.1)
+    return out
+
+
+def amb_cistern():
+    total = AMB_LOOP + 1.5
+    out = loopify(wind(total, 0.22, 0.02, [(1, 0.15, 0.4), (2, 0.1, 2.0)]))
+    # Drips at irregular intervals, from two or three spots in the tank.
+    t = 0.3
+    while t < AMB_LOOP:
+        place(out, drip(rng.choice([900, 1150, 1400]) * rng.uniform(0.95, 1.05), rng.uniform(0.06, 0.12)), t)
+        t += rng.uniform(0.7, 2.6)
+    return reverb(out, mix_=0.5, room=0.88)
+
+
+def amb_indoor():
+    total = AMB_LOOP + 1.5
+    return loopify(wind(total, 0.3, 0.025, [(1, 0.3, 0.0), (2, 0.2, 1.0), (4, 0.1, 2.5)]))
+
+
 if __name__ == "__main__":
     random.seed(7)  # the same files every run, so regenerating doesn't churn git
     names = effects()
@@ -366,3 +459,7 @@ if __name__ == "__main__":
     write(MUSIC / "explore.wav", explore(), peak=0.7)
     write(MUSIC / "tension.wav", tension(), peak=0.7)
     print("music: explore.wav, tension.wav in", MUSIC)
+    write(AMBIENCE / "night.wav", amb_night(), peak=0.5)
+    write(AMBIENCE / "cistern.wav", amb_cistern(), peak=0.5)
+    write(AMBIENCE / "indoor.wav", amb_indoor(), peak=0.5)
+    print("ambience: night.wav, cistern.wav, indoor.wav in", AMBIENCE)

@@ -210,3 +210,10 @@ the title).
   side of a column on an altar, in a dark frame), flat in the wall's plane and then sheared onto
   the wall's lit face. `Room._make_door()` places it in the lion-gate room only. At 480×270 the
   lions are an impression rather than a readable carving.
+- 2026-10-19: Ambience. `tools/gen_audio.py` writes three 24 s room-tone loops to
+  `audio/ambience/`: `night` (gusting wind and two crickets with their own pitch and rhythm that
+  drift in and out), `cistern` (a low hum and irregular drips from a few spots, heavily
+  reverberated), `indoor` (a low draught). They loop without a seam (noise crossfaded across the
+  join, modulations in whole cycles, events wrapped). `Sfx.set_ambience()` crossfades between
+  them; the title and the open-air rooms use night, the storerooms indoor, the cistern its own.
+  Autoshot `idle` prints the audio state. Not listened to: levels set by numbers only.

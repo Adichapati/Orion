@@ -12,6 +12,7 @@ const SCRIPTS := {
 	],
 	"idle": [
 		[1.2, "shot", "", "start"],
+		[2.0, "call", "audio"],
 		[3.0, "shot", "", "later"],
 	],
 	"walk": [
@@ -158,6 +159,8 @@ func _run(e: Array) -> void:
 				for c in main.ui.get_children():
 					if c is IntroCards:
 						c._advance()
+			elif e[2] == "audio":
+				print("autoshot audio: ambience '%s' playing=%s vol=%.1f dB, music playing=%s" % [Sfx._ambience_name, Sfx._ambience.playing, Sfx._ambience.volume_db, Sfx._explore.playing])
 			elif e[2] == "begin":
 				main.start_run()
 			elif e[2] == "end":

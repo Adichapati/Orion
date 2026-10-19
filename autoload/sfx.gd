@@ -1,5 +1,5 @@
 extends Node
-## Sound effects and the two-layer adaptive music.
+## Sound effects, the two-layer adaptive music and the room ambience.
 ##
 ## Effects are WAV files in res://audio/sfx/<name>.wav (missing ones are skipped silently, so
 ## sounds can be swapped or added by file name). Music is two loops of the same length that start
@@ -10,6 +10,9 @@ const SFX_DIR := "res://audio/sfx/"
 const MUSIC_EXPLORE := "res://audio/music/explore.wav"
 const MUSIC_TENSION := "res://audio/music/tension.wav"
 const VOICES := 12
+const AMBIENCE_DIR := "res://audio/ambience/"
+## Per-loop trim, so the quiet draught and the busier night sit at a similar level.
+const AMBIENCE_GAIN := {"night": -2.0, "cistern": -3.0, "indoor": 5.0}
 
 var _cache := {}
 var _players: Array[AudioStreamPlayer] = []
@@ -20,6 +23,10 @@ var _tension_target := 0.0
 var _tension_level := 0.0
 var music_volume_db := -8.0
 var listener_pos := Vector2.ZERO
+var ambience_volume_db := -6.0
+var _ambience: AudioStreamPlayer
+var _ambience_name := ""
+var _ambience_tween: Tween
 
 
 func _ready() -> void:
@@ -31,6 +38,8 @@ func _ready() -> void:
 		_players.append(p)
 	_explore = _make_music(MUSIC_EXPLORE)
 	_tension = _make_music(MUSIC_TENSION)
+	_ambience = AudioStreamPlayer.new()
+	add_child(_ambience)
 
 
 func _make_music(path: String) -> AudioStreamPlayer:
@@ -90,6 +99,33 @@ func start_music() -> void:
 func stop_music() -> void:
 	_explore.stop()
 	_tension.stop()
+
+
+## The room tone under the music ("night", "cistern", "indoor", or "" for none). Crossfades over
+## about a second; asking for the one already playing does nothing.
+func set_ambience(name: String) -> void:
+	if name == _ambience_name:
+		return
+	_ambience_name = name
+	if _ambience_tween:
+		_ambience_tween.kill()
+	_ambience_tween = create_tween()
+	if _ambience.playing:
+		_ambience_tween.tween_property(_ambience, "volume_db", -60.0, 0.6)
+	_ambience_tween.tween_callback(func():
+		var path := AMBIENCE_DIR + name + ".wav"
+		if name == "" or not ResourceLoader.exists(path):
+			_ambience.stop()
+			return
+		var wav := load(path) as AudioStreamWAV
+		if wav:
+			wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+			wav.loop_begin = 0
+			wav.loop_end = int(wav.get_length() * wav.mix_rate)
+		_ambience.stream = wav
+		_ambience.volume_db = -60.0
+		_ambience.play())
+	_ambience_tween.tween_property(_ambience, "volume_db", ambience_volume_db + AMBIENCE_GAIN.get(name, 0.0), 1.0)
 
 
 ## 0 = all calm, 1 = a guard is fully alert.
