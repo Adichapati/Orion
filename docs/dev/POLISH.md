@@ -266,3 +266,6 @@ the title).
 - 2026-10-19: Steps show two treads (a bright nose and a darker riser each) on the lit face and
   a stepped edge on the shaded face, instead of blue stripes; the star altar has a stepped base,
   a gold band of stars and an overhanging top slab instead of a plain cube.
+- 2026-10-19: Walls. Tall walls now show block masonry on both faces (courses with staggered
+  vertical joints; the shaded face had none), and the ivy walls have ivy hanging in strands from
+  a clump along the top (a wandering stem with leaves either side) instead of scattered dots.

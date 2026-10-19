@@ -222,6 +222,22 @@ def wall_joints(img, d, h):
             y = 8 + i // 2 + k * 8
             if y < 8 + h + i // 2 and y < img.height:
                 img.putpixel((i, y), hexc("7a7468"))
+    # staggered vertical joints on the lit face
+    for k in range(1, h // 8 + 1):
+        jx = 10 if k % 2 else 4
+        top = 8 + jx // 2 + (k - 1) * 8 + 1
+        for y in range(top, min(top + 7, img.height)):
+            img.putpixel((jx, y), hexc("7a7468"))
+    # and on the shaded right face, with staggered vertical joints between the blocks
+    for k in range(1, h // 8 + 1):
+        for i in range(16):
+            y = 15 - i // 2 + k * 8
+            if y < 16 + h - i // 2 and y < img.height:
+                img.putpixel((16 + i, y), hexc("4c4a5c"))
+        jx = 5 if k % 2 else 11
+        top = 15 - jx // 2 + (k - 1) * 8 + 1
+        for y in range(top, min(top + 7, img.height)):
+            img.putpixel((16 + jx, y), hexc("4c4a5c"))
 
 
 block("wall_tall", 32, WALL_TOP, WALL_L, WALL_R, EDGE, side_extra=wall_joints)
@@ -229,11 +245,34 @@ block("wall_low", 8, WALL_TOP, WALL_L, WALL_R, EDGE)
 
 
 def ivy(img, d, h):
+    """Ivy hanging from the wall top in a few strands: a wandering dark stem with leaves on both
+    sides, lit leaves on the lit face, and a thick clump along the top edge."""
     rnd = random.Random(5)
-    for _ in range(40):
-        x, y = rnd.randint(1, 30), rnd.randint(10, 8 + h)
-        if img.getpixel((x, y))[3] > 0:
-            img.putpixel((x, y), rnd.choice([P["olive1"], P["olive2"], P["olive0"]]))
+
+    def leaf(x, y, lit):
+        if 0 <= x < img.width and 0 <= y < img.height and img.getpixel((x, y))[3] > 0:
+            img.putpixel((x, y), (P["olive2"] if rnd.random() < 0.6 else P["olive1"]) if lit else
+                         (P["olive1"] if rnd.random() < 0.5 else P["olive0"]))
+
+    for x0 in (2, 7, 12, 20, 26):
+        x = x0
+        top = 8 + x // 2 if x < 16 else 15 - (x - 16) // 2
+        length = rnd.randint(h // 2, h - 2)
+        for k in range(length):
+            y = top + k
+            if rnd.random() < 0.25:
+                x = max(1, min(30, x + rnd.choice([-1, 1])))
+            lit = x < 16
+            if 0 <= y < img.height and img.getpixel((x, y))[3] > 0:
+                img.putpixel((x, y), P["olive0"])
+            if k % 2 == 0:
+                leaf(x - 1, y, lit)
+                leaf(x + 1, y + (1 if rnd.random() < 0.5 else 0), lit)
+    # a clump along the top edge of both faces
+    for i in range(32):
+        y = 8 + i // 2 if i < 16 else 15 - (i - 16) // 2
+        for dy in range(0, rnd.randint(1, 3)):
+            leaf(i, y + dy, i < 16)
 
 
 block("wall_tall_ivy", 32, WALL_TOP, WALL_L, WALL_R, EDGE, side_extra=lambda img, d, h: (wall_joints(img, d, h), ivy(img, d, h)))
