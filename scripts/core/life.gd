@@ -13,6 +13,9 @@ var ground_y := 0.0
 var air := 0.0
 var bob_px := 1.0
 var enabled := true
+## 0 = standing, 1 = crouched (sneaking): eased toward each frame.
+var crouch := 0.0
+var _crouch := 0.0
 
 var body: Node2D
 var sprite: Sprite2D
@@ -77,6 +80,8 @@ func _process(delta: float) -> void:
 	_squash_v += ((Vector2.ONE - _squash) * k - _squash_v * damp) * delta
 	_squash += _squash_v * delta
 	var sc := _squash
+	_crouch = lerpf(_crouch, crouch, 1.0 - exp(-14.0 * delta))
+	sc *= Vector2(1.0 + 0.06 * _crouch, 1.0 - 0.14 * _crouch)
 	var bob := 0.0
 	if speed > 0.3:
 		# Two steps per cycle; the body is highest mid-stride and dips on each footfall.

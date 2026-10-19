@@ -93,6 +93,13 @@ const SCRIPTS := {
 		[0.95, "shot", "", "floating"],
 		[2.4, "shot", "", "escape"],
 	],
+	"sneak": [
+		[0.8, "shot", "", "stand"],
+		[0.9, "press", "sneak"],
+		[1.4, "shot", "", "crouch"],
+		[1.5, "press", "move_right"],
+		[2.2, "shot", "", "sneaking"],
+	],
 	"duel": [
 		[0.6, "call", "near_guard"],
 		[0.9, "shot", "", "duel1"],

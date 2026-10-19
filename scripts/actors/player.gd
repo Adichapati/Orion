@@ -559,6 +559,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
+	# Sneaking crouches him, so the quiet gait reads at a glance.
+	life.crouch = 1.0 if gait == "sneak" and state == S.NORMAL else 0.0
 	# A held toss shows its arc once it is clearly a hold, not a tap.
 	_aim_preview.visible = _aiming and _aim_t > 0.1 and state == S.NORMAL
 	if _aim_preview.visible:

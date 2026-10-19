@@ -253,3 +253,6 @@ the title).
   (Fix-up: the star beat's freeze and slow motion delay the first collapse by ~0.5 s of real
   time, so the play-through test now waits 3.2 s for the ring to start falling; the previous
   commit went in with that one test failing.)
+- 2026-10-19: Sneaking looked the same as walking. Holding sneak now eases Cedalion into a
+  crouch (14% shorter, 6% wider, `Life.crouch`), so the silent gait reads at a glance. Autoshot
+  timeline `sneak`.
