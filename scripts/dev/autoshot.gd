@@ -44,9 +44,10 @@ const SCRIPTS := {
 		[1.0, "call", "begin"],
 		[2.0, "shot", "", "intro"],
 		[2.2, "call", "end"],
-		[3.6, "shot", "", "end"],
-		[3.7, "call", "death"],
-		[4.4, "shot", "", "death"],
+		[3.2, "shot", "", "end_stamp"],
+		[5.4, "shot", "", "end"],
+		[5.5, "call", "death"],
+		[6.2, "shot", "", "death"],
 	],
 	"duel": [
 		[0.6, "call", "near_guard"],

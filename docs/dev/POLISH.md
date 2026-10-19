@@ -136,3 +136,8 @@ the title).
   now eases off by up to 60% inside a moonlight pool (`Room.moon_pools`), and a guard's lantern
   and glow dim by up to 45% and 60% when Cedalion is within a few tiles. The spot reads pink-warm
   instead of white.
+- 2026-10-19: End card. Still a black-figure vase, but now laid out: banded terracotta that is
+  lighter where the vase swells, a black glaze band where Orion draws himself twice in reserved
+  clay, the Dawn Rank stamped in gold (scale punch and a low bell) with the score counting up,
+  and the night's eight numbers as a frieze (number over name) instead of two dotted lines of
+  1× text. The button is black glaze too. Autoshot `screens` now waits for the stamp.
