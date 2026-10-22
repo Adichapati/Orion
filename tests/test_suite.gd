@@ -366,27 +366,35 @@ func test_cedalion_sword() -> void:
 	_free_room(r)
 
 
-## Bug (Sathvik: "when I move left the character also faces right"): the sheet's front idle and
-## walk poses look screen-left, but were used as the screen-right (SE) views, so he walked one way
-## looking the other and turned round whenever he swung. Every frame of every clip now faces the
-## same way as the attack: sword hand on the screen-right of his feet, torch on the left.
+## Bug (Sathvik: "when I move left the character also faces right", then "he looks back every
+## few frames"): the artist drew some front poses looking left and some right, and the walk mixed
+## them. tools/process_sheet.py records which way each frame looks (after mirroring) as "faces"
+## in the sheet's JSON; every clip but the glance back ("look") must face the way he moves, and
+## the walk must keep the torch in one hand.
 func test_cedalion_faces_where_he_walks() -> void:
 	print("Cedalion faces where he walks")
-	var anim := SheetAnim.load_for("cedalion")
-	if anim == null:
-		check(false, "Cedalion has an animation sheet")
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://art/final/cedalion_sheet.json"))
+	if not (data is Dictionary):
+		check(false, "Cedalion's sheet data reads")
 		return
+	var frames: Array = data.frames
 	var wrong: Array = []
-	for name in anim.clips:
-		var clip: SheetAnim.Clip = anim.clips[name]
-		for i in clip.frames.size():
-			var h: Variant = clip.hand[i]
-			var t: Variant = clip.torch[i]
-			if h != null and h.x <= 0.0:
-				wrong.append("%s#%d sword at x %d" % [name, i, h.x])
-			if t != null and h != null and t.x >= 0.0:
-				wrong.append("%s#%d torch at x %d" % [name, i, t.x])
-	check(wrong.is_empty(), "every frame holds the sword on the side he faces and the torch on the other%s" % ("" if wrong.is_empty() else " (%s)" % ", ".join(wrong)))
+	for tag in data.meta.frameTags:
+		var name := String(tag.name)
+		if name.begins_with("look_"):
+			continue
+		for i in range(int(tag.from), int(tag.to) + 1):
+			if String(frames[i].get("faces", "")) != "right":
+				wrong.append("%s#%d faces %s" % [name, i - int(tag.from), frames[i].get("faces", "?")])
+	check(wrong.is_empty(), "every frame but the glance back faces the way he moves%s" % ("" if wrong.is_empty() else " (%s)" % ", ".join(wrong)))
+	var anim := SheetAnim.load_for("cedalion")
+	for d in ["se", "ne"]:
+		var walk: SheetAnim.Clip = anim.clips["walk_" + d]
+		var sides := {}
+		for t in walk.torch:
+			if t != null:
+				sides[signf(t.x)] = true
+		check(sides.size() == 1, "walk_%s keeps the torch in one hand" % d)
 	# Walking left mirrors the front walk, walking right doesn't: so he faces the way he goes.
 	check(anim.pick("walk", Vector2(-1, 0)).flip and not anim.pick("walk", Vector2(1, 0)).flip,
 			"walking left mirrors the walk, walking right shows it as drawn")

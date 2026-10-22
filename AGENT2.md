@@ -34,10 +34,11 @@ stable build: all tests pass.
    - Storeroom clutter, looks only, no collision (`Room.CLUTTER`: sacks, crates, rope,
      `floor_grain`).
 3. This push: two fixes.
-   - Facing bug: the first sheet's front idle and walk frames look screen-left, so they are
-     mirrored again (`BOXES` in `tools/process_sheet.py`). Every clip now holds the sword on the
-     side he faces. Don't un-mirror them: the morning's "walk animation is inverted" fix was the
-     cause.
+   - Facing bug: the artist drew the front poses facing different ways. `idle_f` and `walk_f0`
+     look left; `idle_f2` and `walk_f1`-`walk_f3` look right. Nothing is mirrored now. The walk is
+     `walk_f2, walk_f1, walk_f3, walk_f1`; `idle_se` is `idle_f2` and `look_se` (the glance back)
+     is `idle_f`. `FACES` in `tools/process_sheet.py` records each pose's facing and the JSON
+     carries it per frame ("faces"), so the test catches a left-facing frame in any clip but `look`.
    - Sky: `Atmosphere.skyline()` / `skyline_span()` / `unpeek()`. Far islands that would rest on
      the back walls lift clear or sink behind them; Orion moves to the nearest open sky and
      shrinks to 80% when it's tight. `NightSky.room` / `FarSky.room` are set in `dress()`.
@@ -45,7 +46,7 @@ stable build: all tests pass.
 
 ## Tests
 
-229 pass (`tests/run_tests.gd`). New tests: `test_cedalion_moves`,
+231 pass (`tests/run_tests.gd`). New tests: `test_cedalion_moves`,
 `test_cedalion_faces_where_he_walks`, `test_medallions_on_plain_floor` (also covers cracked walls
 and clutter), `test_sky_clears_walls`.
 

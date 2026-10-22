@@ -10,14 +10,15 @@
    },
    "duration": 400,
    "torch": {
-    "x": -11,
-    "y": -19
+    "x": 15,
+    "y": -21
    },
    "hand": {
-    "x": 10,
-    "y": -9,
-    "angle": -33
-   }
+    "x": -3,
+    "y": -6,
+    "angle": -136
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 1",
@@ -36,7 +37,8 @@
     "x": 9,
     "y": -10,
     "angle": -44
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 2",
@@ -48,14 +50,15 @@
    },
    "duration": 400,
    "torch": {
-    "x": -15,
-    "y": -21
+    "x": 12,
+    "y": -18
    },
    "hand": {
-    "x": 4,
-    "y": -6,
-    "angle": -44
-   }
+    "x": -9,
+    "y": -9,
+    "angle": -147
+   },
+   "faces": "left"
   },
   {
    "filename": "cedalion 3",
@@ -74,7 +77,8 @@
     "x": 10,
     "y": -9,
     "angle": -40
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 4",
@@ -86,14 +90,15 @@
    },
    "duration": 150,
    "torch": {
-    "x": -12,
+    "x": 12,
     "y": -19
    },
    "hand": {
-    "x": 9,
+    "x": -8,
     "y": -9,
-    "angle": -44
-   }
+    "angle": -136
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 5",
@@ -105,14 +110,15 @@
    },
    "duration": 150,
    "torch": {
-    "x": -9,
-    "y": -17
+    "x": 11,
+    "y": -18
    },
    "hand": {
-    "x": 9,
-    "y": -10,
-    "angle": -44
-   }
+    "x": -8,
+    "y": -9,
+    "angle": -136
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 6",
@@ -124,14 +130,15 @@
    },
    "duration": 150,
    "torch": {
-    "x": -12,
+    "x": 12,
     "y": -19
    },
    "hand": {
-    "x": 9,
+    "x": -8,
     "y": -9,
-    "angle": -44
-   }
+    "angle": -136
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 7",
@@ -143,14 +150,15 @@
    },
    "duration": 150,
    "torch": {
-    "x": -11,
+    "x": 11,
     "y": -18
    },
    "hand": {
-    "x": 9,
+    "x": -8,
     "y": -9,
-    "angle": -44
-   }
+    "angle": -136
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 8",
@@ -169,7 +177,8 @@
     "x": 8,
     "y": -8,
     "angle": -44
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 9",
@@ -188,7 +197,8 @@
     "x": 6,
     "y": -8,
     "angle": -42
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 10",
@@ -207,7 +217,8 @@
     "x": 8,
     "y": -8,
     "angle": -44
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 11",
@@ -226,7 +237,8 @@
     "x": 9,
     "y": -8,
     "angle": -45
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 12",
@@ -245,7 +257,8 @@
     "x": 4,
     "y": -8,
     "angle": -39
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 13",
@@ -264,7 +277,8 @@
     "x": 16,
     "y": -7,
     "angle": -42
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 14",
@@ -283,7 +297,8 @@
     "x": 10,
     "y": -7,
     "angle": -42
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 15",
@@ -296,13 +311,14 @@
    "duration": 300,
    "torch": {
     "x": -14,
-    "y": -20
+    "y": -19
    },
    "hand": {
     "x": 6,
     "y": -7,
     "angle": -42
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 16",
@@ -320,8 +336,9 @@
    "hand": {
     "x": 7,
     "y": -6,
-    "angle": -33
-   }
+    "angle": -147
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 17",
@@ -340,7 +357,8 @@
     "x": 7,
     "y": -13,
     "angle": -44
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 18",
@@ -359,7 +377,8 @@
     "x": 10,
     "y": -7,
     "angle": -42
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 19",
@@ -372,13 +391,14 @@
    "duration": 300,
    "torch": {
     "x": -14,
-    "y": -20
+    "y": -19
    },
    "hand": {
     "x": 6,
     "y": -7,
     "angle": -42
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 20",
@@ -390,14 +410,15 @@
    },
    "duration": 300,
    "torch": {
-    "x": -11,
+    "x": 11,
     "y": -18
    },
    "hand": {
-    "x": 9,
+    "x": -8,
     "y": -9,
-    "angle": -44
-   }
+    "angle": -136
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 21",
@@ -416,7 +437,8 @@
     "x": 8,
     "y": -8,
     "angle": -44
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 22",
@@ -428,9 +450,10 @@
    },
    "duration": 90,
    "torch": {
-    "x": -4,
+    "x": -5,
     "y": -11
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 23",
@@ -444,7 +467,8 @@
    "torch": {
     "x": -1,
     "y": -10
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 24",
@@ -458,7 +482,8 @@
    "torch": {
     "x": -1,
     "y": -13
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 25",
@@ -470,9 +495,10 @@
    },
    "duration": 90,
    "torch": {
-    "x": -4,
+    "x": -5,
     "y": -11
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 26",
@@ -486,7 +512,8 @@
    "torch": {
     "x": -1,
     "y": -10
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 27",
@@ -500,7 +527,8 @@
    "torch": {
     "x": -1,
     "y": -13
-   }
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 28",
@@ -512,14 +540,15 @@
    },
    "duration": 300,
    "torch": {
-    "x": -2,
-    "y": -19
+    "x": 3,
+    "y": -17
    },
    "hand": {
-    "x": 9,
+    "x": -8,
     "y": -15,
-    "angle": -54
-   }
+    "angle": -126
+   },
+   "faces": "right"
   },
   {
    "filename": "cedalion 29",
@@ -538,7 +567,8 @@
     "x": 6,
     "y": -6,
     "angle": -44
-   }
+   },
+   "faces": "right"
   }
  ],
  "meta": {

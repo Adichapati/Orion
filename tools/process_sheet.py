@@ -45,19 +45,22 @@ COLS = 8
 # ---------------------------------------------------------------- Cedalion's hand-made sheet
 
 # (box in the sheet, mirror?, kind) - boxes found by scanning the sheet; mirror normalises facing:
-# front views must look toward screen-right (SE) and back views away up-right (NE). The sheet's
-# front idle and walk poses look toward screen-LEFT (eyes on the left of the face, the ear on the
-# right), so they are mirrored, which also puts the sword on the same side as in the attack
-# frames. Left unmirrored (as on 2026-10-22 morning) he walked one way while looking the other.
+# front views must look toward screen-right (SE) and back views away up-right (NE). The artist was
+# not consistent: of the front poses, the second idle and the last three walk frames look right
+# (ear on the left of the face, eyes right of centre) but the first idle and the first walk frame
+# look left. Mirroring those two would swap the torch to the other hand mid-step, so the walk
+# leaves the first frame out and the left-looking idle is only his glance back ("look"). FACES
+# records which way each pose looks as drawn; the sheet's JSON carries it (after mirroring) so a
+# test can check that every clip faces the way he moves.
 BOXES = {
-    "idle_f": ((60, 50, 280, 222), True, "stand"),
-    "idle_f2": ((380, 50, 590, 222), True, "stand"),
+    "idle_f": ((60, 50, 280, 222), False, "stand"),
+    "idle_f2": ((380, 50, 590, 222), False, "stand"),
     "idle_b": ((640, 50, 880, 222), False, "stand"),
     "idle_b2": ((950, 50, 1190, 222), False, "stand"),
-    "walk_f0": ((15, 275, 182, 429), True, "stand"),
-    "walk_f1": ((191, 274, 320, 430), True, "stand"),
-    "walk_f2": ((327, 274, 458, 430), True, "stand"),
-    "walk_f3": ((462, 274, 596, 430), True, "stand"),
+    "walk_f0": ((15, 275, 182, 429), False, "stand"),
+    "walk_f1": ((191, 274, 320, 430), False, "stand"),
+    "walk_f2": ((327, 274, 458, 430), False, "stand"),
+    "walk_f3": ((462, 274, 596, 430), False, "stand"),
     "walk_b0": ((638, 276, 780, 429), True, "stand"),
     "walk_b1": ((775, 276, 912, 429), True, "stand"),
     "walk_b2": ((912, 276, 1051, 430), True, "stand"),
@@ -66,6 +69,16 @@ BOXES = {
     "atk_f1": ((387, 493, 536, 641), False, "stand"),
     "atk_f2": ((684, 492, 870, 640), False, "stand"),
     "atk_b": ((978, 487, 1163, 640), False, "stand"),
+}
+
+# Which way each pose looks as drawn (before mirroring), seen from the front or the back.
+FACES = {
+    "idle_f": "left", "idle_f2": "right", "idle_b": "right", "idle_b2": "right",
+    "walk_f0": "left", "walk_f1": "right", "walk_f2": "right", "walk_f3": "right",
+    "walk_b0": "left", "walk_b1": "left", "walk_b2": "left", "walk_b3": "left",
+    "atk_f0": "right", "atk_f1": "right", "atk_f2": "right", "atk_b": "right",
+    "roll0": "right", "roll1": "right", "roll2": "right",
+    "block_f": "left", "block_b": "left", "hurt_f": "left", "hurt_b": "right",
 }
 
 # The sword, in sheet pixels before mirroring: the blade's tip and the centre of its crossguard
@@ -110,12 +123,12 @@ BOXES_V2 = {
     "roll0": ((161, 641, 229, 707), False, "stand"),
     "roll1": ((266, 638, 338, 705), False, "stand"),
     "roll2": ((383, 635, 454, 705), False, "stand"),
-    # the front block looks left like the first sheet's front views, so it is mirrored too
+    # the front block looks left, so it is mirrored to face the way he moves
     "block_f": ((698, 626, 771, 704), True, "stand"),
     # the back views hold the sword on the left: mirrored to match the first sheet's back views
     "block_b": ((962, 628, 1042, 704), True, "stand"),
-    # the flinch already holds the sword on our right, like the (mirrored) front views
-    "hurt_f": ((537, 779, 608, 862), False, "stand"),
+    # the flinch looks a little left, with the sword on our right: mirrored like the block
+    "hurt_f": ((537, 779, 608, 862), True, "stand"),
     "hurt_b": ((609, 778, 694, 854), False, "stand"),
 }
 SWORDS_V2 = {
@@ -142,10 +155,12 @@ SHEET_V2 = dict(
 # Animation tags: name -> (frame keys, ms per frame). Facing suffix: _se front, _ne back; the game
 # mirrors them for _sw / _nw.
 TAGS = [
-    ("idle_se", ["idle_f"], 400), ("idle_ne", ["idle_b"], 400),
-    ("look_se", ["idle_f2"], 400), ("look_ne", ["idle_b2"], 400),
-    # stride, pass, stride, pass: two footfalls per cycle, in step with the footstep sounds
-    ("walk_se", ["walk_f2", "walk_f0", "walk_f3", "walk_f1"], 150),
+    # the right-looking idle; now and then he glances back over his shoulder (the left-looking one)
+    ("idle_se", ["idle_f2"], 400), ("idle_ne", ["idle_b"], 400),
+    ("look_se", ["idle_f"], 400), ("look_ne", ["idle_b2"], 400),
+    # stride, pass, stride, pass: two footfalls per cycle, in step with the footstep sounds (the
+    # first walk frame looks the other way, so the other pass frame is used twice)
+    ("walk_se", ["walk_f2", "walk_f1", "walk_f3", "walk_f1"], 150),
     ("walk_ne", ["walk_b1", "walk_b0", "walk_b3", "walk_b2"], 150),
     ("attack_se", ["atk_f0", "atk_f1", "atk_f2"], 100),
     ("attack_ne", ["atk_b"], 300),
@@ -162,7 +177,7 @@ CONFIGS = {
         source=GENERATED / "cedalion_friend_sheet.webp",
         boxes=BOXES, tags=TAGS, swords=SWORDS, arcs=ARCS, angle_from={**ANGLE_FROM, **ANGLE_FROM_V2},
         scale=0.19,  # sheet pixels -> game pixels (~26 px tall, the doc's 16x24 hero plus hair)
-        palette=22, background="paper", torch=True, stills=("idle_f", "idle_b"),
+        palette=22, background="paper", torch=True, stills=("idle_f2", "idle_b"), faces=FACES,
         more=[SHEET_V2],
     ),
 }
@@ -460,6 +475,7 @@ def flame_of(f: Image.Image, side=0):
 def process(name, cfg, preview=None):
     raw = {}
     hands = {}
+    mirrors = {}
     first = None
     # The main sheet, then any extra sheets ("more": their own source, boxes, swords, arcs and
     # scale) that add frames to the same set.
@@ -475,6 +491,7 @@ def process(name, cfg, preview=None):
             if part.get("enhance"):
                 cut = enhance(cut, *part["enhance"])
             tip, guard, hand = swords.get(key, (None, None, None))
+            mirrors[key] = mirror
             if mirror:
                 cut = cut.transpose(Image.FLIP_LEFT_RIGHT)
             bb = cut.getbbox()
@@ -544,6 +561,10 @@ def process(name, cfg, preview=None):
         if k in hands:
             hx, hy, angle = hands[k]
             entry["hand"] = {"x": round(hx - ax), "y": round(hy - ay), "angle": round(angle or 0.0)}
+        drawn = cfg.get("faces", {}).get(k)
+        if drawn:
+            mirrored = mirrors.get(k, False)
+            entry["faces"] = ("left" if drawn == "right" else "right") if mirrored else drawn
         frame_meta.append(entry)
 
     OUT.mkdir(parents=True, exist_ok=True)
