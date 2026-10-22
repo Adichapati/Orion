@@ -14,6 +14,7 @@ func run() -> void:
 	test_iso_round_trip()
 	test_final_art_matches_placeholders()
 	await test_rooms_build_and_connect()
+	await test_rooms_are_sealed()
 	await test_guard_sees_player()
 	await test_noise_makes_guard_suspicious()
 	await test_statue_guard_wakes()
@@ -164,6 +165,88 @@ func _flood_with_jumps(r: Room, start: Vector2i) -> Dictionary:
 				seen[n] = true
 				queue.append(n)
 	return seen
+
+
+## The eight input directions (screen space), as pressed on the keyboard.
+const PUSHES := [
+	["move_right"], ["move_left"], ["move_up"], ["move_down"],
+	["move_up", "move_right"], ["move_up", "move_left"], ["move_down", "move_right"], ["move_down", "move_left"],
+]
+
+
+var _escaped_to := ""
+
+
+## Steps the player's own state machine synchronously and returns false if he ever stands outside
+## the room (off the grid or inside a wall cell).
+func _step_inside(r: Room, p: Player, frames: int) -> bool:
+	for i in frames:
+		p._physics_process(1.0 / 60.0)
+		var c := p.cell()
+		if c.x < 0 or c.y < 0 or c.x >= r.size.x or c.y >= r.size.y or r.ch(c) in Room.WALLS:
+			_escaped_to = "%s in state %s" % [p.grid_pos().snapped(Vector2(0.01, 0.01)), Player.S.keys()[p.state]]
+			return false
+	return true
+
+
+func _reset_player(r: Room, p: Player, c: Vector2i) -> void:
+	p._set_state(Player.S.NORMAL)
+	p._gvel = Vector2.ZERO
+	p.velocity = Vector2.ZERO
+	p.global_position = r.cell_center(c)
+	for k in p._cool:
+		p._cool[k] = 0.0
+
+
+## Bug: Cedalion could walk out through a door on the grid's edge onto the sky. From every
+## reachable cell next to a wall or the edge, push him in all eight directions by walking, then
+## dodge and jump into whatever stopped him, and check he never leaves the room.
+func test_rooms_are_sealed() -> void:
+	print("Rooms are sealed")
+	for data in Game.rooms:
+		var r := _make_room(data)
+		NoiseBus.noise.disconnect(r._show_noise)
+		var p := _add_player(r, r.player_spawn)
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		var seen := _flood_with_jumps(r, r.player_spawn)
+		var leaks: Array = []
+		var tried := 0
+		for c in seen:
+			var edge: bool = r.ch(c) in "ED"
+			for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
+					Vector2i(1, 1), Vector2i(-1, -1), Vector2i(1, -1), Vector2i(-1, 1)]:
+				var n: Vector2i = c + d
+				if n.x < 0 or n.y < 0 or n.x >= r.size.x or n.y >= r.size.y or r.ch(n) in Room.WALLS:
+					edge = true
+			if not edge:
+				continue
+			for push in PUSHES:
+				tried += 1
+				_reset_player(r, p, c)
+				for a in push:
+					Input.action_press(a)
+				var dir := Iso.input_to_grid_dir(Input.get_vector("move_left", "move_right", "move_up", "move_down"))
+				var ok := _step_inside(r, p, 45)
+				p._start_dodge(dir)
+				ok = ok and _step_inside(r, p, 20)
+				p._set_state(Player.S.NORMAL)
+				ok = ok and _step_inside(r, p, 10)
+				p.facing = dir
+				p._start_jump()
+				ok = ok and _step_inside(r, p, 30)
+				for a in push:
+					Input.action_release(a)
+				# A standing jump from the middle of the cell, too.
+				_reset_player(r, p, c)
+				p.facing = dir
+				p._start_jump()
+				ok = ok and _step_inside(r, p, 30)
+				if not ok:
+					leaks.append("%s %s to %s" % [c, "+".join(push), _escaped_to])
+		check(tried > 0 and leaks.is_empty(), "%s: Cedalion stays inside from %d pushes at the edges%s" % [
+				r.id, tried, "" if leaks.is_empty() else " (leaks: %s)" % ", ".join(leaks.slice(0, 6))])
+		_free_room(r)
 
 
 const OPEN_GRID := [

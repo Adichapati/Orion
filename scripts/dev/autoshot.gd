@@ -116,6 +116,24 @@ const SCRIPTS := {
 		[0.7, "call", "wait_flash"],
 		[5.0, "shot", "", "later"],
 	],
+	# Cistern: push against the exit door from inside (it used to lead out onto the sky), then
+	# climb the steps to Phineus.
+	"seal": [
+		[0.5, "call", "goto", Vector2i(11, 9)],
+		[0.7, "press", "move_down"],
+		[0.7, "press", "move_right"],
+		[2.2, "shot", "", "door_push"],
+		[2.3, "release", "move_down"],
+		[2.3, "release", "move_right"],
+		[2.3, "call", "info"],
+		[2.4, "call", "goto", Vector2i(2, 6)],
+		[2.6, "press", "move_up"],
+		[2.6, "press", "move_right"],
+		[3.8, "release", "move_up"],
+		[3.8, "release", "move_right"],
+		[4.0, "call", "info"],
+		[4.2, "shot", "", "phineus"],
+	],
 	"pause": [
 		[1.0, "tap", "pause"],
 		[1.5, "shot", "", "paused"],
@@ -186,6 +204,12 @@ func _run(e: Array) -> void:
 				_run([0, "shot", "", "flash"])
 				await get_tree().create_timer(Guard.FLASH_LEAD, true, false, true).timeout
 				_run([0, "shot", "", "strike"])
+			elif e[2] == "goto" and main.room:
+				main.player.global_position = main.room.cell_center(e[3])
+				main.player.camera.reset_smoothing()
+			elif e[2] == "info" and main.room:
+				var f: Interactable = main.player.focus
+				print("autoshot info: player at %s, focus %s" % [main.player.grid_pos(), f.verb if f else "none"])
 			elif e[2] == "next":
 				for c in main.ui.get_children():
 					if c is IntroCards:

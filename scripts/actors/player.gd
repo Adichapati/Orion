@@ -625,6 +625,17 @@ func _start_jump() -> void:
 	var mid := from_c + Vector2i(signi(step.x), signi(step.y))
 	var ok := not _is_solid(mid) and not _is_solid(to_c) \
 			and absf(room.elevation_px(to_c) - room.elevation_px(from_c)) < 12.0
+	# A diagonal jump can't cut a wall's corner, and the flight from where he really stands (not
+	# the cell's centre) must not cross anything solid.
+	if ok and step.x != 0 and step.y != 0:
+		ok = not _is_solid(from_c + Vector2i(step.x, 0)) and not _is_solid(from_c + Vector2i(0, step.y))
+	if ok:
+		var a := grid_pos()
+		for i in range(1, 16):
+			var on := Iso.cell_of_grid(a.lerp(Vector2(to_c), i / 16.0))
+			if on != from_c and _is_solid(on):
+				ok = false
+				break
 	_jump_from = global_position
 	_jump_to = room.cell_center(to_c) if ok else global_position
 	_set_state(S.JUMP)

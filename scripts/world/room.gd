@@ -117,6 +117,7 @@ func build(room_data: Dictionary) -> void:
 	for c in order:
 		_build_solid(c)
 	_build_ledges()
+	_build_bounds()
 	_build_moonlight()
 	if id == "star-shrine":
 		exit_locked = true
@@ -495,6 +496,25 @@ func _add_hazard(c: Vector2i) -> void:
 	body.add_child(shape)
 	add_child(body)
 	_hazard_bodies[c] = body
+
+
+## The room is an island: a ring of solid cells just outside the grid seals every edge, so doors
+## and open sides on the border (the Lion Gate's south edge) lead nowhere.
+func _build_bounds() -> void:
+	var body := StaticBody2D.new()
+	body.name = "Bounds"
+	body.collision_layer = SOLID_LAYER
+	body.collision_mask = 0
+	body.set_meta("kind", "#")
+	add_child(body)
+	for y in range(-1, size.y + 1):
+		for x in range(-1, size.x + 1):
+			if x >= 0 and y >= 0 and x < size.x and y < size.y:
+				continue
+			var shape := CollisionPolygon2D.new()
+			shape.polygon = Iso.diamond(1.0)
+			shape.position = cell_center(Vector2i(x, y))
+			body.add_child(shape)
 
 
 ## Raised floor ('h') can only be climbed by the steps ('^'); other edges block walking.
