@@ -129,6 +129,10 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
 - Started three design agents in parallel worktrees (Sathvik: use ultracode for the design): the
   floating-island title screen, ruin props and materials from his references, and the armour and
   weapon sets (labrys, koryne, a mail shirt, armour bodies cut from his sheet).
+- The tour found the new moves hard to read: the roll was a faint smudge (60% alpha), the block
+  blown out to white (x1.4) and the get-hit a flat red silhouette. Now 85% alpha, a cool x1.15
+  glint, and a red flash that settles to a light tint. Test: the roll stays at 0.8 alpha or more
+  and the flinch shows in its own colours after the flash. 243 tests pass.
 
 ; stopped at about 55% of the 5-hour window)
 

@@ -429,13 +429,16 @@ func test_cedalion_moves() -> void:
 	p._start_dodge(Vector2(1, 0))
 	var seen := {}
 	var hidden := true
+	var min_alpha := 1.0
 	while p.state == Player.S.DODGE:
 		await get_tree().physics_frame
 		if p.state != Player.S.DODGE:
 			break
 		seen[p.sprite.texture.region] = true
 		hidden = hidden and not p.sword.visible
+		min_alpha = minf(min_alpha, p.sprite.modulate.a)
 	check(seen.size() >= 3, "a dodge plays %d roll frames" % seen.size())
+	check(min_alpha >= 0.8, "the roll stays readable, not a faint smudge (alpha %.2f)" % min_alpha)
 	check(hidden, "the sword is hidden all through the roll")
 	await get_tree().physics_frame
 	check(p.sword.visible, "the sword is back once he's up")
@@ -444,6 +447,8 @@ func test_cedalion_moves() -> void:
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	check(p._anim_base == "hurt", "a hit shows the get-hit frame (showing '%s')" % p._anim_base)
+	await _seconds(0.15)
+	check(p.state != Player.S.HURT or p.sprite.modulate.g > 0.6, "after the red flash the flinch shows in its own colours")
 	Game.reset_run()
 	_free_room(r)
 

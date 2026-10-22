@@ -55,9 +55,12 @@ stable build: all tests pass.
    back)`. `Game.room_state` (+ `remember()` / `remembered()`, saved in the snapshot) keeps
    smashed pots (`Breakable`) and opened chests (`Chest`) used up for the run. Test `test_go_back`.
 
+7. `Player._update_visuals` / `take_hit`: dodge alpha 0.85, parry glint (1.15, 1.15, 1.3), hurt
+   tint (1, 0.75, 0.72) after the red flash.
+
 ## Tests
 
-241 pass (`tests/run_tests.gd`). New tests: `test_cedalion_moves`,
+243 pass (`tests/run_tests.gd`). New tests: `test_cedalion_moves`,
 `test_cedalion_faces_where_he_walks`, `test_medallions_on_plain_floor` (also covers cracked walls
 and clutter), `test_sky_clears_walls`.
 

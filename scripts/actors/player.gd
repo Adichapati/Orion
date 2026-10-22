@@ -628,7 +628,8 @@ func take_hit(damage: int, from_pos: Vector2, knockback_tiles: float) -> bool:
 	var away := (grid_pos() - Iso.screen_to_grid(from_pos)).normalized()
 	_knock = away * knockback_tiles * 6.0
 	_set_state(S.HURT)
-	sprite.modulate = Color(1.0, 0.35, 0.35)
+	# A red flash, then the flinch itself in its own colours (it used to stay solid red).
+	sprite.modulate = Color(1.0, 0.75, 0.72)
 	Juice.flash(sprite, 0.08, Color(1.0, 0.35, 0.3))
 	Juice.freeze(get_tree(), 0.08)
 	ShakeCamera.add_trauma(0.5)
@@ -848,9 +849,11 @@ func _update_visuals(delta: float) -> void:
 	else:
 		sprite.visible = true
 	if state == S.PARRY and _parry_t > 0.0:
-		sprite.modulate = Color(1.4, 1.4, 1.6)
+		# a cool glint on the block, not a white-out: the braced pose must still read
+		sprite.modulate = Color(1.15, 1.15, 1.3)
 	elif state == S.DODGE:
-		sprite.modulate = Color(1, 1, 1, 0.6)
+		# a little see-through while he can't be hit, but the roll must read as a roll
+		sprite.modulate = Color(1, 1, 1, 0.85)
 	_update_sword(delta, sd)
 
 
