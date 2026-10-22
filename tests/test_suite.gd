@@ -16,6 +16,7 @@ func run() -> void:
 	await test_rooms_build_and_connect()
 	await test_rooms_are_sealed()
 	await test_interactables_reachable()
+	await test_cedalion_sword()
 	await test_guard_sees_player()
 	await test_noise_makes_guard_suspicious()
 	await test_statue_guard_wakes()
@@ -273,6 +274,49 @@ func test_interactables_reachable() -> void:
 					r.id, it.verb, at, "" if from == Vector2i(-1, -1) else " (%s)" % from])
 		check(count > 0, "%s has interactables to check" % r.id)
 		_free_room(r)
+
+
+## Bug: Cedalion showed a sword before he had one, and it blinked in and out as he walked (two
+## walk frames were drawn without it). The sword is now its own sprite on a hand point that
+## every frame carries, hidden while he's unarmed, and swept through an arc when he attacks.
+func test_cedalion_sword() -> void:
+	print("Cedalion's sword")
+	var anim := SheetAnim.load_for("cedalion")
+	check(anim != null, "Cedalion has an animation sheet")
+	if anim == null:
+		return
+	var missing: Array = []
+	for name in anim.clips:
+		var clip: SheetAnim.Clip = anim.clips[name]
+		for i in clip.frames.size():
+			if clip.hand[i] == null:
+				missing.append("%s#%d" % [name, i])
+	check(missing.is_empty(), "every frame of every clip has a sword hand%s" % ("" if missing.is_empty() else " (missing: %s)" % ", ".join(missing)))
+	for wid in Game.weapons:
+		check(ResourceLoader.exists("res://art/final/sword_%s.png" % wid), "the %s has a sword sprite" % wid)
+
+	Game.reset_run()
+	var r := _open_room([])
+	var p := _add_player(r, Vector2i(4, 3))
+	await _seconds(0.1)
+	check(not p.sword.visible, "unarmed, Cedalion shows no sword")
+	Game.give_weapon("xiphos")
+	var shown := true
+	for i in 40:
+		Input.action_press("move_right")
+		await get_tree().physics_frame
+		shown = shown and p.sword.visible
+	Input.action_release("move_right")
+	check(shown, "armed, the sword shows on every frame of the walk")
+	await _seconds(0.3)
+	var frames := {}
+	p._start_attack()
+	while p.state == Player.S.ATTACK:
+		frames[p.sword.frame] = true
+		await get_tree().physics_frame
+	check(frames.size() >= 5, "a swing sweeps the blade through %d angles" % frames.size())
+	Game.reset_run()
+	_free_room(r)
 
 
 const OPEN_GRID := [

@@ -64,9 +64,18 @@ var _anim_base := ""
 var _anim_t := 0.0
 var _idle_t := 0.0
 var _torch_at := Vector2(-8, -19)
+## The sword hand in the current frame: x, y from the feet and the resting blade angle (degrees),
+## as drawn (before mirroring).
+var _hand := Vector3(6, -9, -45)
+var _sword_tex := ""
+var _lunge := 0.0
 
 var body_node: Node2D
 var sprite: Sprite2D
+## The sword, drawn on the sword hand from a strip of 32 pre-rotated angles (tools/gen_swords.py):
+## hidden while he's unarmed, swung in an arc when he attacks, one look per weapon.
+var sword: Sprite2D
+var trail: BladeTrail
 var torch: PointLight2D
 var torch_embers: CPUParticles2D
 var camera: ShakeCamera
@@ -91,6 +100,16 @@ func _ready() -> void:
 	_anim = SheetAnim.load_for("cedalion")
 	if _anim:
 		sprite.offset = _anim.sprite_offset()
+	sword = Sprite2D.new()
+	sword.hframes = 32
+	sword.visible = false
+	body_node.add_child(sword)
+	body_node.move_child(sword, sprite.get_index())
+	trail = BladeTrail.new()
+	trail.top_level = true
+	trail.z_index = 30
+	trail.material = Atmosphere.unshaded()
+	add_child(trail)
 	life = Life.new()
 	add_child(life)
 	life.setup(body_node, sprite, 12)
@@ -395,7 +414,10 @@ func _aim_at_nearest(reach: float) -> void:
 func _attacking(delta: float) -> void:
 	var w := Game.weapon()
 	var dur := w.swing_time if w else 0.4
-	_slide(0.6 if _state_t < dur * 0.4 else 0.0)
+	# A step into the swing: a little drift in the wind-up, a lunge on the strike.
+	var k := _state_t / dur
+	var lunge := 2.4 if _combo == 2 else 1.6
+	_slide(0.5 if k < SWING_STRIKE else lunge if k < SWING_FOLLOW else 0.0)
 	if not _hit_done and _state_t >= dur * 0.35:
 		_hit_done = true
 		_resolve_hit(w)
@@ -414,7 +436,6 @@ func _attacking(delta: float) -> void:
 
 
 func _resolve_hit(w: WeaponData) -> void:
-	Fx.swing(room.world, global_position + Vector2(0, -elev), facing, w.reach)
 	var targets := _guards_in_front(w.reach, 70.0)
 	var hit_any := false
 	for g in targets.slice(0, 1):
@@ -754,12 +775,18 @@ func _animate(delta: float, sd: Vector2) -> bool:
 		_anim_t += delta * rate
 	var clip: SheetAnim.Clip = pick.clip
 	var i := clip.index_for_progress(progress) if progress >= 0.0 else clip.index_at(_anim_t, loop)
+	if base == "attack" and clip.frames.size() == 3:
+		# The wind-up until the blade falls, the lunge through the strike, then the follow-through.
+		i = 0 if progress < SWING_STRIKE else (1 if progress < 0.56 else 2)
 	sprite.texture = clip.frames[i]
 	sprite.flip_h = pick.flip
 	sprite.offset = _anim.sprite_offset()
 	var t: Variant = clip.torch[i]
 	if t != null:
 		_torch_at = t
+	var h: Variant = clip.hand[i] if i < clip.hand.size() else null
+	if h != null:
+		_hand = h
 	var at := Vector2(-_torch_at.x if pick.flip else _torch_at.x, _torch_at.y)
 	torch.position = at + Vector2(0, 2)
 	torch_embers.position = at + Vector2(0, -2)
@@ -816,6 +843,142 @@ func _update_visuals(delta: float) -> void:
 		sprite.modulate = Color(1.4, 1.4, 1.6)
 	elif state == S.DODGE:
 		sprite.modulate = Color(1, 1, 1, 0.6)
+	_update_sword(delta, sd)
+
+
+# ============================================================== the sword
+
+## Phases of a swing, as fractions of the weapon's swing time. The hit lands at 0.35.
+const SWING_STRIKE := 0.26
+const SWING_FOLLOW := 0.44
+const SWING_RECOVER := 0.7
+
+
+## The blade's pose in a swing at progress k, for a figure drawn facing screen-right: hand offset
+## (x forward along the facing, y down, in pixels) and blade angle in degrees. `face` is the
+## facing's screen angle and `rest` the frame's resting angle. The three swings of the combo: a
+## forehand cut from over the shoulder, a backhand sweep up the other way, and a thrust.
+func _swing_pose(k: float, face: float, rest: float) -> Vector3:
+	var wind := face - 95.0
+	var end := face + 55.0
+	var settle := 12.0
+	var reach_px := 3.0
+	if _combo == 1:
+		wind = face + 95.0
+		end = face - 100.0
+		settle = -8.0
+	elif _combo == 2:
+		wind = face - 12.0
+		end = face
+		settle = 0.0
+		reach_px = 6.0
+	if k < SWING_STRIKE:
+		var t := ease(k / SWING_STRIKE, 0.5)
+		return Vector3((-2.0 if _combo == 2 else 2.0) * t, (1.0 if _combo == 1 else -4.0) * t, lerpf(rest, wind, t))
+	if k < SWING_FOLLOW:
+		# Fast out of the wind-up: the blade passes the facing about when the hit lands.
+		var t := 1.0 - pow(1.0 - (k - SWING_STRIKE) / (SWING_FOLLOW - SWING_STRIKE), 2.0)
+		return Vector3(lerpf(-2.0 if _combo == 2 else 2.0, reach_px, t), lerpf(1.0 if _combo == 1 else -4.0, 1.0, t), lerpf(wind, end, t))
+	if k < SWING_RECOVER:
+		var t := (k - SWING_FOLLOW) / (SWING_RECOVER - SWING_FOLLOW)
+		return Vector3(reach_px * (1.0 - 0.3 * t), 1.0, end + settle * t)
+	var t := smoothstep(0.0, 1.0, (k - SWING_RECOVER) / (1.0 - SWING_RECOVER))
+	return Vector3(reach_px * 0.7 * (1.0 - t), 1.0 - t, lerpf(end + settle, rest, t))
+
+
+func _update_sword(delta: float, sd: Vector2) -> void:
+	var w := Game.weapon()
+	sword.visible = w != null and sprite.visible and state != S.DEAD and state != S.FALL
+	if not sword.visible:
+		trail.stop()
+		if state != S.DEAD:
+			body_node.position.x = 0.0
+		return
+	var tex_name := "sword_" + String(w.id)
+	if tex_name != _sword_tex:
+		_sword_tex = tex_name
+		var known := ResourceLoader.exists("res://art/final/%s.png" % tex_name)
+		sword.texture = Art.tex(tex_name if known else "sword_xiphos")
+	var flip := sprite.flip_h
+	# Work in the drawn (unmirrored) frame, where the figure faces screen-right; mirror at the end.
+	var fwd := Vector2(absf(sd.x), sd.y).normalized()
+	var face := rad_to_deg(fwd.angle())
+	var hand := Vector2(_hand.x, _hand.y)
+	var angle := _hand.z
+	var front := false
+	var lunge_to := 0.0
+	var k := clampf(_state_t / w.swing_time, 0.0, 1.0)
+	if state == S.ATTACK:
+		var pose := _swing_pose(k, face, _hand.z)
+		hand += fwd * pose.x + Vector2(0, pose.y)
+		angle = pose.z
+		front = k < SWING_RECOVER + 0.1
+		if k >= SWING_STRIKE and k < SWING_RECOVER:
+			lunge_to = (4.0 if _combo == 2 else 2.5) * (1.0 - (k - SWING_STRIKE) / (SWING_RECOVER - SWING_STRIKE))
+	elif state == S.PARRY:
+		# The blade raised across the body to catch the strike.
+		hand += Vector2(-1, -4)
+		angle = face - 165.0
+		front = true
+	if flip:
+		hand.x = -hand.x
+		angle = 180.0 - angle
+	# The lunge carries the body forward on the strike and eases back.
+	_lunge = move_toward(_lunge, lunge_to, delta * 40.0)
+	body_node.position.x = roundf((-fwd.x if flip else fwd.x) * _lunge)
+	sword.position = (hand + sprite.position).round()
+	sword.frame = posmod(roundi(angle / 11.25), 32)
+	sword.modulate = sprite.modulate
+	var behind := sword.get_index() < sprite.get_index()
+	if front == behind:
+		body_node.move_child(sword, sprite.get_index())
+	# The blade's trail through the strike.
+	if state == S.ATTACK and k >= SWING_STRIKE and k < SWING_RECOVER - 0.12:
+		trail.add(body_node.global_position + sword.position * body_node.scale, deg_to_rad(angle), 11.0 * w.reach)
+	else:
+		trail.stop()
+
+
+## The pale crescent a blade leaves through the air: the swept wedge between the last few blade
+## positions, fading out in about a tenth of a second.
+class BladeTrail extends Node2D:
+	const LIFE := 0.11
+	var _samples: Array = []  # [pivot, angle (rad), length, time]
+	var _active := false
+
+	func add(pivot: Vector2, angle: float, length: float) -> void:
+		_active = true
+		_samples.append([pivot, angle, length, Time.get_ticks_msec() / 1000.0])
+
+	func stop() -> void:
+		_active = false
+
+	func _process(_delta: float) -> void:
+		var now := Time.get_ticks_msec() / 1000.0
+		while not _samples.is_empty() and now - float(_samples[0][3]) > LIFE:
+			_samples.pop_front()
+		queue_redraw()
+
+	func _draw() -> void:
+		var now := Time.get_ticks_msec() / 1000.0
+		for i in range(1, _samples.size()):
+			var a: Array = _samples[i - 1]
+			var b: Array = _samples[i]
+			var age := clampf((now - float(a[3])) / LIFE, 0.0, 1.0)
+			var col := Color(1.0, 0.93, 0.72, 0.9 * pow(1.0 - age, 1.5))
+			var steps := maxi(1, int(absf(angle_difference(float(a[1]), float(b[1]))) / 0.2))
+			var r: float = a[2]
+			for j in steps:
+				var t0 := float(j) / steps
+				var t1 := float(j + 1) / steps
+				var p0: Vector2 = (a[0] as Vector2).lerp(b[0], t0)
+				var p1: Vector2 = (a[0] as Vector2).lerp(b[0], t1)
+				var a0 := lerp_angle(float(a[1]), float(b[1]), t0)
+				var a1 := lerp_angle(float(a[1]), float(b[1]), t1)
+				draw_colored_polygon(PackedVector2Array([
+					p0 + Vector2.from_angle(a0) * r * 0.62, p0 + Vector2.from_angle(a0) * (r + 1.5),
+					p1 + Vector2.from_angle(a1) * (r + 1.5), p1 + Vector2.from_angle(a1) * r * 0.62,
+				]), col)
 
 
 ## The aim of a held knucklebone: a dotted arc that marches toward the landing spot, and the

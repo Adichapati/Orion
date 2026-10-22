@@ -9,7 +9,9 @@ extends RefCounted
 ## single stills as before.
 ##
 ## Optional extras the game reads if present: meta.pivot {x, y} (the feet pixel in every cell;
-## default bottom-centre) and a per-frame "torch" {x, y} (the flame, relative to the pivot).
+## default bottom-centre), a per-frame "torch" {x, y} (the flame, relative to the pivot) and a
+## per-frame "hand" {x, y, angle} (the sword hand's grip relative to the pivot, and the resting
+## blade's screen angle in degrees, clockwise from screen right), where the game draws the sword.
 
 const SEARCH := ["res://art/final/", "res://art/placeholders/"]
 
@@ -18,6 +20,8 @@ class Clip:
 	var frames: Array[Texture2D] = []
 	var durations: PackedFloat32Array = PackedFloat32Array()
 	var torch: Array = []
+	## Vector3(x, y, angle) per frame, or null.
+	var hand: Array = []
 	var total := 0.0
 	var pingpong := false
 
@@ -80,6 +84,7 @@ func _parse(text: String, tex: Texture2D) -> bool:
 	var atlases: Array[Texture2D] = []
 	var durs: Array[float] = []
 	var torches: Array = []
+	var hands: Array = []
 	for f in frames:
 		var r: Dictionary = f.get("frame", {})
 		var at := AtlasTexture.new()
@@ -89,6 +94,8 @@ func _parse(text: String, tex: Texture2D) -> bool:
 		durs.append(maxf(0.016, float(f.get("duration", 100)) / 1000.0))
 		var t: Variant = f.get("torch", null)
 		torches.append(Vector2(float(t.x), float(t.y)) if t is Dictionary else null)
+		var h: Variant = f.get("hand", null)
+		hands.append(Vector3(float(h.x), float(h.y), float(h.get("angle", 0.0))) if h is Dictionary else null)
 
 	for tag in meta.get("frameTags", []):
 		var clip := Clip.new()
@@ -104,6 +111,7 @@ func _parse(text: String, tex: Texture2D) -> bool:
 			clip.frames.append(atlases[i])
 			clip.durations.append(durs[i])
 			clip.torch.append(torches[i])
+			clip.hand.append(hands[i])
 			clip.total += durs[i]
 		if not clip.frames.is_empty():
 			clips[String(tag.get("name", ""))] = clip

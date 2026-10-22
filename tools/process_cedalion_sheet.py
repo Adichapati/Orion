@@ -4,16 +4,19 @@ Writes art/final/cedalion_sheet.png + cedalion_sheet.json in Aseprite's json-arr
 real Aseprite export (File > Export Sprite Sheet, JSON data, tags) can replace it later with no
 code changes, plus art/final/cedalion_se.png / cedalion_ne.png stills.
 
-For every frame it removes the paper, grid and drop shadow, mirrors it so all front frames face
-south-east and all back frames face north-east, scales it down to the in-game size, maps every
-frame to one shared palette (so colours never flicker between frames), lines the feet up on one
-pivot and records where the torch flame is, so the torch light follows the hand.
+For every frame it removes the paper, grid and drop shadow, cuts the sword out (the game draws
+the sword as its own sprite: hidden while Cedalion is unarmed, swung in an arc, one per weapon),
+mirrors it so all front frames face south-east and all back frames face north-east, scales it
+down to the in-game size, maps every frame to one shared palette (so colours never flicker
+between frames), lines the feet up on one pivot and records where the torch flame and the sword
+hand are, so the torch light and the sword follow the hands.
 
     python tools/process_cedalion_sheet.py
 """
 from collections import deque
 from pathlib import Path
 import json
+import math
 import sys
 
 from PIL import Image
@@ -47,6 +50,38 @@ BOXES = {
     "atk_b": ((978, 487, 1163, 640), False, "stand"),
 }
 
+# The sword, in sheet pixels before mirroring: the blade's tip and the centre of its crossguard
+# (None where the frame shows no blade), and the sword hand's grip. Measured by eye from the sheet.
+# The blade and crossguard are cut out of the frame; the grip becomes the frame's "hand" point.
+SWORDS = {
+    "idle_f": ((70, 113), (132, 153), (143, 160)),
+    "idle_f2": ((398, 125), (442, 168), (452, 176)),
+    "idle_b": ((870, 93), (815, 146), (803, 157)),
+    "idle_b2": ((1168, 103), (1112, 150), (1098, 160)),
+    "walk_f0": ((17, 325), (58, 364), (72, 367)),
+    "walk_f1": (None, None, (199, 372)),
+    "walk_f2": (None, None, (337, 375)),
+    "walk_f3": (None, None, (471, 373)),
+    "walk_b0": ((640, 329), (684, 368), (695, 378)),
+    "walk_b1": ((778, 333), (818, 372), (829, 378)),
+    "walk_b2": ((914, 329), (955, 370), (963, 379)),
+    "walk_b3": ((1056, 328), (1098, 369), (1110, 378)),
+    "atk_f0": ((263, 542), (216, 580), (205, 588)),
+    "atk_f1": (None, None, (517, 590)),
+    "atk_f2": ((866, 539), (820, 580), (810, 590)),
+    "atk_b": ((1160, 542), (1115, 582), (1100, 592)),
+}
+BLADE_R = 10      # half-width of the cut along the blade, in sheet pixels (blade plus outline)
+GUARD_R = 6       # half-width of the cut along the crossguard
+GUARD_HALF = 14   # half-length of the crossguard
+# Frames whose blade isn't drawn: the resting angle is borrowed from another frame.
+ANGLE_FROM = {"walk_f1": "walk_f0", "walk_f2": "walk_f0", "walk_f3": "walk_f0", "atk_f1": "atk_f2"}
+# The pale swing arc painted into one frame (the game draws its own): only light pixels inside
+# these capsules (x0, y0, x1, y1, radius) are removed, so the tunic and legs stay.
+ARCS = {
+    "atk_f1": [(512, 488, 548, 528, 8), (548, 528, 545, 570, 8), (545, 570, 512, 604, 8), (512, 604, 478, 616, 7)],
+}
+
 # The sheet's lying poses sit on a grass tile that can't be separated cleanly at this scale, so the
 # game animates the fall in code instead.
 # Animation tags: name -> (frame keys, ms per frame). Facing suffix: _se front, _ne back; the game
@@ -54,8 +89,9 @@ BOXES = {
 TAGS = [
     ("idle_se", ["idle_f"], 400), ("idle_ne", ["idle_b"], 400),
     ("look_se", ["idle_f2"], 400), ("look_ne", ["idle_b2"], 400),
-    ("walk_se", ["walk_f0", "walk_f1", "walk_f2", "walk_f3"], 110),
-    ("walk_ne", ["walk_b0", "walk_b1", "walk_b2", "walk_b3"], 110),
+    # stride, pass, stride, pass: two footfalls per cycle, in step with the footstep sounds
+    ("walk_se", ["walk_f2", "walk_f0", "walk_f3", "walk_f1"], 150),
+    ("walk_ne", ["walk_b1", "walk_b0", "walk_b3", "walk_b2"], 150),
     ("attack_se", ["atk_f0", "atk_f1", "atk_f2"], 100),
     ("attack_ne", ["atk_b"], 300),
     ("parry_se", ["atk_f0"], 300), ("parry_ne", ["atk_b"], 300),
@@ -165,6 +201,46 @@ def keep_main_parts(img: Image.Image) -> Image.Image:
     return img
 
 
+def seg_dist(p, a, b):
+    ax, ay = a
+    bx, by = b
+    dx, dy = bx - ax, by - ay
+    L = dx * dx + dy * dy
+    t = 0.0 if L == 0 else max(0.0, min(1.0, ((p[0] - ax) * dx + (p[1] - ay) * dy) / L))
+    return ((p[0] - ax - t * dx) ** 2 + (p[1] - ay - t * dy) ** 2) ** 0.5
+
+
+def cut_sword(img: Image.Image, key, origin):
+    """Clears the blade and crossguard (and any painted swing arc) out of a cut-out frame. Points
+    are in sheet pixels; `origin` is the crop's top-left in the sheet."""
+    tip, guard, _hand = SWORDS.get(key, (None, None, None))
+    caps = []
+    if tip:
+        dx, dy = guard[0] - tip[0], guard[1] - tip[1]
+        n = (dx * dx + dy * dy) ** 0.5
+        ux, uy = dx / n, dy / n
+        caps.append((tip, (guard[0] + ux * 3, guard[1] + uy * 3), BLADE_R, False))
+        caps.append(((guard[0] - uy * GUARD_HALF, guard[1] + ux * GUARD_HALF),
+                     (guard[0] + uy * GUARD_HALF, guard[1] - ux * GUARD_HALF), GUARD_R, False))
+    for x0, y0, x1, y1, r in ARCS.get(key, []):
+        caps.append(((x0, y0), (x1, y1), r, True))
+    if not caps:
+        return img
+    px = img.load()
+    ox, oy = origin
+    for y in range(img.height):
+        for x in range(img.width):
+            c = px[x, y]
+            if c[3] == 0:
+                continue
+            p = (x + ox, y + oy)
+            for a, b, r, light_only in caps:
+                if seg_dist(p, a, b) <= r and (not light_only or min(c[:3]) > 150):
+                    px[x, y] = (0, 0, 0, 0)
+                    break
+    return keep_main_parts(img)
+
+
 def shrink(img: Image.Image) -> Image.Image:
     bb = img.getbbox()
     img = img.crop(bb)
@@ -272,13 +348,33 @@ def flame_of(f: Image.Image):
 def main():
     sheet = Image.open(SRC).convert("RGB")
     raw = {}
+    hands = {}
     for key, (box, mirror, kind) in BOXES.items():
         x0, y0, x1, y1 = box
-        crop = sheet.crop((max(0, x0 - 4), max(0, y0 - 4), min(sheet.width, x1 + 5), min(sheet.height, y1 + 5)))
-        cut = cut_out(crop, kind == "lying")
+        origin = (max(0, x0 - 4), max(0, y0 - 4))
+        crop = sheet.crop((origin[0], origin[1], min(sheet.width, x1 + 5), min(sheet.height, y1 + 5)))
+        cut = cut_sword(cut_out(crop, kind == "lying"), key, origin)
+        tip, guard, hand = SWORDS.get(key, (None, None, None))
         if mirror:
             cut = cut.transpose(Image.FLIP_LEFT_RIGHT)
-        raw[key] = (shrink(cut), kind)
+        bb = cut.getbbox()
+        small = shrink(cut)
+        if hand:
+            hx, hy = hand[0] - origin[0], hand[1] - origin[1]
+            if mirror:
+                hx = crop.width - 1 - hx
+            sx, sy = small.width / (bb[2] - bb[0]), small.height / (bb[3] - bb[1])
+            angle = None
+            if tip:
+                dx, dy = tip[0] - guard[0], tip[1] - guard[1]
+                if mirror:
+                    dx = -dx
+                angle = math.degrees(math.atan2(dy, dx))
+            hands[key] = [(hx - bb[0]) * sx, (hy - bb[1]) * sy, angle]
+        raw[key] = (small, kind)
+    for key, src in ANGLE_FROM.items():
+        if key in hands and src in hands:
+            hands[key][2] = hands[src][2]
     pal = build_palette([f for f, _ in raw.values()])
     ink = min(pal, key=lambda p: p[0] + p[1] + p[2])
     frames = {}
@@ -319,6 +415,9 @@ def main():
         fl = flame_of(f)
         if fl:
             entry["torch"] = {"x": round(fl[0] - ax), "y": round(fl[1] - ay)}
+        if k in hands:
+            hx, hy, angle = hands[k]
+            entry["hand"] = {"x": round(hx - ax), "y": round(hy - ay), "angle": round(angle or 0.0)}
         frame_meta.append(entry)
 
     OUT.mkdir(parents=True, exist_ok=True)
@@ -347,7 +446,18 @@ def main():
     if PREVIEW:
         big = Image.new("RGBA", out.size, (40, 38, 64, 255))
         big.alpha_composite(out)
-        big.resize((out.width * 4, out.height * 4), Image.NEAREST).save(PREVIEW / "cedalion_sheet_x4.png")
+        big = big.resize((out.width * 4, out.height * 4), Image.NEAREST)
+        # the sword hand (red) and the resting blade direction (yellow)
+        from PIL import ImageDraw
+        d = ImageDraw.Draw(big)
+        for i, e in enumerate(frame_meta):
+            if "hand" not in e:
+                continue
+            cx, cy = (i % COLS) * cw + pivot[0] + e["hand"]["x"], (i // COLS) * ch + pivot[1] + e["hand"]["y"]
+            a = math.radians(e["hand"]["angle"])
+            d.line([(cx * 4 + 2, cy * 4 + 2), (cx * 4 + 2 + math.cos(a) * 44, cy * 4 + 2 + math.sin(a) * 44)], fill=(255, 220, 0), width=2)
+            d.rectangle([cx * 4, cy * 4, cx * 4 + 3, cy * 4 + 3], fill=(255, 0, 0))
+        big.save(PREVIEW / "cedalion_sheet_x4.png")
         w = Image.open(ROOT / "art" / "final" / "watchman_se.png").convert("RGBA")
         line = Image.new("RGBA", (cw * 3 + w.width + 8, max(ch, w.height) + 4), (60, 58, 80, 255))
         line.alpha_composite(Image.open(OUT / "cedalion_se.png"), (2, line.height - ch - 2))

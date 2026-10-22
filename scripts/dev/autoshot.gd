@@ -134,6 +134,57 @@ const SCRIPTS := {
 		[4.0, "call", "info"],
 		[4.2, "shot", "", "phineus"],
 	],
+	# Cedalion's frames while he walks and swings: prints the clip and frame on every frame.
+	"anim": [
+		[0.5, "call", "give_sword"],
+		[0.6, "call", "trace"],
+		[0.7, "press", "move_right"],
+		[1.3, "shot", "", "walk1"],
+		[1.38, "shot", "", "walk2"],
+		[1.46, "shot", "", "walk3"],
+		[1.54, "shot", "", "walk4"],
+		[1.9, "release", "move_right"],
+		[2.2, "tap", "attack"],
+		[2.24, "shot", "", "swing1"],
+		[2.29, "shot", "", "swing2"],
+		[2.33, "shot", "", "swing3"],
+		[2.37, "shot", "", "swing4"],
+		[2.42, "shot", "", "swing5"],
+		[2.5, "shot", "", "swing6"],
+		[2.8, "tap", "attack"],
+		[3.0, "tap", "attack"],
+		[3.4, "tap", "parry"],
+		[3.48, "shot", "", "parry"],
+		[3.8, "tap", "jump"],
+		[3.95, "shot", "", "jump"],
+		[4.4, "call", "untrace"],
+		[4.5, "call", "unarm"],
+		[4.7, "shot", "", "unarmed"],
+	],
+	# The swing facing away (up-right) and mirrored (up-left), in a dark room.
+	"anim_back": [
+		[0.5, "call", "give_sword"],
+		[0.6, "press", "move_up"],
+		[0.6, "press", "move_right"],
+		[1.0, "release", "move_up"],
+		[1.0, "release", "move_right"],
+		[1.2, "tap", "attack"],
+		[1.27, "shot", "", "back1"],
+		[1.33, "shot", "", "back2"],
+		[1.4, "shot", "", "back3"],
+		[1.8, "press", "move_left"],
+		[2.0, "release", "move_left"],
+		[2.2, "tap", "attack"],
+		[2.27, "shot", "", "left1"],
+		[2.33, "shot", "", "left2"],
+		[2.4, "shot", "", "left3"],
+		[2.8, "press", "move_down"],
+		[3.0, "release", "move_down"],
+		[3.2, "tap", "attack"],
+		[3.27, "shot", "", "down1"],
+		[3.33, "shot", "", "down2"],
+		[3.4, "shot", "", "down3"],
+	],
 	"pause": [
 		[1.0, "tap", "pause"],
 		[1.5, "shot", "", "paused"],
@@ -148,6 +199,7 @@ var events: Array = []
 var main: Node
 var _t := 0.0
 var _i := 0
+var _tracing := false
 
 
 func setup(p_main: Node, p_prefix: String, script_name: String) -> Autoshot:
@@ -163,6 +215,12 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	if _tracing and main.player:
+		var p: Player = main.player
+		var r: Rect2 = p.sprite.texture.region if p.sprite.texture is AtlasTexture else Rect2()
+		print("trace %.3f %s %s frame=%d flip=%s gvel=%.2f sword=%s/%d" % [_t, Player.S.keys()[p.state], p._anim_base,
+				int(r.position.x / maxf(1.0, r.size.x)) + 8 * int(r.position.y / maxf(1.0, r.size.y)), p.sprite.flip_h, p._gvel.length(),
+				p.sword.visible, p.sword.frame] + " pos=%s idx=%d/%d hand=%s" % [p.sword.position, p.sword.get_index(), p.sprite.get_index(), p._hand])
 	while _i < events.size() and _t >= events[_i][0]:
 		_run(events[_i])
 		_i += 1
@@ -210,6 +268,14 @@ func _run(e: Array) -> void:
 			elif e[2] == "info" and main.room:
 				var f: Interactable = main.player.focus
 				print("autoshot info: player at %s, focus %s" % [main.player.grid_pos(), f.verb if f else "none"])
+			elif e[2] == "give_sword":
+				Game.give_weapon("xiphos")
+			elif e[2] == "unarm":
+				Game.weapon_id = ""
+			elif e[2] == "trace":
+				_tracing = true
+			elif e[2] == "untrace":
+				_tracing = false
 			elif e[2] == "next":
 				for c in main.ui.get_children():
 					if c is IntroCards:
@@ -244,4 +310,7 @@ func _run(e: Array) -> void:
 			var room_id: String = main.room.id if main.room else "screen"
 			var path := "%s_%s_%s.png" % [prefix, room_id, e[3]]
 			img.save_png(path)
-			print("autoshot: ", path)
+			var at := ""
+			if main.player and is_instance_valid(main.player):
+				at = " player at ui %s" % main.world_to_ui(main.player.global_position)
+			print("autoshot: ", path, at)
