@@ -67,6 +67,9 @@ var lantern: PointLight2D
 var cone: Polygon2D
 var mark: Sprite2D
 var meter: AwarenessMeter
+## His health as pips over his head, shown while he fights and for a moment after each hit.
+var pips: HealthPips
+var _pips_t := 0.0
 var glint: Sprite2D
 var life: Life
 var daze: DazeStars
@@ -196,6 +199,14 @@ func _ready() -> void:
 	meter.position = Vector2(0, -h - 1)
 	meter.z_index = 60
 	body_node.add_child(meter)
+	pips = HealthPips.new()
+	pips.position = Vector2(0, -h - 1)
+	pips.z_index = 61
+	pips.material = Atmosphere.unshaded()
+	pips.total = type.hp
+	pips.value = hp
+	pips.visible = false
+	body_node.add_child(pips)
 	glint = Sprite2D.new()
 	glint.z_index = 61
 	glint.visible = false
@@ -747,7 +758,13 @@ func take_damage(dmg: int, from_screen_pos: Vector2, force := 1.0) -> void:
 	wake(false)
 	if not is_hittable():
 		return
+	var before := hp
 	hp -= dmg
+	_pips_t = 2.0
+	pips.value = maxi(hp, 0)
+	for i in range(maxi(hp, 0), before):
+		# each lost pip pops off his head
+		Fx.pip_pop(room.world, global_position + pips.position + Vector2(pips.pip_x(i), -elev))
 	Juice.flash(sprite, 0.07)
 	_shake_t = 0.14
 	_hurt_t = 0.24
@@ -842,7 +859,18 @@ func knock_out(env: bool, _by: Node) -> void:
 	mark.visible = false
 	meter.visible = false
 	daze.visible = false
+	pips.visible = false
 	if not fell:
+		Fx.star_burst(room.world, global_position + Vector2(0, -sprite.texture.get_height() * 0.6 - elev))
+		var side := -1.0 if sprite.flip_h else 1.0
+		var h := float(sprite.texture.get_height())
+		get_tree().create_timer(0.36).timeout.connect(func():
+			if is_instance_valid(daze):
+				daze.position = Vector2(side * h * 0.72, -5)
+				daze.visible = true
+				get_tree().create_timer(1.6).timeout.connect(func():
+					if is_instance_valid(daze):
+						daze.visible = false))
 		# Topple: a beat of stagger, then down with a thud and a puff of dust.
 		life.enabled = false
 		body_node.scale = Vector2.ONE
@@ -941,6 +969,10 @@ func _update_visuals(delta: float) -> void:
 	meter.value = awareness / ALERT_AT
 	meter.visible = awareness > 0.5 and state != S.ALERT
 	meter.queue_redraw()
+	_pips_t = maxf(0.0, _pips_t - delta)
+	pips.visible = not dormant and hp > 0 and (state == S.ALERT or state == S.STUNNED or _pips_t > 0.0)
+	if pips.visible:
+		pips.queue_redraw()
 	_update_cone()
 	if dormant:
 		lantern.energy = 0.0
@@ -1035,6 +1067,25 @@ class DazeStars extends Node2D:
 			var c := Color(1.0, 0.85, 0.35) if sin(a) > 0.0 else Color(0.8, 0.6, 0.25)
 			draw_rect(Rect2(p, Vector2(1, 1)), c)
 			draw_rect(Rect2(p + Vector2(-1, 0), Vector2(3, 1)), Color(c, 0.5))
+
+
+## A guard's health as a row of pips: bright while he has them, dark sockets once lost.
+class HealthPips extends Node2D:
+	var total := 3
+	var value := 3
+
+	func pip_x(i: int) -> float:
+		return -((total * 3 - 1) / 2.0) + i * 3
+
+	func _draw() -> void:
+		for i in total:
+			var p := Vector2(roundf(pip_x(i)), -1)
+			draw_rect(Rect2(p - Vector2(1, 1), Vector2(4, 4)), Color(0.05, 0.03, 0.08, 0.85))
+			if i < value:
+				draw_rect(Rect2(p, Vector2(2, 2)), Color(0.92, 0.24, 0.2))
+				draw_rect(Rect2(p, Vector2(1, 1)), Color(1.0, 0.75, 0.6))
+			else:
+				draw_rect(Rect2(p, Vector2(2, 2)), Color(0.3, 0.12, 0.14))
 
 
 ## The thin bar under the mark that fills as a guard grows suspicious.

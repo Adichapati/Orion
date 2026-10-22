@@ -112,6 +112,67 @@ static func glitter(parent: Node, pos: Vector2) -> void:
 	tw.chain().tween_callback(holder.queue_free)
 
 
+## A lost health pip: it pops up off the guard's head, turns and drops, fading.
+static func pip_pop(parent: Node, pos: Vector2) -> void:
+	if parent == null or not parent.is_inside_tree():
+		return
+	var s := Sprite2D.new()
+	s.texture = _dot()
+	s.scale = Vector2(2, 2)
+	s.position = pos.round()
+	s.z_index = 62
+	s.modulate = Color(0.95, 0.3, 0.25)
+	var mat := CanvasItemMaterial.new()
+	mat.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+	s.material = mat
+	parent.add_child(s)
+	var dx := randf_range(-6.0, 6.0)
+	var tw := s.create_tween()
+	tw.tween_property(s, "position", (pos + Vector2(dx * 0.5, -7)).round(), 0.14).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	tw.tween_property(s, "position", (pos + Vector2(dx, 6)).round(), 0.3).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	tw.parallel().tween_property(s, "modulate:a", 0.0, 0.3)
+	tw.tween_callback(s.queue_free)
+
+
+## A knockout: little four-point stars burst out of the guard and fade.
+static func star_burst(parent: Node, pos: Vector2) -> void:
+	if parent == null or not parent.is_inside_tree():
+		return
+	var holder := StarBurst.new()
+	holder.position = pos.round()
+	holder.z_index = 46
+	var mat := CanvasItemMaterial.new()
+	mat.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+	holder.material = mat
+	parent.add_child(holder)
+
+
+class StarBurst extends Node2D:
+	var _t := 0.0
+	var _dirs: Array[Vector2] = []
+
+	func _ready() -> void:
+		for i in 7:
+			var a := TAU * i / 7.0 + randf_range(-0.2, 0.2)
+			_dirs.append(Vector2(cos(a), sin(a) * 0.7) * randf_range(10.0, 16.0))
+
+	func _process(delta: float) -> void:
+		_t += delta
+		queue_redraw()
+		if _t > 0.55:
+			queue_free()
+
+	func _draw() -> void:
+		var k := _t / 0.55
+		var ease_out := 1.0 - pow(1.0 - k, 3.0)
+		for i in _dirs.size():
+			var p := (_dirs[i] * ease_out + Vector2(0, 6.0 * k * k)).round()
+			var c := Color(1.0, 0.88, 0.4, 1.0 - k) if i % 2 == 0 else Color(1.0, 1.0, 0.9, 1.0 - k)
+			var r := 2 if k < 0.5 else 1
+			draw_rect(Rect2(p - Vector2(r, 0), Vector2(r * 2 + 1, 1)), c)
+			draw_rect(Rect2(p - Vector2(0, r), Vector2(1, r * 2 + 1)), c)
+
+
 static var _dot_tex: Texture2D
 
 
