@@ -458,7 +458,7 @@
   }
  ],
  "meta": {
-  "app": "tools/process_cedalion_sheet.py",
+  "app": "tools/process_sheet.py",
   "image": "cedalion_sheet.png",
   "size": {
    "w": 368,

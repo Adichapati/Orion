@@ -1,17 +1,32 @@
-"""Turn the hand-made Cedalion sheet (art/generated/cedalion_friend_sheet.webp) into game frames.
+"""Turn a hand-made character sheet into game frames: art/final/<name>_sheet.png + .json.
 
-Writes art/final/cedalion_sheet.png + cedalion_sheet.json in Aseprite's json-array format, so a
-real Aseprite export (File > Export Sprite Sheet, JSON data, tags) can replace it later with no
-code changes, plus art/final/cedalion_se.png / cedalion_ne.png stills.
+The output is Aseprite's json-array sprite-sheet format, so a real Aseprite export (File > Export
+Sprite Sheet, JSON data, tags) can replace it with no code changes; it also writes the stills
+art/final/<name>_se.png and <name>_ne.png at the sheet's cell size.
 
-For every frame it removes the paper, grid and drop shadow, cuts the sword out (the game draws
-the sword as its own sprite: hidden while Cedalion is unarmed, swung in an arc, one per weapon),
-mirrors it so all front frames face south-east and all back frames face north-east, scales it
-down to the in-game size, maps every frame to one shared palette (so colours never flicker
-between frames), lines the feet up on one pivot and records where the torch flame and the sword
-hand are, so the torch light and the sword follow the hands.
+For every frame it removes the background (and drop shadows), optionally cuts the sword out (the
+game draws Cedalion's sword as its own sprite: hidden while he's unarmed, swung in an arc, one
+per weapon), mirrors frames so front views face south-east and back views north-east, scales
+them to the in-game size, maps every frame to one shared palette (so colours never flicker),
+lines the feet up on one pivot and records where the torch flame and the sword hand are.
 
-    python tools/process_cedalion_sheet.py
+Cedalion's sheet (art/generated/cedalion_friend_sheet.webp) has hand-measured frame boxes and
+blade lines below. Any other character drops straight in: save its sheet as
+art/generated/<name>_sheet.png (or .webp) in the same layout, on a flat plain background with no
+ground tile or shadow:
+
+    row 1: idle  - front view, then back view (extra poses are ignored)
+    row 2: walk  - the front-view frames, then the back-view frames (4 + 4)
+    row 3: attack - the front-view frames, then the back-view frames
+    (row 4, if any, is ignored: lying poses are animated in code)
+
+Front views should face screen-right (pass --mirror if they face left; --paper for a sheet drawn
+on gridded paper like Cedalion's). The frames are found
+automatically (labels are skipped), scaled to the height of the character's current still, and
+the stills are rewritten to match.
+
+    python tools/process_sheet.py cedalion [preview dir]
+    python tools/process_sheet.py watchman [--mirror] [--paper] [--attack-front=N] [preview dir]
 """
 from collections import deque
 from pathlib import Path
@@ -22,13 +37,12 @@ import sys
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / "art" / "generated" / "cedalion_friend_sheet.webp"
+GENERATED = ROOT / "art" / "generated"
 OUT = ROOT / "art" / "final"
-PREVIEW = Path(sys.argv[1]) if len(sys.argv) > 1 else None
-
-SCALE = 0.19          # sheet pixels -> game pixels (figure ~26 px tall, like the doc's 16x24 hero plus hair and sword)
-PALETTE_SIZE = 22
+APP = "tools/process_sheet.py"
 COLS = 8
+
+# ---------------------------------------------------------------- Cedalion's hand-made sheet
 
 # (box in the sheet, mirror?, kind) - boxes found by scanning the sheet; mirror normalises facing
 BOXES = {
@@ -82,7 +96,7 @@ ARCS = {
     "atk_f1": [(512, 488, 548, 528, 8), (548, 528, 545, 570, 8), (545, 570, 512, 604, 8), (512, 604, 478, 616, 7)],
 }
 
-# The sheet's lying poses sit on a grass tile that can't be separated cleanly at this scale, so the
+# Cedalion's lying poses sit on a grass tile that can't be separated cleanly at this scale, so the
 # game animates the fall in code instead.
 # Animation tags: name -> (frame keys, ms per frame). Facing suffix: _se front, _ne back; the game
 # mirrors them for _sw / _nw.
@@ -99,6 +113,15 @@ TAGS = [
     ("jump_se", ["walk_f1"], 300), ("jump_ne", ["walk_b1"], 300),
     ("dodge_se", ["walk_f3"], 300), ("dodge_ne", ["walk_b3"], 300),
 ]
+
+CONFIGS = {
+    "cedalion": dict(
+        source=GENERATED / "cedalion_friend_sheet.webp",
+        boxes=BOXES, tags=TAGS, swords=SWORDS, arcs=ARCS, angle_from=ANGLE_FROM,
+        scale=0.19,  # sheet pixels -> game pixels (~26 px tall, the doc's 16x24 hero plus hair)
+        palette=22, background="paper", torch=True, stills=("idle_f", "idle_b"),
+    ),
+}
 
 
 def is_paper(c):
@@ -133,7 +156,21 @@ def near_any(c, cols, d):
     return any((r - p[0]) ** 2 + (g - p[1]) ** 2 + (b - p[2]) ** 2 < d * d for p in cols)
 
 
-def cut_out(img: Image.Image, lying: bool) -> Image.Image:
+def flat_background(sheet: Image.Image):
+    """A test for a flat plain background: the commonest colour in the sheet's corners, give or
+    take a little (and soft dark drop shadows on it)."""
+    px = sheet.load()
+    counts = {}
+    for cx, cy in ((0, 0), (sheet.width - 8, 0), (0, sheet.height - 8), (sheet.width - 8, sheet.height - 8)):
+        for y in range(cy, cy + 8):
+            for x in range(cx, cx + 8):
+                c = px[x, y][:3]
+                counts[c] = counts.get(c, 0) + 1
+    bg = max(counts, key=counts.get)
+    return lambda c: sum((c[i] - bg[i]) ** 2 for i in range(3)) < 48 * 48
+
+
+def cut_out(img: Image.Image, lying: bool, is_bg=is_paper) -> Image.Image:
     """Flood the background in from the crop's border; the dark outline protects the figure."""
     img = img.convert("RGBA")
     w, h = img.size
@@ -141,9 +178,9 @@ def cut_out(img: Image.Image, lying: bool) -> Image.Image:
     if lying:
         tile = tile_colours(img)
         # tight match, and nothing bright: hair and skin highlights are never tile
-        passable = lambda c: is_paper(c) or (max(c[:3]) < 190 and near_any(c, tile, 28))
+        passable = lambda c: is_bg(c) or (max(c[:3]) < 190 and near_any(c, tile, 28))
     else:
-        passable = is_paper
+        passable = is_bg
     bg = bytearray(w * h)
     q = deque()
     for x in range(w):
@@ -210,10 +247,10 @@ def seg_dist(p, a, b):
     return ((p[0] - ax - t * dx) ** 2 + (p[1] - ay - t * dy) ** 2) ** 0.5
 
 
-def cut_sword(img: Image.Image, key, origin):
+def cut_sword(img: Image.Image, key, origin, cfg):
     """Clears the blade and crossguard (and any painted swing arc) out of a cut-out frame. Points
     are in sheet pixels; `origin` is the crop's top-left in the sheet."""
-    tip, guard, _hand = SWORDS.get(key, (None, None, None))
+    tip, guard, _hand = cfg.get("swords", {}).get(key, (None, None, None))
     caps = []
     if tip:
         dx, dy = guard[0] - tip[0], guard[1] - tip[1]
@@ -222,7 +259,7 @@ def cut_sword(img: Image.Image, key, origin):
         caps.append((tip, (guard[0] + ux * 3, guard[1] + uy * 3), BLADE_R, False))
         caps.append(((guard[0] - uy * GUARD_HALF, guard[1] + ux * GUARD_HALF),
                      (guard[0] + uy * GUARD_HALF, guard[1] - ux * GUARD_HALF), GUARD_R, False))
-    for x0, y0, x1, y1, r in ARCS.get(key, []):
+    for x0, y0, x1, y1, r in cfg.get("arcs", {}).get(key, []):
         caps.append(((x0, y0), (x1, y1), r, True))
     if not caps:
         return img
@@ -241,11 +278,11 @@ def cut_sword(img: Image.Image, key, origin):
     return keep_main_parts(img)
 
 
-def shrink(img: Image.Image) -> Image.Image:
+def shrink(img: Image.Image, scale: float) -> Image.Image:
     bb = img.getbbox()
     img = img.crop(bb)
     w, h = img.size
-    tw, th = max(1, round(w * SCALE)), max(1, round(h * SCALE))
+    tw, th = max(1, round(w * scale)), max(1, round(h * scale))
     small = img.convert("RGBa").resize((tw, th), Image.BOX).convert("RGBA")
     px = small.load()
     for y in range(th):
@@ -255,7 +292,7 @@ def shrink(img: Image.Image) -> Image.Image:
     return small
 
 
-def build_palette(frames):
+def build_palette(frames, size):
     strip_w = sum(f.width for f in frames)
     strip = Image.new("RGB", (strip_w, max(f.height for f in frames)), (0, 0, 0))
     x = 0
@@ -269,8 +306,8 @@ def build_palette(frames):
         x += f.width
     sample = Image.new("RGB", (len(pts), 1))
     sample.putdata(pts)
-    q = sample.quantize(colors=PALETTE_SIZE, method=Image.Quantize.MEDIANCUT)
-    pal = q.getpalette()[: PALETTE_SIZE * 3]
+    q = sample.quantize(colors=size, method=Image.Quantize.MEDIANCUT)
+    pal = q.getpalette()[: size * 3]
     return [tuple(pal[i:i + 3]) for i in range(0, len(pal), 3)]
 
 
@@ -345,20 +382,22 @@ def flame_of(f: Image.Image):
     return (sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts))
 
 
-def main():
-    sheet = Image.open(SRC).convert("RGB")
+def process(name, cfg, preview=None):
+    sheet = Image.open(cfg["source"]).convert("RGB")
+    is_bg = is_paper if cfg.get("background") == "paper" else flat_background(sheet)
+    swords = cfg.get("swords", {})
     raw = {}
     hands = {}
-    for key, (box, mirror, kind) in BOXES.items():
+    for key, (box, mirror, kind) in cfg["boxes"].items():
         x0, y0, x1, y1 = box
         origin = (max(0, x0 - 4), max(0, y0 - 4))
         crop = sheet.crop((origin[0], origin[1], min(sheet.width, x1 + 5), min(sheet.height, y1 + 5)))
-        cut = cut_sword(cut_out(crop, kind == "lying"), key, origin)
-        tip, guard, hand = SWORDS.get(key, (None, None, None))
+        cut = cut_sword(cut_out(crop, kind == "lying", is_bg), key, origin, cfg)
+        tip, guard, hand = swords.get(key, (None, None, None))
         if mirror:
             cut = cut.transpose(Image.FLIP_LEFT_RIGHT)
         bb = cut.getbbox()
-        small = shrink(cut)
+        small = shrink(cut, cfg["scale"])
         if hand:
             hx, hy = hand[0] - origin[0], hand[1] - origin[1]
             if mirror:
@@ -372,10 +411,10 @@ def main():
                 angle = math.degrees(math.atan2(dy, dx))
             hands[key] = [(hx - bb[0]) * sx, (hy - bb[1]) * sy, angle]
         raw[key] = (small, kind)
-    for key, src in ANGLE_FROM.items():
+    for key, src in cfg.get("angle_from", {}).items():
         if key in hands and src in hands:
             hands[key][2] = hands[src][2]
-    pal = build_palette([f for f, _ in raw.values()])
+    pal = build_palette([f for f, _ in raw.values()], cfg.get("palette", 22))
     ink = min(pal, key=lambda p: p[0] + p[1] + p[2])
     frames = {}
     for key, (f, kind) in raw.items():
@@ -396,11 +435,11 @@ def main():
 
     order = []
     tag_meta = []
-    for name, keys, ms in TAGS:
+    for tag, keys, ms in cfg["tags"]:
         start = len(order)
         for k in keys:
             order.append((k, ms))
-        tag_meta.append({"name": name, "from": start, "to": len(order) - 1, "direction": "forward"})
+        tag_meta.append({"name": tag, "from": start, "to": len(order) - 1, "direction": "forward"})
 
     rows = (len(order) + COLS - 1) // COLS
     out = Image.new("RGBA", (cw * COLS, ch * rows), (0, 0, 0, 0))
@@ -411,8 +450,8 @@ def main():
         cx, cy = (i % COLS) * cw, (i // COLS) * ch
         ox, oy = round(cx + pivot[0] - ax), round(cy + pivot[1] - ay)
         out.alpha_composite(f, (ox, oy))
-        entry = {"filename": f"cedalion {i}", "frame": {"x": cx, "y": cy, "w": cw, "h": ch}, "duration": ms}
-        fl = flame_of(f)
+        entry = {"filename": f"{name} {i}", "frame": {"x": cx, "y": cy, "w": cw, "h": ch}, "duration": ms}
+        fl = flame_of(f) if cfg.get("torch") else None
         if fl:
             entry["torch"] = {"x": round(fl[0] - ax), "y": round(fl[1] - ay)}
         if k in hands:
@@ -421,21 +460,21 @@ def main():
         frame_meta.append(entry)
 
     OUT.mkdir(parents=True, exist_ok=True)
-    out.save(OUT / "cedalion_sheet.png")
+    out.save(OUT / f"{name}_sheet.png")
     meta = {
         "frames": frame_meta,
         "meta": {
-            "app": "tools/process_cedalion_sheet.py",
-            "image": "cedalion_sheet.png",
+            "app": APP,
+            "image": f"{name}_sheet.png",
             "size": {"w": out.width, "h": out.height},
             "pivot": {"x": pivot[0], "y": pivot[1]},
             "frameTags": tag_meta,
         },
     }
-    (OUT / "cedalion_sheet.json").write_text(json.dumps(meta, indent=1))
+    (OUT / f"{name}_sheet.json").write_text(json.dumps(meta, indent=1), newline="\n")
 
-    # stills for anything that still asks for cedalion_se / cedalion_ne
-    for still, key in (("cedalion_se", "idle_f"), ("cedalion_ne", "idle_b")):
+    # stills for anything that still asks for <name>_se / <name>_ne
+    for still, key in ((f"{name}_se", cfg["stills"][0]), (f"{name}_ne", cfg["stills"][1])):
         f, _ = frames[key]
         ax, ay = anchors[key]
         img = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
@@ -443,7 +482,7 @@ def main():
         img.save(OUT / f"{still}.png")
 
     print(f"{len(order)} frames, cell {cw}x{ch}, pivot {pivot}, palette {len(pal)} colours")
-    if PREVIEW:
+    if preview:
         big = Image.new("RGBA", out.size, (40, 38, 64, 255))
         big.alpha_composite(out)
         big = big.resize((out.width * 4, out.height * 4), Image.NEAREST)
@@ -457,13 +496,125 @@ def main():
             a = math.radians(e["hand"]["angle"])
             d.line([(cx * 4 + 2, cy * 4 + 2), (cx * 4 + 2 + math.cos(a) * 44, cy * 4 + 2 + math.sin(a) * 44)], fill=(255, 220, 0), width=2)
             d.rectangle([cx * 4, cy * 4, cx * 4 + 3, cy * 4 + 3], fill=(255, 0, 0))
-        big.save(PREVIEW / "cedalion_sheet_x4.png")
-        w = Image.open(ROOT / "art" / "final" / "watchman_se.png").convert("RGBA")
-        line = Image.new("RGBA", (cw * 3 + w.width + 8, max(ch, w.height) + 4), (60, 58, 80, 255))
-        line.alpha_composite(Image.open(OUT / "cedalion_se.png"), (2, line.height - ch - 2))
-        line.alpha_composite(Image.open(OUT / "cedalion_ne.png"), (cw + 2, line.height - ch - 2))
-        line.alpha_composite(w, (cw * 2 + 6, line.height - w.height - 2))
-        line.resize((line.width * 5, line.height * 5), Image.NEAREST).save(PREVIEW / "cedalion_scale_x5.png")
+        big.save(preview / f"{name}_sheet_x4.png")
+
+
+# ---------------------------------------------------------------- any other character
+
+def detect_rows(sheet: Image.Image, is_bg):
+    """Finds the figures on a sheet and groups them into rows, top to bottom, left to right.
+    Returns a list of rows of boxes (x0, y0, x1, y1) in sheet pixels. Labels and specks are
+    skipped: anything much shorter than the tallest figure."""
+    import numpy as np
+    from scipy import ndimage
+    arr = np.asarray(sheet.convert("RGB")).astype(int)
+    h, w, _ = arr.shape
+    fg = np.zeros((h, w), dtype=bool)
+    for y in range(h):
+        row = arr[y]
+        fg[y] = [not is_bg(tuple(c)) for c in row]
+    # merge a figure's loose parts (flames, weapons) within a few pixels
+    grown = ndimage.binary_dilation(fg, iterations=4)
+    labels, n = ndimage.label(grown)
+    boxes = []
+    for sl in ndimage.find_objects(labels):
+        ys, xs = sl
+        boxes.append((xs.start, ys.start, xs.stop, ys.stop))
+    if not boxes:
+        return []
+    tallest = max(b[3] - b[1] for b in boxes)
+    figs = [b for b in boxes if (b[3] - b[1]) >= tallest * 0.45 and (b[2] - b[0]) >= tallest * 0.2]
+    figs.sort(key=lambda b: (b[1] + b[3]) / 2)
+    rows = []
+    for b in figs:
+        cy = (b[1] + b[3]) / 2
+        if rows and abs(cy - rows[-1][0]) < tallest * 0.5:
+            rows[-1][1].append(b)
+            rows[-1][0] = sum((r[1] + r[3]) / 2 for r in rows[-1][1]) / len(rows[-1][1])
+        else:
+            rows.append([cy, [b]])
+    # Figures that touch (a sword over the next frame) come out as one wide box: split any box
+    # much wider than its row's median into that many equal parts.
+    out = []
+    for _, row in rows:
+        widths = sorted(b[2] - b[0] for b in row)
+        med = widths[len(widths) // 2]
+        split = []
+        for b in sorted(row):
+            k = round((b[2] - b[0]) / med)
+            if k >= 2 and (b[2] - b[0]) > med * 1.6:
+                step = (b[2] - b[0]) / k
+                split += [(round(b[0] + i * step), b[1], round(b[0] + (i + 1) * step), b[3]) for i in range(k)]
+            else:
+                split.append(b)
+        out.append(split)
+    return out
+
+
+def auto_config(name, source, mirror=False, attack_front=None, paper=False):
+    """A config for a sheet in the standard layout (see the top of this file). `paper`: the sheet
+    is drawn on gridded paper like Cedalion's, not a flat background."""
+    sheet = Image.open(source).convert("RGB")
+    flat = flat_background(sheet)
+    is_bg = (lambda c: flat(c) or is_paper(c)) if paper else flat
+    rows = detect_rows(sheet, is_bg)
+    if len(rows) < 3:
+        raise SystemExit(f"{source.name}: found {len(rows)} rows of figures, need idle, walk and attack rows")
+    boxes = {}
+
+    def add(key, b):
+        boxes[key] = ((b[0] + 3, b[1] + 3, b[2] - 4, b[3] - 4), mirror, "stand")
+        return key
+
+    idle, walk, attack = rows[0], rows[1], rows[2]
+    half_i = max(1, len(idle) // 2)
+    idle_f, idle_b = add("idle_f", idle[0]), add("idle_b", idle[half_i] if len(idle) > 1 else idle[0])
+    half_w = max(1, len(walk) // 2)
+    walk_f = [add(f"walk_f{i}", b) for i, b in enumerate(walk[:half_w])]
+    walk_b = [add(f"walk_b{i}", b) for i, b in enumerate(walk[half_w:])] or walk_f
+    n = len(attack)
+    front = attack_front if attack_front else (n // 2 if n % 2 == 0 and n >= 4 else max(1, n - 1))
+    atk_f = [add(f"atk_f{i}", b) for i, b in enumerate(attack[:front])]
+    atk_b = [add(f"atk_b{i}", b) for i, b in enumerate(attack[front:])] or atk_f
+    tags = [
+        ("idle_se", [idle_f], 400), ("idle_ne", [idle_b], 400),
+        ("walk_se", walk_f, 150), ("walk_ne", walk_b, 150),
+        ("attack_se", atk_f, 120), ("attack_ne", atk_b, 120),
+        ("hurt_se", [atk_f[0]], 200), ("hurt_ne", [atk_b[0]], 200),
+    ]
+    # scale to the height of the character's current still (or 32 px)
+    target = 32
+    still = OUT / f"{name}_se.png"
+    if still.exists():
+        bb = Image.open(still).getbbox()
+        target = bb[3] - bb[1]
+    heights = []
+    for b in idle[:1] + walk[:1]:
+        crop = cut_out(sheet.crop(b), False, is_bg)
+        bb = crop.getbbox()
+        heights.append(bb[3] - bb[1])
+    scale = target / max(heights)
+    print(f"{name}: rows of {[len(r) for r in rows]} figures; scale {scale:.3f} to {target} px")
+    return dict(source=source, boxes=boxes, tags=tags, scale=scale, palette=20,
+                background="paper" if paper else "auto", torch=False, stills=(idle_f, idle_b))
+
+
+def main():
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    flags = [a for a in sys.argv[1:] if a.startswith("--")]
+    if not args:
+        raise SystemExit(__doc__)
+    name = args[0]
+    preview = Path(args[1]) if len(args) > 1 else None
+    if name in CONFIGS:
+        cfg = CONFIGS[name]
+    else:
+        source = next((p for p in (GENERATED / f"{name}_sheet.png", GENERATED / f"{name}_sheet.webp") if p.exists()), None)
+        if source is None:
+            raise SystemExit(f"No sheet for {name}: save it as art/generated/{name}_sheet.png")
+        attack_front = next((int(f.split("=")[1]) for f in flags if f.startswith("--attack-front=")), None)
+        cfg = auto_config(name, source, "--mirror" in flags, attack_front, "--paper" in flags)
+    process(name, cfg, preview)
 
 
 if __name__ == "__main__":

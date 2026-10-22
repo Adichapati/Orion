@@ -1,7 +1,7 @@
 """Draw Cedalion's swords as pixel-art sprite strips, one per weapon, pre-rotated to 32 angles.
 
 The game draws the sword as its own sprite on Cedalion's sword hand (the body frames are cut
-sword-free by tools/process_cedalion_sheet.py), so it can be hidden while he's unarmed, swung
+sword-free by tools/process_sheet.py), so it can be hidden while he's unarmed, swung
 in an arc and changed per weapon. Pre-rotating here keeps every angle crisp: each angle is
 rendered from the sword's shape with 8x8 supersampling, then outlined in the sheet's dark ink.
 

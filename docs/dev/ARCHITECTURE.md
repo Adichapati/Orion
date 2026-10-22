@@ -80,6 +80,13 @@ controls.
   aim, noise, sneak, statue, star, pause, title.
 - `tools/process_generated.py` turns the AI-generated sheets in `art/generated/` into
   `art/final/` sprites; `tools/gen_font.py` writes the pixel font in `art/fonts/`.
+- Animation sheets (`art/final/<name>_sheet.*`, Aseprite format, read by `SheetAnim`):
+  `tools/process_sheet.py <name>` turns a hand-made sheet into one (Cedalion's has hand-measured
+  boxes and sword lines; any other sheet in the same layout is detected automatically);
+  `tools/animate_stills.py` builds procedural sheets for the guards and Phineus from their stills;
+  `tools/gen_swords.py` draws Cedalion's swords pre-rotated to 32 angles.
+- `tools/gen_islands.py` draws each room's floating island (rim, cliffs, underside, from the
+  grid size in rooms.json), the far islands and the cloud banks. Re-run it after resizing a room.
 
 ## Polish layer (see docs/dev/POLISH.md)
 
@@ -93,6 +100,12 @@ controls.
   lintel and relief, door glows and brazier flames; draws noise rings (`Fx.noise_ring()`) for
   the player's and the world's noises; eases lights off in moonlight (`moonlight_at()`); tints the
   screen edge by danger (`set_danger()`); and plays the Belt Star beat (`_star_taken_fx()`).
+- `Room._build_island()` hangs the room on its island (the rim in the room's light, the cliffs
+  unshaded in moonlight) and adds waterfalls; `Atmosphere.FarSky` draws the far islands, their
+  braziers and the clouds in parallax. `_build_bounds()` seals the grid's outside edge.
+- The player draws the sword as its own sprite on each frame's sword hand (`_update_sword`,
+  `_swing_pose`, `BladeTrail`); guards pick frames from their sheet by state (`Guard._animate`)
+  and lunge on the strike; Phineus is a `SheetSprite`.
 - `Player` aims knucklebones while G is held (`AimPreview`: arc and hearing ring) and crouches
   while sneaking (`Life.crouch`).
 - `Hud.ROOMS` holds each room's objective line and first-visit hints.
