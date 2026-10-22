@@ -113,6 +113,12 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
   sinks behind the walls, and Orion moves to the nearest open sky (up, then sideways, at 80% if
   tight) clear of the moon and the HUD. Test: from each room's north end Orion clears the walls
   and no island rests on them. 231 tests pass.
+- 15:36 Bug (Sathvik: "my character is able to climb and walk like this near the merchant area"):
+  Phineus's raised floor ran up to the cistern's back wall, so Cedalion could walk behind the seer
+  and looked as if he stood on the wall. New tile `H` (raised dais, drawn like `h`, solid): the
+  dais is solid but for the landing at the top of its step. Test: only the landing is walkable,
+  pushing every way from it never reaches the dais, and it is still reachable. 234 tests pass.
+  (The Aseprite mock-up `art/maps/cistern.*` is not rebuilt: no Aseprite here.)
 
 ; stopped at about 55% of the 5-hour window)
 

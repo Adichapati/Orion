@@ -216,6 +216,39 @@ const SCRIPTS := {
 		[5.37, "shot", "", "back_hurt_c"],
 		[5.6, "call", "untrace"],
 	],
+	# Cistern: try to get onto Phineus's raised floor from the side (walk, roll, jump), reporting
+	# where Cedalion ends up after each try.
+	"ledge": [
+		[0.4, "call", "goto", Vector2i(4, 2)],
+		[0.6, "press", "move_left"],
+		[0.6, "press", "move_up"],
+		[1.6, "release", "move_left"],
+		[1.6, "release", "move_up"],
+		[1.7, "call", "info"],
+		[1.7, "shot", "", "walked"],
+		[1.8, "call", "goto", Vector2i(4, 2)],
+		[2.0, "press", "move_left"],
+		[2.0, "press", "move_up"],
+		[2.05, "tap", "dodge"],
+		[2.6, "release", "move_left"],
+		[2.6, "release", "move_up"],
+		[2.7, "call", "info"],
+		[2.7, "shot", "", "rolled"],
+		[2.8, "call", "goto", Vector2i(4, 1)],
+		[3.0, "press", "move_up"],
+		[3.0, "press", "move_right"],
+		[3.8, "release", "move_up"],
+		[3.8, "release", "move_right"],
+		[3.9, "call", "info"],
+		[3.9, "shot", "", "corner"],
+		[4.0, "call", "goto", Vector2i(3, 2)],
+		[4.2, "press", "move_up"],
+		[4.2, "press", "move_right"],
+		[5.2, "release", "move_up"],
+		[5.2, "release", "move_right"],
+		[5.3, "call", "info"],
+		[5.3, "shot", "", "from_top"],
+	],
 	# Walk each of the four ways in turn, tracing the frame and mirroring every frame.
 	"turns": [
 		[0.5, "call", "give_sword"],
@@ -381,7 +414,7 @@ func _run(e: Array) -> void:
 				main.player.camera.reset_smoothing()
 			elif e[2] == "info" and main.room:
 				var f: Interactable = main.player.focus
-				print("autoshot info: player at %s, focus %s" % [main.player.grid_pos(), f.verb if f else "none"])
+				print("autoshot info: player at %s cell %s (%s) elev %.1f, focus %s" % [main.player.grid_pos(), main.player.cell(), main.room.ch(main.player.cell()), main.player.elev, f.verb if f else "none"])
 			elif e[2] == "give_sword":
 				Game.give_weapon("xiphos")
 			elif e[2] == "hurt" and main.player:

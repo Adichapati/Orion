@@ -172,7 +172,7 @@ func _prop_elevated(c: Vector2i) -> bool:
 	var low := 0
 	for n in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
 		var k := ch(c + n)
-		if k == "h":
+		if k in "hH":
 			h += 1
 		elif k in ".mx*~":
 			low += 1
@@ -184,7 +184,7 @@ func _build_floor(c: Vector2i) -> void:
 	if k in WALLS:
 		return
 	match k:
-		"h":
+		"h", "H":
 			_add_floor_sprite(c, Art.block_sprite("raised"))
 		"^":
 			_add_floor_sprite(c, Art.block_sprite("steps"))
@@ -389,6 +389,8 @@ func _build_solid(c: Vector2i) -> void:
 	var lift := Iso.LEVEL_PX if (not (k in WALLS) and _prop_elevated(c)) else 0.0
 	var body := _body(c, k)
 	match k:
+		"H":
+			pass  # a dais: raised floor you can't walk on (its block is drawn with the floor)
 		"#", "L", "v":
 			var tall := _wall_is_tall(c)
 			var name := "wall_tall" if tall else "wall_low"
@@ -891,7 +893,7 @@ func is_well(c: Vector2i) -> bool:
 ## Floor height in pixels: raised floor 16, steps 8, stepping stones 4.
 func elevation_px(c: Vector2i) -> float:
 	match ch(c):
-		"h":
+		"h", "H":
 			return Iso.LEVEL_PX
 		"^":
 			return Iso.LEVEL_PX * 0.5
@@ -900,7 +902,7 @@ func elevation_px(c: Vector2i) -> float:
 		"D", "E":
 			# A door in the wall of a raised floor opens at that floor's height.
 			for n in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
-				if ch(c + n) == "h":
+				if ch(c + n) in "hH":
 					return Iso.LEVEL_PX
 	return 0.0
 

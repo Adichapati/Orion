@@ -44,15 +44,20 @@ stable build: all tests pass.
      shrinks to 80% when it's tight. `NightSky.room` / `FarSky.room` are set in `dress()`.
    - Tests: `test_cedalion_faces_where_he_walks`, `test_sky_clears_walls`.
 
+4. `Phineus's dais`: new tile `H` in `art/maps/rooms.json` = raised dais, drawn like `h` but
+   solid (`Room._build_floor`, `_build_solid`, `_prop_elevated`, `elevation_px`). The cistern's
+   raised floor is `H` except the landing (2, 3) at the top of the step. Test `test_phineus_dais`.
+5. `scripts/dev/autoshot.gd`: `--script=turns` (walk four ways, traced) and `--script=ledge`
+   (cistern dais probe); the `info` call prints the cell, its tile and the elevation.
+
 ## Tests
 
-231 pass (`tests/run_tests.gd`). New tests: `test_cedalion_moves`,
+234 pass (`tests/run_tests.gd`). New tests: `test_cedalion_moves`,
 `test_cedalion_faces_where_he_walks`, `test_medallions_on_plain_floor` (also covers cracked walls
 and clutter), `test_sky_clears_walls`.
 
 ## In progress here next (avoid these files for now, or tell Sathvik)
 
-- Climbing onto the wall by Phineus in the cistern (`scripts/world/room.gd`, ledges and elevation).
 - Going back through a room's entrance door with E (`scripts/main.gd`, `scripts/world/room.gd`,
   `autoload/game.gd`).
 - Title screen as floating platforms (`scripts/ui/title_screen.gd`, a new generator in `tools/`).

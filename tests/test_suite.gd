@@ -28,6 +28,7 @@ func run() -> void:
 	await test_shove_into_pit()
 	await test_duel_parry_and_hit()
 	await test_shop_buy_and_equip()
+	await test_phineus_dais()
 	await test_sky_clears_walls()
 	await test_playthrough()
 	print("
@@ -695,6 +696,43 @@ func _door(r: Room, verb: String) -> Interactable:
 
 
 ## Drives the real main scene: walks every exit, the shop, the star-shrine escape and a death.
+## Bug (Sathvik: "my character is able to climb and walk like this near the merchant area"):
+## Phineus's raised floor ran right up to the cistern's back wall, so Cedalion could walk round
+## behind the seer and look as if he stood on the wall. The dais is now solid ("H") but for the
+## landing at the top of its step, where he talks to Phineus.
+func test_phineus_dais() -> void:
+	print("Phineus's dais")
+	var data: Dictionary = {}
+	for d in Game.rooms:
+		if d.id == "cistern":
+			data = d
+	var r := _make_room(data)
+	var landing := Vector2i(2, 3)
+	var open: Array = []
+	for y in r.size.y:
+		for x in r.size.x:
+			var c := Vector2i(x, y)
+			if r.ch(c) in ["h", "H"] and c != landing and r.is_walkable(c):
+				open.append(c)
+	check(r.ch(landing) == "h" and r.is_walkable(landing) and open.is_empty(),
+			"only the landing at the top of the step is walkable on the dais%s" % ("" if open.is_empty() else " (also %s)" % [open]))
+	var p := _add_player(r, landing)
+	await _seconds(0.1)
+	var strayed := false
+	for dirs in [["move_up", "move_right"], ["move_up", "move_left"], ["move_right"], ["move_left"], ["move_up"]]:
+		_reset_player(r, p, landing)
+		for a in dirs:
+			Input.action_press(a)
+		for i in 40:
+			await get_tree().physics_frame
+			strayed = strayed or r.ch(p.cell()) == "H"
+		for a in dirs:
+			Input.action_release(a)
+	check(not strayed, "pushing every way from the landing never puts Cedalion on the dais behind it")
+	check(r.reachable(r.player_spawn, landing), "the landing is still reachable from the spawn")
+	_free_room(r)
+
+
 ## Bug: Orion, the run's clock, hid behind the star shrine's back walls, and far islands sometimes
 ## showed just over a room's walls as if resting on them. Orion now lifts clear of the walls' top
 ## edge on screen, and a far island that would peek lifts clear or sinks out of sight behind them.
