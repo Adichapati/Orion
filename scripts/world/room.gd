@@ -131,6 +131,7 @@ func build(room_data: Dictionary) -> void:
 	_place_vigil_lamps()
 	_paint_scorpions()
 	_place_clutter()
+	_place_decor()
 	Atmosphere.dress(self, id)
 	NoiseBus.noise.connect(_show_noise)
 
@@ -271,6 +272,95 @@ func _place_clutter() -> void:
 			var s := Art.feet_sprite(name)
 			s.position = at
 			world.add_child(s)
+
+
+## Ruins and growth, after Sathvik's references: a mossy arch, a winged Nike, snapped and fallen
+## columns, amphorae on plinths, moss, grass and hanging vines. Placed by hand like CLUTTER
+## ([cell, sprite, nudge toward the wall in tiles]) on plain floor, clear of cracked marble, pits,
+## water, doors, chests, marks, the dais and the guards' beats. Looks only (no collision). Moss
+## and grass lie flat on the floor; vines_hang drapes the lit face of the back wall behind its cell.
+const DECOR := {
+	"lion-gate": [
+		[Vector2i(14, 1), "ruin_arch", Vector2(0.1, -0.3)],
+		[Vector2i(1, 8), "column_snapped", Vector2(-0.3, 0)],
+		[Vector2i(3, 10), "fallen_drums", Vector2(-0.1, 0.1)],
+		[Vector2i(3, 1), "moss_patch_0", Vector2(0, -0.2)],
+		[Vector2i(13, 1), "grass_tuft_0", Vector2(0, -0.2)],
+		[Vector2i(1, 3), "grass_tuft_1", Vector2(-0.2, 0)],
+		[Vector2i(1, 5), "moss_patch_1", Vector2(-0.2, 0)],
+		[Vector2i(14, 6), "grass_tuft_2", Vector2.ZERO],
+		[Vector2i(14, 9), "moss_patch_2", Vector2.ZERO],
+		[Vector2i(6, 10), "grass_tuft_0", Vector2.ZERO],
+		[Vector2i(11, 10), "moss_patch_0", Vector2.ZERO],
+		[Vector2i(2, 9), "grass_tuft_2", Vector2.ZERO],
+	],
+	"colonnade": [
+		[Vector2i(4, 3), "amphora_plinth", Vector2(0.5, 0)],
+		[Vector2i(13, 7), "amphora_plinth", Vector2(0.5, 0)],
+		[Vector2i(4, 1), "vines_hang", Vector2(0, -0.5)],
+		[Vector2i(11, 1), "vines_hang", Vector2(0, -0.5)],
+		[Vector2i(15, 1), "vines_hang", Vector2(0, -0.5)],
+		[Vector2i(1, 4), "moss_patch_0", Vector2(-0.2, 0)],
+		[Vector2i(7, 1), "moss_patch_1", Vector2(0, -0.2)],
+		[Vector2i(1, 8), "moss_patch_2", Vector2(-0.2, 0)],
+		[Vector2i(10, 8), "moss_patch_1", Vector2(0, 0.2)],
+		[Vector2i(16, 2), "grass_tuft_1", Vector2.ZERO],
+	],
+	"storerooms": [
+		[Vector2i(1, 5), "moss_patch_1", Vector2(-0.2, 0)],
+		[Vector2i(8, 1), "moss_patch_0", Vector2(0, -0.2)],
+		[Vector2i(3, 10), "moss_patch_2", Vector2.ZERO],
+	],
+	"cistern": [
+		[Vector2i(1, 6), "moss_patch_0", Vector2(-0.2, 0)],
+		[Vector2i(1, 9), "moss_patch_1", Vector2(-0.2, 0)],
+		[Vector2i(11, 2), "moss_patch_2", Vector2(0.2, 0)],
+		[Vector2i(9, 1), "moss_patch_1", Vector2(0, -0.2)],
+		[Vector2i(6, 1), "vines_hang", Vector2(0, -0.5)],
+	],
+	"statue-court": [
+		[Vector2i(1, 5), "nike_statue", Vector2(-0.3, 0)],
+		[Vector2i(10, 13), "fallen_drums", Vector2(0, 0.1)],
+		[Vector2i(3, 13), "column_snapped", Vector2(0, 0.2)],
+		[Vector2i(1, 8), "moss_patch_0", Vector2(-0.2, 0)],
+		[Vector2i(1, 11), "grass_tuft_0", Vector2(-0.2, 0)],
+		[Vector2i(12, 13), "moss_patch_2", Vector2.ZERO],
+		[Vector2i(5, 13), "grass_tuft_1", Vector2.ZERO],
+		[Vector2i(3, 5), "grass_tuft_2", Vector2.ZERO],
+		[Vector2i(8, 12), "moss_patch_1", Vector2.ZERO],
+	],
+	"star-shrine": [
+		[Vector2i(1, 8), "column_snapped", Vector2(-0.3, 0)],
+		[Vector2i(3, 10), "fallen_drums", Vector2.ZERO],
+		[Vector2i(1, 4), "moss_patch_0", Vector2(-0.2, 0)],
+		[Vector2i(11, 4), "moss_patch_1", Vector2(0.2, 0)],
+		[Vector2i(9, 9), "moss_patch_2", Vector2.ZERO],
+		[Vector2i(8, 11), "grass_tuft_1", Vector2.ZERO],
+	],
+}
+const DECOR_TALL := {"ruin_arch": 56.0, "nike_statue": 44.0, "column_snapped": 38.0}
+
+
+static func decor_is_flat(name: String) -> bool:
+	return name.begins_with("floor_") or name.begins_with("moss_patch_") or name.begins_with("grass_tuft_")
+
+
+func _place_decor() -> void:
+	for entry in DECOR.get(id, []):
+		var c: Vector2i = entry[0]
+		var name: String = entry[1]
+		var at := cell_center(c) + Iso.grid_to_screen(entry[2]).round()
+		if decor_is_flat(name):
+			var flat := Art.tile_sprite(name)
+			flat.position = at
+			floor_layer.add_child(flat)
+			continue
+		# Vines are drawn in the wall face's plane; lift the sort point so Cedalion passes in front.
+		var s := Art.feet_sprite(name, 4 if name == "vines_hang" else 0)
+		s.position = at
+		world.add_child(s)
+		if DECOR_TALL.has(name):
+			_fading.append({"node": s, "body": s, "height": DECOR_TALL[name]})
 
 
 func _lay_medallions() -> void:

@@ -30,6 +30,7 @@ func run() -> void:
 	await test_shop_buy_and_equip()
 	await test_phineus_dais()
 	await test_sky_clears_walls()
+	test_decor_on_plain_floor()
 	await test_playthrough()
 	print("
 %d passed, %d failed" % [_passed, _failed])
@@ -823,3 +824,35 @@ func test_playthrough() -> void:
 	main.queue_free()
 	await get_tree().process_frame
 
+
+
+## Ruin props, moss, grass and vines are looks only: each stands on plain floor, clear of cracked
+## marble, pits, water, doors, chests, marks and Phineus's dais, its art exists, and no standing
+## prop sits on a guard's patrol line where it would hide him.
+func test_decor_on_plain_floor() -> void:
+	print("Ruin decor")
+	for data in Game.rooms:
+		var r := _make_room(data)
+		var beat := {}
+		for g in data.get("guards", []):
+			var pts: Array = g.get("path", [g.get("at", [0, 0])])
+			for i in pts.size():
+				var a := Vector2i(int(pts[i][0]), int(pts[i][1]))
+				var b := Vector2i(int(pts[mini(i + 1, pts.size() - 1)][0]), int(pts[mini(i + 1, pts.size() - 1)][1]))
+				var steps := maxi(absi(b.x - a.x), absi(b.y - a.y))
+				for s in steps + 1:
+					beat[a + (b - a) * s / maxi(steps, 1)] = true
+		for entry in Room.DECOR.get(r.id, []):
+			var c: Vector2i = entry[0]
+			var name: String = entry[1]
+			var bad: Array = []
+			for dy in range(-1, 2):
+				for dx in range(-1, 2):
+					var k := r.ch(c + Vector2i(dx, dy))
+					if k in ["x", "_", "W", "p", "D", "E", "C", "*", "H", "P"]:
+						bad.append("%s %s" % [c + Vector2i(dx, dy), k])
+			if not Room.decor_is_flat(name) and beat.has(c):
+				bad.append("a guard's beat")
+			check(r.ch(c) in [".", "m"] and r.is_walkable(c) and bad.is_empty() and Art.tex(name) != null,
+					"%s: the %s at %s stands on plain floor, clear of hazards, doors and guards%s" % [r.id, name, c, "" if bad.is_empty() else " (by %s)" % ", ".join(bad)])
+		_free_room(r)
