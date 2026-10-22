@@ -332,6 +332,26 @@ const SCRIPTS := {
 	],
 }
 
+
+## --script=gear: every armour with every weapon ("equip" gives Cedalion the item and puts it on),
+## a mace swing, then the shop.
+static func _gear_timeline() -> Array:
+	var out: Array = [[0.8, "shot", "", "start"]]
+	var t := 1.0
+	for a: String in ["tunic", "linothorax", "mail", "cuirass"]:
+		for w: String in ["xiphos", "labrys", "koryne"]:
+			out.append([t, "call", "equip", a])
+			out.append([t, "call", "equip", w])
+			out.append([t + 0.35, "shot", "", "%s_%s" % [a, w]])
+			t += 0.5
+	out.append([t, "call", "equip", "koryne"])
+	out.append([t + 0.1, "press", "attack"])
+	out.append([t + 0.25, "shot", "", "swing"])
+	out.append([t + 0.3, "release", "attack"])
+	out.append([t + 1.0, "call", "shop"])
+	out.append([t + 1.5, "shot", "", "shop"])
+	return out
+
 var prefix := ""
 var events: Array = []
 var main: Node
@@ -343,7 +363,7 @@ var _tracing := false
 func setup(p_main: Node, p_prefix: String, script_name: String) -> Autoshot:
 	main = p_main
 	prefix = p_prefix
-	events = SCRIPTS.get(script_name, SCRIPTS.idle)
+	events = _gear_timeline() if script_name == "gear" else SCRIPTS.get(script_name, SCRIPTS.idle)
 	return self
 
 
@@ -417,6 +437,9 @@ func _run(e: Array) -> void:
 				print("autoshot info: player at %s cell %s (%s) elev %.1f, focus %s" % [main.player.grid_pos(), main.player.cell(), main.room.ch(main.player.cell()), main.player.elev, f.verb if f else "none"])
 			elif e[2] == "give_sword":
 				Game.give_weapon("xiphos")
+			elif e[2] == "equip":
+				Game.owned[e[3]] = true
+				Game.equip(e[3])
 			elif e[2] == "hurt" and main.player:
 				# A harmless blow from the side he faces, to show the get-hit frame.
 				main.player.take_hit(0, main.player.global_position + Iso.grid_to_screen(main.player.facing), 0.0)

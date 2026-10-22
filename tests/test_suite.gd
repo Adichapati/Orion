@@ -30,6 +30,7 @@ func run() -> void:
 	await test_shop_buy_and_equip()
 	await test_phineus_dais()
 	await test_sky_clears_walls()
+	await test_axe_mace_and_mail()
 	await test_playthrough()
 	print("
 %d passed, %d failed" % [_passed, _failed])
@@ -823,3 +824,30 @@ func test_playthrough() -> void:
 	main.queue_free()
 	await get_tree().process_frame
 
+
+
+## Sathvik's armour sheet adds an axe and a mace: the bronze labrys and the iron koryne, each a
+## 32-angle sprite drawn in Cedalion's hand, and an iron mail shirt; Phineus sells all three.
+func test_axe_mace_and_mail() -> void:
+	print("Labrys, koryne and mail")
+	var shop := ShopPanel.new()
+	var stock: Array = shop._items()
+	for id: String in ["labrys", "koryne", "mail"]:
+		check(Game.SHOP_STOCK.has(id) and stock.has(id), "Phineus sells the %s" % id)
+		check(shop._icon_of(id) == "item_" + id, "the %s has its own shop icon" % id)
+	shop.free()
+	check(Game.armours.has("mail") and Game.armours.mail.hp_bonus == 2, "the mail shirt loads as armour")
+	Game.reset_run()
+	var r := _open_room([])
+	var p := _add_player(r, Vector2i(4, 3))
+	for id: String in ["labrys", "koryne"]:
+		var w: WeaponData = Game.weapons.get(id)
+		check(w != null and w.damage == 2 and w.price > 0, "the %s loads as a weapon" % id)
+		var t := Art.tex("sword_" + id)
+		check(t != null and t.get_width() == 32 * 32 and t.get_height() == 32, "sword_%s is a strip of 32 angles" % id)
+		Game.give_weapon(id)
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		check(p.sword.visible and p.sword.texture == t, "equipping the %s puts it in Cedalion's hand" % id)
+	Game.reset_run()
+	_free_room(r)

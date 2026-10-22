@@ -17,15 +17,17 @@ const POMEGRANATE_LIMIT := 2
 const WEAPON_PATHS := [
 	"res://data/weapons/xiphos.tres", "res://data/weapons/dagger.tres",
 	"res://data/weapons/kopis.tres", "res://data/weapons/longsword.tres",
+	"res://data/weapons/labrys.tres", "res://data/weapons/koryne.tres",
 ]
 const ARMOUR_PATHS := [
-	"res://data/armour/tunic.tres", "res://data/armour/linothorax.tres", "res://data/armour/cuirass.tres",
+	"res://data/armour/tunic.tres", "res://data/armour/linothorax.tres", "res://data/armour/mail.tres",
+	"res://data/armour/cuirass.tres",
 ]
 const GUARD_PATHS := [
 	"res://data/guards/watchman.tres", "res://data/guards/spearman.tres", "res://data/guards/hoplite.tres",
 ]
-## What Phineus sells in v1 (the doc's Must list: 2 swords, 2 armour sets, plus pomegranates).
-const SHOP_STOCK := ["dagger", "kopis", "linothorax", "cuirass", "pomegranate"]
+## What Phineus sells in v1: swords, the axe and the mace, three armours, plus pomegranates.
+const SHOP_STOCK := ["dagger", "kopis", "labrys", "koryne", "linothorax", "mail", "cuirass", "pomegranate"]
 
 var rooms: Array = []
 var guard_types := {}
