@@ -297,8 +297,8 @@ const DECOR := {
 	"colonnade": [
 		[Vector2i(4, 3), "amphora_plinth", Vector2(0.5, 0)],
 		[Vector2i(13, 7), "amphora_plinth", Vector2(0.5, 0)],
-		[Vector2i(4, 1), "vines_hang", Vector2(0, -0.5)],
-		[Vector2i(11, 1), "vines_hang", Vector2(0, -0.5)],
+		[Vector2i(9, 1), "vines_hang", Vector2(0, -0.5)],
+		[Vector2i(12, 1), "vines_hang", Vector2(0, -0.5)],
 		[Vector2i(15, 1), "vines_hang", Vector2(0, -0.5)],
 		[Vector2i(1, 4), "moss_patch_0", Vector2(-0.2, 0)],
 		[Vector2i(7, 1), "moss_patch_1", Vector2(0, -0.2)],
@@ -356,11 +356,23 @@ func _place_decor() -> void:
 			floor_layer.add_child(flat)
 			continue
 		# Vines are drawn in the wall face's plane; lift the sort point so Cedalion passes in front.
+		# They never drape a Brotherhood mark, which is a clue the player must see.
+		if name == "vines_hang" and _wall_marked(c + Vector2i(0, -1)):
+			continue
 		var s := Art.feet_sprite(name, 4 if name == "vines_hang" else 0)
 		s.position = at
 		world.add_child(s)
 		if DECOR_TALL.has(name):
 			_fading.append({"node": s, "body": s, "height": DECOR_TALL[name]})
+
+
+func _wall_marked(c: Vector2i) -> bool:
+	var body := _body_at(c)
+	if body:
+		for k in body.get_children():
+			if k is Sprite2D and (k as Sprite2D).texture == Art.tex("wall_scorpion"):
+				return true
+	return false
 
 
 func _lay_medallions() -> void:

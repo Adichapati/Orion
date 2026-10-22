@@ -855,4 +855,15 @@ func test_decor_on_plain_floor() -> void:
 				bad.append("a guard's beat")
 			check(r.ch(c) in [".", "m"] and r.is_walkable(c) and bad.is_empty() and Art.tex(name) != null,
 					"%s: the %s at %s stands on plain floor, clear of hazards, doors and guards%s" % [r.id, name, c, "" if bad.is_empty() else " (by %s)" % ", ".join(bad)])
+		# Tall pieces fade when Cedalion walks behind them, like columns.
+		var tall := 0
+		var fading := 0
+		for entry in Room.DECOR.get(r.id, []):
+			if Room.DECOR_TALL.has(entry[1]):
+				tall += 1
+		for f in r._fading:
+			for name: String in Room.DECOR_TALL:
+				if (f.node as Sprite2D).texture == Art.tex(name):
+					fading += 1
+		check(fading == tall, "%s: its %d tall ruin pieces fade when Cedalion is behind them" % [r.id, tall])
 		_free_room(r)
