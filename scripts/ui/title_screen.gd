@@ -27,7 +27,7 @@ const FALLS_W := 6
 const FALLS_TOP := 101
 const BACK_BRAZIER := Vector2(56, 23)
 ## Cloud bands: texture, top y, drift speed. The first sits behind the near island.
-const CLOUDS := [["title_cloud_0", 188, 2.0], ["title_cloud_1", 226, 4.0], ["title_cloud_2", 242, 7.0]]
+const CLOUDS := [["title_cloud_0", 194, 2.0], ["title_cloud_1", 224, 4.0], ["title_cloud_2", 236, 7.0]]
 
 
 func _ready() -> void:
@@ -152,6 +152,11 @@ func _draw_main_fx() -> void:
 		_fx.draw_rect(Rect2(b.x - w + sway, b.y - 9 - i, w * 2 + 1, 1), col)
 	if flick % 3 == 0:
 		_fx.draw_rect(Rect2(b.x + 2 - (flick % 5), b.y - 11 - h, 1, 1), Color("ffc857"))
+	# Embers rising off the flame and fading.
+	for i in 4:
+		var life := fmod(_t * 0.6 + i * 0.25, 1.0)
+		var e := Vector2(b.x + sin(_t * 2.0 + i * 2.7) * 3.0 + (i - 1.5) * 2.0, b.y - 14 - life * 26.0)
+		_fx.draw_rect(Rect2(e.round(), Vector2(1, 1)), Color("ffc857", 1.0 - life))
 	# Falling streaks down the waterfall.
 	for i in 9:
 		var x := FALLS_X + (i * 5) % FALLS_W
@@ -180,6 +185,12 @@ func _draw_shade(n: Control) -> void:
 		for gy in 135:
 			var e: float = 1.0 - absf(gy - 64.0) / 90.0
 			if bayer[(gy % 4) * 4 + gx % 4] < k * e * 22.0:
+				n.draw_rect(Rect2(gx * 4, gy * 4, 4, 4), ink)
+	# And a dark strip along the bottom so the controls line reads over the clouds.
+	for gy in range(120, 135):
+		var d := (gy - 120) / 6.0
+		for gx in 240:
+			if bayer[(gy % 4) * 4 + gx % 4] < d * 16.0:
 				n.draw_rect(Rect2(gx * 4, gy * 4, 4, 4), ink)
 
 

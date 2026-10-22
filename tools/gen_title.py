@@ -147,7 +147,7 @@ def island(cv, rng, cx, cy, rx, ry, cliff, spike, warm=True, grass=True):
                 c = N2 if k < 0.25 or (k < 0.55 and dith(x, y, 1.6 - k * 2.6)) else N1
                 if k > 0.8 and dith(x, y, 0.5):
                     c = N0
-                if side > 0.15 and k < 0.35 and dith(x, y, 0.5 - k):
+                if side > 0.25 and k < 0.3 and dith(x, y, 0.22 - k * 0.5):
                     c = M0
                 if side < -0.3 and k < 0.2 and warm and dith(x, y, 0.4):
                     c = C0
@@ -320,6 +320,28 @@ def main_island():
         for i in range(8):
             cv.set(bx + leg + (leg // 4) * (i // 4), by - 4 + i, BRONZE if leg < 0 else C0)
     cv.rect(bx - 2, by - 9, 5, 1, F1)
+    # Two olive trees: gnarled trunks, round silver-green crowns lit from the upper left.
+    for tx, ty, r in [(150, 52, 11), (28, 72, 8)]:
+        for i in range(r + 2):
+            cv.set(tx + (1 if i > r // 2 else 0), ty - i, LEATHER)
+            cv.set(tx + 1 + (1 if i > r // 2 else 0), ty - i, N1)
+        cy2 = ty - r - 4
+        for yy in range(-r, r // 2 + 2):
+            for xx in range(-r - 2, r + 3):
+                d = (xx / (r + 2)) ** 2 + (yy / r) ** 2
+                if d <= 1 and not (d > 0.8 and dith(tx + xx, cy2 + yy, 0.5)):
+                    l = -0.6 * xx / r - 0.8 * yy / r
+                    c = P["Silver"] if l > 0.88 else (O2 if l > 0.35 else (O1 if l > -0.3 else N2))
+                    if c == O2 and dith(tx + xx + (yy // 3) * 2, cy2 + yy, 0.3):
+                        c = O1
+                    if c == N2 and dith(tx + xx, cy2 + yy + xx // 3, 0.3):
+                        c = O0
+                    if d > 0.7 and l < 0.2:
+                        c = N1
+                    if c == O1 and dith(tx + xx, cy2 + yy, 0.25):
+                        c = O0
+                    cv.set(tx + xx, cy2 + yy, c)
+        cv.rect(tx - r, ty + 1, r * 2 + 2, 1, O0)  # shadow on the grass
     # A spring and a little stream to the waterfall's lip.
     fx0 = FALLS_X
     sx, sy = 140, 80
@@ -380,7 +402,7 @@ def back_island(name, seed, brazier):
         for x in range(W):
             c = cv.get(x, y)
             if c is not None:
-                cv.set(x, y, haze(c, 0.6 if name.endswith("0.png") else 0.3))
+                cv.set(x, y, haze(c, 0.3))
     cv.save(name)
 
 
@@ -396,7 +418,7 @@ def cloud_band(name, seed, h, rows, cols):
         x = rng.randint(0, r1)
         while x < W + r1:
             r = rng.randint(r0, r1)
-            by = ry + rng.randint(-3, 3)
+            by = ry + rng.randint(-5, 4)
             for yy in range(by - r, h):
                 for xx in range(x - r - 1, x + r + 2):
                     dx = (xx - x) / r
@@ -412,7 +434,7 @@ def cloud_band(name, seed, h, rows, cols):
                     elif l > 0.84:
                         c = rim
                     elif l > 0.45:
-                        c = lit if not (l < 0.52 and dith(xx, yy, 0.5)) else body
+                        c = lit
                     elif l > -0.1:
                         c = body
                     else:
@@ -447,8 +469,8 @@ if __name__ == "__main__":
     main_island()
     back_island("title_island_back_0.png", 721, False)
     back_island("title_island_back_1.png", 733, True)
-    cloud_band("title_cloud_0.png", 801, 74, [(24, 14, 24), (36, 10, 16)], (M0, N2, N2, N1, N1))
-    cloud_band("title_cloud_1.png", 802, 46, [(18, 11, 18), (28, 8, 13)], (M1, M0, N2, N1, N1))
-    cloud_band("title_cloud_2.png", 803, 34, [(15, 10, 16), (24, 7, 11)], (M0, N2, N1, N0, N0))
+    cloud_band("title_cloud_0.png", 801, 70, [(18, 7, 11), (26, 6, 9)], (N2, N2, N2, N1, N1))
+    cloud_band("title_cloud_1.png", 802, 52, [(22, 11, 17), (32, 8, 12)], (M1, M0, N2, N1, N1))
+    cloud_band("title_cloud_2.png", 803, 44, [(24, 14, 22), (34, 9, 14)], (M0, N2, N1, N0, N0))
     moon()
     print("wrote title art to", OUT)
