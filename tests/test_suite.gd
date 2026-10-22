@@ -157,13 +157,21 @@ func test_medallions_on_plain_floor() -> void:
 						bad.append("%s %s" % [c + Vector2i(dx, dy), k])
 			check(r.ch(c) in [".", "m"] and bad.is_empty(),
 					"%s: the mosaic at %s lies on plain floor, clear of cracks, pits and water%s" % [r.id, c, "" if bad.is_empty() else " (over %s)" % ", ".join(bad)])
-		# Broken walls are looks only: plain tall walls, away from doors and lamps, still solid.
-		for c in Room.BROKEN_WALLS.get(r.id, []):
+		# Cracked walls are looks only: plain tall walls, away from doors and lamps, still solid.
+		for c in Room.CRACKED_WALLS.get(r.id, []):
 			var near_door := false
 			for n in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
 				near_door = near_door or r.ch(c + n) in ["D", "E", "L", "v"]
 			check(r.ch(c) == "#" and r._wall_is_tall(c) and not near_door and not r.is_walkable(c),
-					"%s: the broken wall at %s is a plain tall wall, away from doors and lamps, and still blocks" % [r.id, c])
+					"%s: the cracked wall at %s is a plain tall wall, away from doors and lamps, and still blocks" % [r.id, c])
+		# Clutter stands on plain floor, clear of cracked marble, doors, chests and marks.
+		for entry in Room.CLUTTER.get(r.id, []):
+			var c: Vector2i = entry[0]
+			var clear := r.ch(c) == "."
+			for dy in range(-1, 2):
+				for dx in range(-1, 2):
+					clear = clear and not (r.ch(c + Vector2i(dx, dy)) in ["x", "D", "E", "C", "*"])
+			check(clear and r.is_walkable(c), "%s: the %s at %s stands on plain floor, clear of cracks, doors, chests and marks" % [r.id, entry[1], c])
 		_free_room(r)
 
 

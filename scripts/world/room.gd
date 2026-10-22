@@ -130,6 +130,7 @@ func build(room_data: Dictionary) -> void:
 	checkpoint = player_spawn
 	_place_vigil_lamps()
 	_paint_scorpions()
+	_place_clutter()
 	Atmosphere.dress(self, id)
 	NoiseBus.noise.connect(_show_noise)
 
@@ -231,15 +232,45 @@ const MEDALLIONS := {
 ## How far a medallion reaches from its cell, in tiles (its ring's radius in gen_greybox.py).
 const MEDALLION_R := 1.4
 
-## Back-wall cells drawn with a bite out of their top (the citadel is old), only on plain tall
+## Back-wall cells drawn with cracks down their faces (the citadel is old), only on plain tall
 ## walls and away from doors and lamps. Looks only: the wall still blocks as before.
-const BROKEN_WALLS := {
+const CRACKED_WALLS := {
 	"lion-gate": [Vector2i(3, 0), Vector2i(12, 0), Vector2i(0, 7)],
 	"colonnade": [Vector2i(8, 0), Vector2i(0, 5)],
 	"storerooms": [Vector2i(8, 0), Vector2i(0, 7)],
 	"cistern": [Vector2i(9, 0), Vector2i(0, 7)],
 	"statue-court": [Vector2i(3, 0), Vector2i(11, 0), Vector2i(0, 10)],
 }
+
+## A working room's clutter, placed by hand on plain floor against the walls: [cell, sprite, nudge
+## toward the wall in tiles]. Looks only (no collision); a "floor_" sprite lies flat on the floor.
+const CLUTTER := {
+	"storerooms": [
+		[Vector2i(4, 1), "sacks", Vector2(0, -0.38)],
+		[Vector2i(5, 1), "floor_grain", Vector2(0, -0.1)],
+		[Vector2i(6, 1), "crate", Vector2(0, -0.36)],
+		[Vector2i(10, 1), "sacks", Vector2(0, -0.38)],
+		[Vector2i(11, 2), "floor_grain", Vector2.ZERO],
+		[Vector2i(1, 4), "rope", Vector2(-0.3, 0)],
+		[Vector2i(1, 7), "crate", Vector2(-0.36, 0)],
+		[Vector2i(1, 8), "sacks", Vector2(-0.38, 0)],
+	],
+}
+
+
+func _place_clutter() -> void:
+	for entry in CLUTTER.get(id, []):
+		var c: Vector2i = entry[0]
+		var name: String = entry[1]
+		var at := cell_center(c) + Iso.grid_to_screen(entry[2]).round()
+		if name.begins_with("floor_"):
+			var s := Art.tile_sprite(name)
+			s.position = at
+			floor_layer.add_child(s)
+		else:
+			var s := Art.feet_sprite(name)
+			s.position = at
+			world.add_child(s)
 
 
 func _lay_medallions() -> void:
@@ -361,8 +392,8 @@ func _build_solid(c: Vector2i) -> void:
 		"#", "L", "v":
 			var tall := _wall_is_tall(c)
 			var name := "wall_tall" if tall else "wall_low"
-			if tall and k == "#" and c in BROKEN_WALLS.get(id, []):
-				name = "wall_tall_broken"
+			if tall and k == "#" and c in CRACKED_WALLS.get(id, []):
+				name = "wall_tall_cracked"
 			if k == "v":
 				name = "wall_tall_ivy"
 			body.add_child(Art.block_sprite(name))

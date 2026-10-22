@@ -90,8 +90,13 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
   and lamps; looks only. Both are generated last in `tools/gen_greybox.py` (its older output
   differs by a few pixels on this machine's Python and Pillow, so only the new files are
   committed). Test: no mosaic reaches over cracks, pits or water, and every broken wall is a
-  plain tall wall that still blocks. 201 tests pass. Not yet asked: Adithya's chest and Alcyone
-  images.
+  plain tall wall that still blocks. 201 tests pass. Asked for Adithya's chest and Alcyone
+  images and where Alcyone appears.
+- Sathvik: "stick to cracks instead of breaking the wall". The broken top is gone: those walls
+  now have cracks running down both faces (`wall_tall_cracked`, `Room.CRACKED_WALLS`), outline
+  and top untouched. Storeroom clutter, looks only and placed by hand against the walls
+  (`Room.CLUTTER`): burlap grain sacks, plank crates, a coil of rope and spilled grain. Test:
+  clutter stands on plain floor clear of cracks, doors, chests and marks. 209 tests pass.
 
 ; stopped at about 55% of the 5-hour window)
 

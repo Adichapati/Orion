@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://pwt5u4rtt0ki"
-path="res://.godot/imported/wall_tall_broken.png-7afa59d95461f2bead05aa63b82c8a5b.ctex"
+uid="uid://584fldbj46oh"
+path="res://.godot/imported/sacks.png-9a57f4564924301c7aff4f6e7513016c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/greybox/wall_tall_broken.png"
-dest_files=["res://.godot/imported/wall_tall_broken.png-7afa59d95461f2bead05aa63b82c8a5b.ctex"]
+source_file="res://art/greybox/sacks.png"
+dest_files=["res://.godot/imported/sacks.png-9a57f4564924301c7aff4f6e7513016c.ctex"]
 
 [params]
 

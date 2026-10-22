@@ -1085,48 +1085,116 @@ def cone(name, size, half_deg):
 cone("light_cone", 128, 50)
 
 
-def broken_wall(name, src, seed, centre=15, half=11, deep=14):
-    """A tall wall with a bite knocked out of its top: courses of stone broken off at different
-    heights, each lowered column keeping a top face as deep as the wall's cap there (so the gap
-    reads as solid stone, not a hollow shell), lit on the left and shaded on the right, with a dark
-    lip under it. Drawn from the finished `src` wall, last, with its own random generator, so
-    nothing generated before it changes."""
+def cracked_wall(name, src, seed):
+    """A tall wall with cracks running down its faces from the top: a dark core that wanders down
+    and sideways, a lit lip on its lower side (light from the top left), and a short branch or two.
+    The wall's outline and top are untouched. Drawn from the finished `src` wall, last, with its own
+    random generator, so nothing generated before it changes."""
     rnd = random.Random(seed)
     img = Image.open(OUT / f"{src}.png").convert("RGBA")
     w, h = img.size
-    lit_top, shade_top = WALL_TOP, hexc("8f8a7e")
-    lip_lit, lip_shade = hexc("6f695f"), hexc("3c3a4e")
-    step = 0
-    for x in range(w):
-        col = [y for y in range(h) if img.getpixel((x, y))[3] > 0]
-        if not col:
-            continue
-        t = (x - centre) / half
-        if abs(t) >= 1:
-            continue
-        if x % 4 == 0:
-            step = rnd.randint(-1, 1)
-        # courses are 4 px: the break follows them, unevenly
-        depth = max(0, 4 * round(deep * (1 - t * t) / 4) + step)
-        if depth <= 2:
-            continue
-        # the cap's depth in this column: from the top edge down to the faces' top edge
+
+    def on_face(x, y, lit):
+        if not (0 <= x < w and 0 <= y < h) or img.getpixel((x, y))[3] == 0:
+            return False
+        if lit and not (1 <= x <= 14):
+            return False
+        if not lit and not (17 <= x <= 30):
+            return False
         face_top = (8 + x // 2) if x < 16 else (15 - (x - 16) // 2)
-        cap = max(2, face_top - col[0])
-        cut = col[0] + depth
-        for y in range(col[0], min(cut, h)):
-            img.putpixel((x, y), CLEAR)
-        lit = x < 16
-        for y in range(cut, min(cut + cap, h)):
-            if img.getpixel((x, y))[3] > 0:
-                img.putpixel((x, y), lit_top if lit else shade_top)
-        if cut + cap < h:
-            img.putpixel((x, cut + cap), lip_lit if lit else lip_shade)
+        return y >= face_top + 1 and y <= h - 10
+
+    def crack_down(x, y, lit, steps):
+        core = hexc("3e3a36") if lit else hexc("2c2a3a")
+        lip = P["marble2"] if lit else hexc("8a879c")
+        pts = []
+        for _ in range(steps):
+            pts.append((x, y))
+            y += 1
+            if rnd.random() < 0.45:
+                x += rnd.choice([-1, 1])
+        for x, y in pts:
+            if on_face(x + 1, y, lit) and rnd.random() < 0.5:
+                img.putpixel((x + 1, y), lip)
+        for x, y in pts:
+            if on_face(x, y, lit):
+                img.putpixel((x, y), core)
+        return pts
+
+    for lit, x0 in ((True, rnd.randint(5, 9)), (False, rnd.randint(21, 26))):
+        face_top = (8 + x0 // 2) if x0 < 16 else (15 - (x0 - 16) // 2)
+        main = crack_down(x0, face_top + 1, lit, rnd.randint(14, 20))
+        bx, by = main[rnd.randint(4, len(main) - 4)]
+        crack_down(bx + rnd.choice([-1, 1]), by, lit, rnd.randint(4, 7))
     save(img, name)
 
 
 # Added after everything else on 2026-10-22 so the earlier art stays byte-identical.
-broken_wall("wall_tall_broken", "wall_tall", 11)
+cracked_wall("wall_tall_cracked", "wall_tall", 11)
+
+
+# ---------------------------------------------------------------- storeroom clutter (looks only)
+# Light from the top left: lit faces on the left, shade on the right, a dark outline round each.
+
+def sacks(img, d, w, h):
+    """Two burlap grain sacks slumped together: broad at the bottom, gathered to a tied neck with a
+    tuft above the cord, lit on the left."""
+    body, shade, light, ink = hexc("b08a5c"), hexc("7d5e3c"), hexc("d2b083"), P["black"]
+    for cx, base, half, top in ((7, h - 1, 6, 5), (14, h - 1, 5, 8)):
+        outline = [(cx - half, base - 1), (cx - half, base - 5), (cx - half + 2, top + 5), (cx - 1, top + 3),
+                   (cx + 1, top + 3), (cx + half - 2, top + 5), (cx + half, base - 5), (cx + half, base - 1),
+                   (cx + half - 2, base), (cx - half + 2, base)]
+        d.polygon(outline, fill=body, outline=ink)
+        d.polygon([(cx + 1, top + 4), (cx + half - 2, top + 6), (cx + half - 1, base - 5), (cx + half - 2, base - 1),
+                   (cx + 1, base - 1)], fill=shade)
+        d.line([(cx - half + 1, base - 5), (cx - half + 3, top + 6)], fill=light)
+        # the tied neck: a cord and a tuft of cloth above it
+        d.line([(cx - 2, top + 3), (cx + 2, top + 3)], fill=P["leather"])
+        d.polygon([(cx - 2, top + 2), (cx - 3, top), (cx, top + 1), (cx + 3, top), (cx + 2, top + 2)], fill=light, outline=ink)
+        d.line([(cx - half + 3, base - 3), (cx + half - 3, base - 3)], fill=shade)
+
+
+def crate(img, d, w, h):
+    """A small plank crate, as a block: lit left face, shaded right face, a lid with seams."""
+    wood_l, wood_r, wood_t, seam = P["skin1"], P["leather"], P["clay2"], P["black"]
+    d.polygon([(0, 6), (8, 10), (8, h - 1), (0, h - 5)], fill=wood_l)
+    d.polygon([(8, 10), (15, 6), (15, h - 5), (8, h - 1)], fill=wood_r)
+    d.polygon([(0, 6), (8, 2), (15, 6), (8, 10)], fill=wood_t)
+    for y in (h - 8, h - 4):  # plank seams
+        d.line([(0, y - 4), (8, y)], fill=seam)
+        d.line([(8, y), (15, y - 4)], fill=seam)
+    d.line([(3, 4), (11, 8)], fill=P["skin1"])
+    d.line([(0, 6), (8, 2), (15, 6)], fill=seam)
+    d.line([(0, 6), (0, h - 5), (8, h - 1), (15, h - 5), (15, 6)], fill=seam)
+    d.line([(8, 10), (8, h - 1)], fill=seam)
+
+
+def rope(img, d, w, h):
+    """A coil of rope lying on the floor."""
+    for i, (rx, ry) in enumerate(((5, 2), (4, 2), (3, 1), (2, 1))):
+        cy = h - 3 - i
+        d.ellipse([6 - rx, cy - ry, 6 + rx, cy + ry], outline=P["clay2"] if i % 2 == 0 else P["clay1"])
+    d.line([(10, h - 2), (12, h - 1)], fill=P["clay1"])
+
+
+def grain_spill(name):
+    """Grain spilled from a split sack: a fan of gold and husk-coloured specks on the floor, flat
+    like a floor tile (32x16)."""
+    rnd = random.Random(23)
+    img = Image.new("RGBA", (32, 16), CLEAR)
+    for _ in range(46):
+        a = rnd.uniform(-0.9, 0.9)
+        r = rnd.uniform(0, 1) ** 0.7 * 9
+        x, y = int(16 + math.cos(a) * r * 1.6 - 6), int(8 + math.sin(a) * r * 0.8)
+        if 0 <= x < 32 and 0 <= y < 16:
+            img.putpixel((x, y), P["gold"] if rnd.random() < 0.55 else P["olive2"])
+    save(img, name)
+
+
+prop("sacks", 20, 18, sacks)
+prop("crate", 16, 18, crate)
+prop("rope", 13, 8, rope)
+grain_spill("floor_grain")
 
 print("greybox art written to", OUT)
 print(sorted(p.name for p in OUT.glob("*.png")))

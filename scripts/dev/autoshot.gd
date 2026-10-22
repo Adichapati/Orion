@@ -216,7 +216,7 @@ const SCRIPTS := {
 		[5.37, "shot", "", "back_hurt_c"],
 		[5.6, "call", "untrace"],
 	],
-	# Stand by the Lion Gate's first broken wall (3, 0), to look at the gap in its top.
+	# Stand by the Lion Gate's first cracked wall (3, 0), to look at its cracks.
 	"ruins": [
 		[0.5, "call", "goto", Vector2i(3, 2)],
 		[1.2, "shot", "", "ruin"],
