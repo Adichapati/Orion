@@ -1,12 +1,33 @@
 class_name TitleScreen
 extends Control
-## The title: ORION and Begin / Quit on the left, the hunter drawing himself on the right, and the
-## Star Citadel black against the sky with its vigil lamps along the walls.
+## The title: ORION and Begin / Quit on the left, the hunter drawing himself in the upper right,
+## and floating islands over a moonlit sea of clouds: one near island with a ruined temple, a lit
+## brazier and a waterfall, and two far ones in the haze. The art (tools/gen_title.py) is drawn at
+## the game's 480x270 pixel size and shown at 2x, so its pixels match the game's.
 
 signal begin
 
 var _t := 0.0
 var _stars: Array = []
+## Islands that bob: [node, rest position, amplitude in game pixels, phase, speed].
+var _bobbers: Array = []
+## Cloud bands that drift: [node, speed in game pixels a second].
+var _clouds: Array = []
+var _fx: Control
+var _fx_back: Control
+
+## Where each piece sits, in game pixels (480x270).
+const MAIN_AT := Vector2(190, 85)
+const BACK_AT := [Vector2(14, 10), Vector2(214, 22)]
+const MOON_AT := Vector2(160, 14)
+## Spots on the island art, matching tools/gen_title.py.
+const BRAZIER := Vector2(178, 74)
+const FALLS_X := 150
+const FALLS_W := 6
+const FALLS_TOP := 101
+const BACK_BRAZIER := Vector2(56, 23)
+## Cloud bands: texture, top y, drift speed. The first sits behind the near island.
+const CLOUDS := [["title_cloud_0", 188, 2.0], ["title_cloud_1", 226, 4.0], ["title_cloud_2", 242, 7.0]]
 
 
 func _ready() -> void:
@@ -21,10 +42,18 @@ func _ready() -> void:
 	rng.seed = 7
 	for i in 90:
 		_stars.append({"p": Vector2(rng.randf() * 960.0, rng.randf() * 540.0), "s": rng.randf_range(0.3, 1.0), "ph": rng.randf() * TAU})
-	# The menu sits in the left half; Orion stands in the right.
+	_build_islands()
+	# The menu sits in the left half, over a soft dark panel; Orion stands in the upper right.
+	var shade := Control.new()
+	shade.name = "MenuShade"
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shade.draw.connect(_draw_shade.bind(shade))
+	add_child(shade)
 	var c := CenterContainer.new()
-	c.position = Vector2(30, 40)
-	c.size = Vector2(470, 400)
+	c.name = "Menu"
+	c.position = Vector2(10, 50)
+	c.size = Vector2(400, 400)
 	add_child(c)
 	var v := UiKit.vbox(10)
 	v.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -53,7 +82,105 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	for b in _bobbers:
+		var n: Control = b[0]
+		n.position = b[1] + Vector2(0, roundf(sin(_t * b[4] + b[3]) * b[2]) * 2.0)
+	for cl in _clouds:
+		var n: Control = cl[0]
+		n.position.x = -roundf(fmod(_t * cl[1], 480.0)) * 2.0
+	_fx.queue_redraw()
+	_fx_back.queue_redraw()
 	queue_redraw()
+
+
+## A 2x, nearest-filtered sprite of one of the title's textures, placed in game pixels.
+func _sprite(tex_name: String, at: Vector2) -> TextureRect:
+	var r := TextureRect.new()
+	r.texture = Art.tex(tex_name)
+	r.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	r.stretch_mode = TextureRect.STRETCH_KEEP
+	r.scale = Vector2(2, 2)
+	r.position = at * 2.0
+	if r.texture:
+		r.size = r.texture.get_size()
+	add_child(r)
+	return r
+
+
+func _build_islands() -> void:
+	for i in 2:
+		var b := _sprite("title_island_back_%d" % i, BACK_AT[i])
+		b.name = "IslandBack%d" % i
+		_bobbers.append([b, b.position, 1.0, 1.7 + i * 2.4, 0.55 + i * 0.12])
+		if i == 1:
+			_fx_back = Control.new()
+			_fx_back.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_fx_back.draw.connect(_draw_back_fx)
+			b.add_child(_fx_back)
+	for i in CLOUDS.size():
+		var cl := _sprite(CLOUDS[i][0], Vector2(0, CLOUDS[i][1]))
+		cl.name = "Cloud%d" % i
+		cl.stretch_mode = TextureRect.STRETCH_TILE
+		cl.size = Vector2(960, cl.size.y)
+		_clouds.append([cl, CLOUDS[i][2]])
+		if i == 0:
+			var m := _sprite("title_island_main", MAIN_AT)
+			m.name = "IslandMain"
+			_bobbers.append([m, m.position, 2.0, 0.0, 0.7])
+			_fx = Control.new()
+			_fx.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_fx.draw.connect(_draw_main_fx)
+			m.add_child(_fx)
+
+
+## The near island's brazier flame and glow, the waterfall's falling streaks and its mist, in
+## the island's own pixels.
+func _draw_main_fx() -> void:
+	var f := 0.75 + 0.25 * sin(_t * 9.0) * sin(_t * 5.3 + 1.0)
+	var b := BRAZIER
+	for k in 3:
+		_fx.draw_circle(b + Vector2(0, -6), (8.0 + k * 6.0) * f, Color(1.0, 0.6, 0.25, 0.07))
+	var flick := int(_t * 10.0)
+	var h: int = [6, 7, 5, 8, 6, 7][flick % 6]
+	for i in h:
+		var w := maxi(1, int((h - i) * 0.6))
+		var sway := int(round(sin(_t * 7.0 + i * 0.9) * (i * 0.25)))
+		var col := Color("ffc857") if i < h / 2 else Color("e0782c")
+		if i < 2:
+			col = Color("fff1c1")
+		_fx.draw_rect(Rect2(b.x - w + sway, b.y - 9 - i, w * 2 + 1, 1), col)
+	if flick % 3 == 0:
+		_fx.draw_rect(Rect2(b.x + 2 - (flick % 5), b.y - 11 - h, 1, 1), Color("ffc857"))
+	# Falling streaks down the waterfall.
+	for i in 9:
+		var x := FALLS_X + (i * 5) % FALLS_W
+		var y := FALLS_TOP + fmod(_t * 38.0 + i * 13.7, 110.0)
+		_fx.draw_rect(Rect2(x, int(y), 1, 3 + i % 3), Color("cfe3ff", 0.85))
+	# Mist where the falls meet the clouds.
+	var mist_y: float = CLOUDS[1][1] - MAIN_AT.y + 6.0
+	for i in 7:
+		var p := Vector2(FALLS_X + 3 + sin(_t * 0.8 + i * 1.9) * (6 + i), mist_y - 2 + fmod(i * 3.0, 5.0))
+		_fx.draw_rect(Rect2(p.round(), Vector2(4 + i % 3 * 2, 2)), Color("cfe3ff", 0.25 + 0.1 * sin(_t * 2.0 + i)))
+
+
+func _draw_back_fx() -> void:
+	var f := 0.6 + 0.4 * absf(sin(_t * 6.0 + sin(_t * 2.3)))
+	_fx_back.draw_circle(BACK_BRAZIER + Vector2(0, -3), 6.0 * f, Color(1.0, 0.6, 0.25, 0.08))
+	_fx_back.draw_rect(Rect2(BACK_BRAZIER + Vector2(-1, -5), Vector2(2, 2)), Color("e0782c", f))
+	_fx_back.draw_rect(Rect2(BACK_BRAZIER + Vector2(0, -6 - int(f * 1.5)), Vector2(1, 1)), Color("ffc857", f))
+
+
+## A soft dark panel behind the menu: dense at the left edge, dithering out to the right.
+func _draw_shade(n: Control) -> void:
+	var bayer := [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5]
+	var ink := Color(0.03, 0.03, 0.08, 0.6)
+	for gx in 120:
+		var k := 1.0 - gx / 120.0
+		for gy in 135:
+			var e: float = 1.0 - absf(gy - 64.0) / 90.0
+			if bayer[(gy % 4) * 4 + gx % 4] < k * e * 22.0:
+				n.draw_rect(Rect2(gx * 4, gy * 4, 4, 4), ink)
 
 
 ## Orion's main stars (the same figure as the in-game sky), drawn line by line as the title
@@ -65,16 +192,14 @@ const ORION := [
 	["Saiph", Vector2(-0.8, 1.6), 2], ["Rigel", Vector2(1.15, 1.35), 3],
 ]
 const LINES := [[3, 4], [4, 5], [0, 3], [1, 5], [0, 2], [2, 1], [3, 6], [5, 7]]
-const CENTRE := Vector2(690, 214)
-const UNIT := 72.0
-const SKY_INK := Color(0.012, 0.012, 0.035)
-## The citadel's walls and towers: x, width, height above the ground line at y 470.
-const WALLS := [[0, 140, 22], [120, 34, 58], [150, 190, 30], [330, 40, 70], [365, 210, 26], [560, 30, 52], [585, 375, 34]]
+## Up and right of the near island's temple and rim.
+const CENTRE := Vector2(790, 140)
+const UNIT := 52.0
 const LINE_TIME := 0.32
 
 
 func _draw() -> void:
-	# A faint band of the Milky Way, then the stars.
+	# A faint band of the Milky Way, then the stars and the moon.
 	for i in 60:
 		var x := fmod(i * 97.0, 960.0)
 		var y := 60.0 + x * 0.35 + fmod(i * 53.0, 70.0) - 35.0
@@ -82,6 +207,12 @@ func _draw() -> void:
 	for s in _stars:
 		var a: float = 0.4 + 0.6 * s.s * (0.75 + 0.25 * sin(_t * 2.0 + s.ph))
 		draw_rect(Rect2(s.p.round(), Vector2(2, 2)), Color(0.85, 0.88, 1.0, a))
+	var moon := Art.tex("title_moon")
+	if moon:
+		var mc := MOON_AT * 2.0 + moon.get_size()
+		for k in 3:
+			draw_circle(mc, 28.0 + k * 12.0, Color(0.5, 0.65, 0.9, 0.025))
+		draw_texture_rect(moon, Rect2(MOON_AT * 2.0, moon.get_size() * 2.0), false)
 	var pts: Array = []
 	for st in ORION:
 		pts.append((CENTRE + (st[1] as Vector2) * UNIT).round())
@@ -107,37 +238,3 @@ func _draw() -> void:
 		draw_rect(Rect2(p - Vector2(r, r), Vector2(r * 2, r * 2)), col)
 		draw_rect(Rect2(p - Vector2(r * 3, 1), Vector2(r * 6, 2)), Color(col, col.a * 0.3))
 		draw_rect(Rect2(p - Vector2(1, r * 3), Vector2(2, r * 6)), Color(col, col.a * 0.3))
-	_skyline()
-
-
-## The Star Citadel against the sky: walls, towers, cypresses and the temple on the summit, with
-## the vigil lamps flickering along the parapet.
-func _skyline() -> void:
-	draw_rect(Rect2(0, 470, 960, 70), SKY_INK)
-	for w in WALLS:
-		draw_rect(Rect2(w[0], 470 - w[2], w[1], w[2]), SKY_INK)
-		if w[1] < 50:  # towers get crenellations
-			for k in range(0, w[1], 8):
-				draw_rect(Rect2(w[0] + k, 470 - w[2] - 4, 4, 4), SKY_INK)
-	for cx in [70, 260, 520, 640]:
-		for k in 14:
-			var hw := int(5.0 * sin(PI * (k + 1) / 15.0)) + 1
-			draw_rect(Rect2(cx - hw, 446 - k * 4, hw * 2, 4), SKY_INK)
-	var tx := 700.0
-	draw_rect(Rect2(tx, 424, 200, 12), SKY_INK)
-	draw_rect(Rect2(tx + 8, 416, 184, 8), SKY_INK)
-	for k in 8:
-		draw_rect(Rect2(tx + 14 + k * 23, 372, 10, 44), SKY_INK)
-	draw_rect(Rect2(tx + 6, 362, 188, 10), SKY_INK)
-	for k in 18:
-		var hw := 94.0 * (1.0 - k / 18.0)
-		draw_rect(Rect2(tx + 100 - hw, 360 - k * 2, hw * 2, 2), SKY_INK)
-	for i in 14:
-		var x := 40.0 + i * 66.0 + fmod(i * 37.0, 20.0)
-		var top := 470.0
-		for w in WALLS:
-			if x >= w[0] and x < w[0] + w[1]:
-				top = 470.0 - w[2]
-		var f := 0.7 + 0.3 * sin(_t * (5.0 + i) + i * 2.1)
-		draw_rect(Rect2(Vector2(x, top - 4).round(), Vector2(2, 2)), Color(1.0, 0.72, 0.35, f))
-		draw_rect(Rect2(Vector2(x - 2, top - 6).round(), Vector2(6, 6)), Color(1.0, 0.6, 0.3, 0.12 * f))

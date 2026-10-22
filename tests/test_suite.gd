@@ -30,6 +30,7 @@ func run() -> void:
 	await test_shop_buy_and_equip()
 	await test_phineus_dais()
 	await test_sky_clears_walls()
+	await test_title_floating_islands()
 	await test_playthrough()
 	print("
 %d passed, %d failed" % [_passed, _failed])
@@ -823,3 +824,43 @@ func test_playthrough() -> void:
 	main.queue_free()
 	await get_tree().process_frame
 
+
+
+func test_title_floating_islands() -> void:
+	print("Title floating islands")
+	var t := TitleScreen.new()
+	add_child(t)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var main_isle := t.get_node_or_null("IslandMain") as TextureRect
+	check(main_isle != null and main_isle.texture != null, "the title shows the near island with its art")
+	for i in 2:
+		var b := t.get_node_or_null("IslandBack%d" % i) as TextureRect
+		check(b != null and b.texture != null, "...and far island %d with its art" % i)
+		if b and main_isle and b.texture and main_isle.texture:
+			check(b.texture.get_width() * 2 < main_isle.texture.get_width(), "...which is smaller than the near one")
+	for i in TitleScreen.CLOUDS.size():
+		var c := t.get_node_or_null("Cloud%d" % i) as TextureRect
+		check(c != null and c.texture != null, "...over cloud band %d" % i)
+	var labels := t.find_children("*", "Label", true, false)
+	var buttons := t.find_children("*", "Button", true, false)
+	var has_title := labels.any(func(l): return (l as Label).text == "ORION")
+	var has_begin := buttons.any(func(b): return (b as Button).text == "Begin the night")
+	check(has_title and has_begin and buttons.size() >= 2, "...and the ORION title and the menu are still there")
+	# Orion clears the near island: every star sits above the island's top-left corner row.
+	var y0 := main_isle.position.y if main_isle else 0.0
+	var clear := true
+	for st in TitleScreen.ORION:
+		var p: Vector2 = TitleScreen.CENTRE + (st[1] as Vector2) * TitleScreen.UNIT
+		var local := (p - main_isle.position) / 2.0
+		var img := main_isle.texture.get_image()
+		if local.x >= 0 and local.y >= 0 and local.x < img.get_width() and local.y < img.get_height():
+			if img.get_pixelv(Vector2i(local)).a > 0.0:
+				clear = false
+	check(clear and y0 > 0.0, "...and no island pixel hides Orion's stars")
+	var began := [false]
+	t.begin.connect(func(): began[0] = true)
+	(buttons.filter(func(b): return (b as Button).text == "Begin the night")[0] as Button).pressed.emit()
+	check(began[0], "...and Begin the night still starts the run")
+	t.queue_free()
+	await get_tree().process_frame
