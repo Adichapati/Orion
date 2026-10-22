@@ -215,6 +215,23 @@ func _build_floor(c: Vector2i) -> void:
 				_add_floor_sprite(c, Art.block_sprite("raised"))
 			else:
 				_add_floor_sprite(c, Art.tile_sprite(_plain_floor(c)))
+	_add_key_border(c, k)
+
+
+## A Greek-key border runs around a room's floor where it meets the walls (not over cracked
+## marble, which must stay readable, and not in the storerooms, a working room).
+const KEY_BORDER := {Vector2i(-1, 0): "floor_key_w", Vector2i(1, 0): "floor_key_e",
+		Vector2i(0, -1): "floor_key_n", Vector2i(0, 1): "floor_key_s"}
+
+
+func _add_key_border(c: Vector2i, k: String) -> void:
+	if id == "storerooms" or not (k in ".m*"):
+		return
+	for n in KEY_BORDER:
+		if ch(c + n) in WALLS:
+			var s := Art.tile_sprite(KEY_BORDER[n])
+			s.position = cell_center(c)
+			floor_layer.add_child(s)
 
 
 ## A plain marble slab with some variety: darker slabs, polished and stained ones, moss along

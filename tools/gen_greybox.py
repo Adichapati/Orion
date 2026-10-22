@@ -204,6 +204,44 @@ def seven_dots(img, d):
 
 floor_tile(P["marble1"], P["marble0"], "floor_mark", seven_dots)
 
+def key_border(name, axis, side):
+    """A Greek-key border band along one edge of a floor tile, drawn as an overlay. The fret is
+    laid out in grid space (so it foreshortens with the floor and runs on from tile to tile):
+    an outer rail by the wall, a square-wave meander, an inner rail. axis 'x' or 'y' is the grid
+    axis the edge lies across; side -1 or 1 which end of it."""
+    img = Image.new("RGBA", (32, 16), CLEAR)
+    bw = 0.42  # the band's width, in tiles
+    line, rail = hexc("3e3a36"), hexc("4a4540")
+    for py in range(16):
+        for px in range(32):
+            dx, dy = px + 0.5 - 16, py + 0.5 - 8
+            u, v = dx / 32 + dy / 16, dy / 16 - dx / 32
+            if abs(u) > 0.5 or abs(v) > 0.5 or abs(dx) / 16 + abs(dy) / 8 > 1.0:
+                continue
+            across_g, along = (u, v) if axis == "x" else (v, u)
+            a = (across_g * side - (0.5 - bw)) / bw  # 0 at the band's inner edge, 1 at the wall
+            if a < 0:
+                continue
+            a = 1 - a  # 0 by the wall, 1 inside
+            t = (along + 0.5) * 2.0  # one fret period per tile
+            half, f = int(t) % 2, t - int(t)
+            if a < 0.16:
+                c = rail
+            elif a > 0.84:
+                c = line
+            elif f < 0.16 or (half == 0 and a < 0.36) or (half == 1 and a > 0.64):
+                c = line
+            else:
+                c = P["marble2"]
+            img.putpixel((px, py), c)
+    save(img, name)
+
+
+key_border("floor_key_w", "x", -1)   # wall on the -x side
+key_border("floor_key_e", "x", 1)    # wall on the +x side
+key_border("floor_key_n", "y", -1)   # wall on the -y side
+key_border("floor_key_s", "y", 1)    # wall on the +y side
+
 # ---------------------------------------------------------------- blocks
 # The shadowed (right) face is a blue-grey stone rather than night blue: in the dark rooms night
 # blue went near-black and made cut-away walls and raised floors read as holes.
