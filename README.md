@@ -22,7 +22,7 @@ You need Godot 4.7 (standard build, not .NET). Open `project.godot` in the edito
 
     godot --path .
 
-The game starts on the title screen. To jump straight into a room, pass its id or index after `--`:
+The game starts full screen on the title screen (F11 switches to a window; pass `-- --windowed` to start in one). To jump straight into a room, pass its id or index after `--`:
 
     godot --path . -- --room=statue-court
 

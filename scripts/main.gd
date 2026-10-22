@@ -41,6 +41,10 @@ func _ready() -> void:
 	_fader.z_index = 100
 	ui.add_child(_fader)
 	var args := user_args()
+	# The game fills the screen (F11 toggles a window); screenshot runs and `--windowed` keep the
+	# window, and headless runs have no screen.
+	if not args.has("shots") and not args.has("windowed") and DisplayServer.get_name() != "headless":
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	if args.has("shots"):
 		add_child(Autoshot.new().setup(self, args.shots, args.get("script", "idle")))
 	if args.has("debug"):
@@ -54,7 +58,8 @@ func _ready() -> void:
 
 ## User arguments after `--`, as {"room": "colonnade", ...}. `--room=<id or index>` skips the
 ## title and starts in that room; `--shots=<path prefix> --script=<name>` runs an Autoshot
-## timeline (scripts/dev/autoshot.gd); `--debug` turns on the F3 overlay.
+## timeline (scripts/dev/autoshot.gd); `--debug` turns on the F3 overlay; `--windowed` starts in a
+## window instead of full screen.
 static func user_args() -> Dictionary:
 	var out := {}
 	for a in OS.get_cmdline_user_args():
