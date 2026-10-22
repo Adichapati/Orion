@@ -1196,5 +1196,278 @@ prop("crate", 16, 18, crate)
 prop("rope", 13, 8, rope)
 grain_spill("floor_grain")
 
+
+# ---------------------------------------------------------------- ruins and growth (looks only)
+# Added after everything else on 2026-10-22 so the earlier art stays byte-identical. Weathered
+# marble overgrown with moss, grass and vines, after Sathvik's ruin references: lit from the top
+# left, a dark outline round each piece, moss and leaves in the olive tones.
+_RUIN_INK = hexc("3b3742")
+_SHADE = hexc("9a9384")
+
+
+def _outline(img, ink=_RUIN_INK, skip_below=None):
+    """A one-pixel dark outline round everything drawn (not under the feet line)."""
+    src = img.copy()
+    w, h = img.size
+    for y in range(h):
+        if skip_below is not None and y >= skip_below:
+            continue
+        for x in range(w):
+            if src.getpixel((x, y))[3]:
+                continue
+            for ox, oy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + ox, y + oy
+                if 0 <= nx < w and 0 <= ny < h and src.getpixel((nx, ny))[3] and src.getpixel((nx, ny)) != ink:
+                    img.putpixel((x, y), ink)
+                    break
+
+
+def _leaf(img, rnd, x, y, lit=True):
+    if 0 <= x < img.width and 0 <= y < img.height:
+        img.putpixel((x, y), (P["olive2"] if rnd.random() < 0.55 else P["olive1"]) if lit else
+                     (P["olive1"] if rnd.random() < 0.5 else P["olive0"]))
+
+
+def _vine(img, rnd, x, y, length, lean=0):
+    """A hanging strand: a dark stem wandering down with leaves either side."""
+    for k in range(length):
+        if rnd.random() < 0.22:
+            x += rnd.choice([-1, 1]) if lean == 0 else lean
+        if not (0 <= x < img.width and 0 <= y + k < img.height):
+            break
+        img.putpixel((x, y + k), P["olive0"])
+        if k % 2 == 0:
+            _leaf(img, rnd, x - 1, y + k, True)
+            if rnd.random() < 0.7:
+                _leaf(img, rnd, x + 1, y + k + 1, False)
+
+
+def _moss_top(img, rnd, x0, x1, y, depth=2):
+    """A cushion of moss along a top edge, lit on top, darker underneath, drips here and there."""
+    for x in range(x0, x1 + 1):
+        top = y - rnd.randint(0, 2)
+        for yy in range(top, y + depth):
+            if 0 <= x < img.width and 0 <= yy < img.height:
+                img.putpixel((x, yy), P["olive2"] if yy == top else P["olive1"] if yy < y + depth - 1 else P["olive0"])
+        if rnd.random() < 0.18:
+            for yy in range(y + depth, y + depth + rnd.randint(1, 3)):
+                if 0 <= yy < img.height:
+                    img.putpixel((x, yy), P["olive0"])
+
+
+def _shaft(d, cx, y0, y1):
+    """A fluted marble column shaft (8 wide), lit left, shaded right, like the column prop."""
+    d.rectangle([cx - 4, y0, cx + 3, y1], fill=P["marble1"])
+    d.rectangle([cx + 1, y0, cx + 3, y1], fill=_SHADE)
+    for x in (cx - 3, cx - 1):
+        d.line([(x, y0 + 1), (x, y1 - 1)], fill=P["marble2"])
+    d.line([(cx + 2, y0 + 1), (cx + 2, y1 - 1)], fill=P["marble0"])
+
+
+def _ivy_climb(img, rnd, cx, y_top, y_bot):
+    """Ivy wound round a shaft: a stem swinging side to side as it climbs, leaves at each turn."""
+    for y in range(y_bot, y_top, -1):
+        t = (y_bot - y) / 5.0
+        x = cx + int(round(math.sin(t) * 3.5)) - 1
+        img.putpixel((x, y), P["olive0"])
+        if y % 2 == 0:
+            _leaf(img, rnd, x - 1, y, True)
+            _leaf(img, rnd, x + 1, y - 1, x < cx)
+
+
+def ruin_arch(img, d, w, h):
+    """Two weathered columns joined by a cracked lintel, moss along its top, vines hanging down."""
+    rnd = random.Random(301)
+    lx, rx = 8, w - 9
+    for cx in (lx, rx):
+        diamond(d, cx - 7, h - 8, P["marble0"], 14, 7)
+        _shaft(d, cx, 15, h - 5)
+        d.rectangle([cx - 6, 12, cx + 5, 14], fill=P["marble1"])
+        d.rectangle([cx + 2, 12, cx + 5, 14], fill=_SHADE)
+    # the lintel: a lit top strip, the face, a shaded underside and a darker right end
+    d.rectangle([1, 4, w - 2, 5], fill=P["marble2"])
+    d.rectangle([1, 6, w - 2, 11], fill=P["marble1"])
+    d.rectangle([w - 7, 4, w - 2, 11], fill=_SHADE)
+    d.line([(1, 11), (w - 2, 11)], fill=P["marble0"])
+    # a chipped top-right corner and a crack running down through the lintel
+    for x, y in ((w - 2, 4), (w - 3, 4), (w - 2, 5)):
+        img.putpixel((x, y), CLEAR)
+    cx, y = 23, 4
+    while y <= 11:
+        img.putpixel((cx, y), _RUIN_INK)
+        if y in (6, 9):
+            cx += 1
+            img.putpixel((cx, y), _RUIN_INK)
+        y += 1
+    for x, yy in ((10, 7), (11, 7), (30, 9)):  # worn pits
+        img.putpixel((x, yy), P["marble0"])
+    _ivy_climb(img, rnd, lx, 16, h - 6)
+    _outline(img, skip_below=h - 5)
+    _moss_top(img, rnd, 1, w - 3, 4, 2)
+    for x in (4, 13, 17, 27, 33, 36):
+        _vine(img, rnd, x, 12, rnd.randint(7, 22))
+
+
+def nike_statue(img, d, w, h):
+    """Nike, the winged Victory: a marble figure in a long wind-blown chiton on a square plinth,
+    wings swept up and out, moss at the plinth's foot."""
+    rnd = random.Random(302)
+    cx = w // 2
+    d.rectangle([cx - 8, h - 12, cx + 7, h - 3], fill=WALL_L)
+    d.rectangle([cx, h - 12, cx + 7, h - 3], fill=WALL_R)
+    diamond(d, cx - 8, h - 16, P["marble1"], 16, 8)
+    fig = Image.new("RGBA", (w, h), CLEAR)
+    f = ImageDraw.Draw(fig)
+    L, M, D = P["marble2"], P["marble1"], P["marble0"]
+    base = h - 13
+    # wings behind her: swept up from the shoulders to tips above her head, feathers in rows
+    f.polygon([(cx - 2, base - 21), (cx - 7, base - 27), (cx - 11, base - 34), (cx - 12, base - 30),
+               (cx - 11, base - 22), (cx - 8, base - 15), (cx - 3, base - 16)], fill=L)
+    f.polygon([(cx + 1, base - 21), (cx + 6, base - 27), (cx + 10, base - 34), (cx + 11, base - 30),
+               (cx + 10, base - 22), (cx + 7, base - 15), (cx + 2, base - 16)], fill=M)
+    for i, yy in enumerate((base - 27, base - 23, base - 19)):
+        f.line([(cx - 10 + i, yy), (cx - 4, yy + 2)], fill=M)
+        f.line([(cx + 9 - i, yy), (cx + 3, yy + 2)], fill=D)
+    # the chiton flaring out to the hem, blown back to the right
+    f.polygon([(cx - 3, base - 15), (cx + 2, base - 15), (cx + 5, base - 1), (cx + 3, base), (cx - 4, base),
+               (cx - 5, base - 2)], fill=L)
+    f.polygon([(cx, base - 15), (cx + 2, base - 15), (cx + 5, base - 1), (cx + 3, base), (cx + 1, base)], fill=M)
+    for x0 in (cx - 3, cx - 1):
+        f.line([(x0, base - 11), (x0 - 1, base - 1)], fill=M)  # folds
+    f.line([(cx + 2, base - 10), (cx + 3, base - 1)], fill=D)
+    # torso, belt and the left arm down at her side
+    f.rectangle([cx - 3, base - 21, cx + 2, base - 15], fill=L)
+    f.rectangle([cx + 1, base - 21, cx + 2, base - 15], fill=M)
+    f.line([(cx - 3, base - 16), (cx + 2, base - 16)], fill=D)
+    f.line([(cx + 3, base - 20), (cx + 4, base - 14)], fill=M)
+    # the right arm reaching forward and down, as if alighting
+    f.line([(cx - 4, base - 20), (cx - 6, base - 16)], fill=L)
+    # head, hair knotted at the back
+    f.rectangle([cx - 2, base - 25, cx + 1, base - 22], fill=L)
+    f.rectangle([cx, base - 25, cx + 1, base - 22], fill=M)
+    f.point((cx + 2, base - 24), fill=M)
+    f.point((cx - 1, base - 26), fill=M)
+    _outline(fig, skip_below=base + 1)
+    img.alpha_composite(fig)
+    # moss creeping up the plinth's foot and lichen on its top
+    for x in range(cx - 8, cx + 8):
+        for yy in range(h - 3 - rnd.randint(0, 3), h - 2):
+            img.putpixel((x, yy), P["olive1"] if x < cx else P["olive0"])
+    for x, yy in ((cx - 6, h - 13), (cx - 5, h - 12), (cx + 4, h - 12)):
+        img.putpixel((x, yy), P["olive2"])
+
+
+def amphora_plinth(img, d, w, h):
+    """An amphora standing on a short square plinth."""
+    cx = w // 2
+    d.polygon([(0, h - 9), (cx - 1, h - 6), (cx - 1, h - 1), (0, h - 4)], fill=WALL_L)
+    d.polygon([(cx, h - 6), (w - 1, h - 9), (w - 1, h - 4), (cx, h - 1)], fill=WALL_R)
+    diamond(d, 0, h - 12, P["marble1"], w, 7)
+    d.line([(0, h - 9), (cx - 1, h - 6)], fill=P["marble2"])
+    _outline(img, skip_below=h - 2)
+    pot = Image.new("RGBA", (12, 21), CLEAR)
+    vessel(pot, [2, 2, 1, 1, 1, 2, 3, 4, 5, 5, 5, 5, 5, 4, 4, 3, 3, 2, 1, 1], 0, bands=(9, 10), handles=True)
+    img.alpha_composite(pot, (cx - 6, h - 9 - 19))
+
+
+def column_snapped(img, d, w, h):
+    """A column broken off part-way: a jagged lit break on top, ivy climbing the shaft."""
+    rnd = random.Random(304)
+    cx = w // 2
+    diamond(d, cx - 8, h - 9, P["marble0"], 16, 8)
+    top = 8
+    _shaft(d, cx, top, h - 5)
+    # the break: a jagged edge, the broken face lit, a chip knocked out of the shaded side
+    jag = [0, 2, 1, 3, 0, 1, 4, 2]
+    for i, dy in enumerate(jag):
+        x = cx - 4 + i
+        for y in range(top, top + dy):
+            img.putpixel((x, y), CLEAR)
+        img.putpixel((x, top + dy), P["marble2"] if i < 5 else P["marble1"])
+    _outline(img, skip_below=h - 5)
+    _ivy_climb(img, rnd, cx, top + 6, h - 6)
+    _moss_top(img, rnd, cx - 4, cx - 1, top + 1, 1)
+
+
+def fallen_drums(img, d, w, h):
+    """A toppled column lying as two drums: lit tops, shaded undersides, the cut ends showing,
+    moss on the upper drum."""
+    rnd = random.Random(305)
+    for x0, y0, length in ((2, 5, 15), (19, 7, 13)):
+        # a drum lying along the screen: a lit upper half, a shaded lower half, flutes as lines
+        d.rectangle([x0, y0, x0 + length, y0 + 3], fill=P["marble1"])
+        d.rectangle([x0, y0 + 4, x0 + length, y0 + 7], fill=_SHADE)
+        d.line([(x0, y0 + 1), (x0 + length, y0 + 1)], fill=P["marble2"])
+        d.line([(x0, y0 + 6), (x0 + length, y0 + 6)], fill=P["marble0"])
+        # the cut end on the right: a round face with a ring
+        d.ellipse([x0 + length - 2, y0, x0 + length + 3, y0 + 7], fill=P["marble1"])
+        d.ellipse([x0 + length - 1, y0 + 2, x0 + length + 2, y0 + 5], outline=P["marble0"])
+    img.putpixel((9, 5), CLEAR)
+    img.putpixel((10, 5), CLEAR)
+    _outline(img)
+    _moss_top(img, rnd, 3, 14, 5, 1)
+    _moss_top(img, rnd, 22, 27, 7, 1)
+    for x in range(0, w, 3):
+        if rnd.random() < 0.5:
+            img.putpixel((x, h - 1), P["olive1"])
+
+
+def moss_patch(name, seed):
+    """Moss on the floor: a few soft blobs in three olive tones, dithered, flat like a floor tile."""
+    rnd = random.Random(seed)
+    img = Image.new("RGBA", (32, 16), CLEAR)
+    blobs = [(rnd.uniform(9, 23), rnd.uniform(5, 10), rnd.uniform(4.5, 7.5)) for _ in range(4)]
+    for y in range(16):
+        for x in range(32):
+            if abs(x - 15.5) / 16 + abs(y - 7.5) / 8 > 0.92:
+                continue
+            v = max(1.0 - math.hypot((x - bx) / (r * 1.6), (y - by) / (r * 0.8)) for bx, by, r in blobs)
+            v += rnd.uniform(-0.18, 0.18)
+            if v > 0.55:
+                img.putpixel((x, y), P["olive2"] if (v > 0.68 and (x + y) % 2) else P["olive1"])
+            elif v > 0.32:
+                img.putpixel((x, y), P["olive0"] if (x + y) % 2 or v > 0.42 else CLEAR)
+    save(img, name)
+
+
+def grass_tuft(name, seed):
+    """Tufts of grass between the slabs: little fans of blades, dark at the root, lit at the tips."""
+    rnd = random.Random(seed)
+    img = Image.new("RGBA", (32, 16), CLEAR)
+    for _ in range(rnd.randint(2, 3)):
+        bx, by = rnd.randint(8, 23), rnd.randint(9, 12)
+        for dx in (-2, -1, 0, 1, 2):
+            tall = 6 - abs(dx) + rnd.randint(0, 1)
+            lean = 0 if dx == 0 else (1 if dx > 0 else -1)
+            for k in range(tall):
+                x = bx + dx + (lean if k >= tall // 2 + 1 else 0)
+                y = by - k
+                if 0 <= x < 32 and 0 <= y < 16:
+                    img.putpixel((x, y), P["olive0"] if k == 0 else P["olive2"] if k == tall - 1 and dx <= 0 else P["olive1"])
+    save(img, name)
+
+
+def vines_hang(img, d, w, h):
+    """Vines hanging from a wall top down its lit face: a thick clump along the top edge (which
+    drops half a pixel per pixel, like the face) and strands of uneven length below."""
+    rnd = random.Random(307)
+    for x in range(w):
+        top = x // 2
+        for yy in range(top, top + rnd.randint(1, 3)):
+            _leaf(img, rnd, x, yy, True)
+    for x in (1, 4, 6, 9, 12, 14):
+        _vine(img, rnd, x, x // 2 + 2, rnd.randint(8, 24))
+
+
+prop("ruin_arch", 40, 58, ruin_arch)
+prop("nike_statue", 24, 46, nike_statue)
+prop("amphora_plinth", 14, 28, amphora_plinth)
+prop("column_snapped", 16, 40, column_snapped)
+prop("fallen_drums", 36, 16, fallen_drums)
+for _i in range(3):
+    moss_patch(f"moss_patch_{_i}", 311 + _i)
+    grass_tuft(f"grass_tuft_{_i}", 321 + _i)
+prop("vines_hang", 16, 40, vines_hang)
+
 print("greybox art written to", OUT)
 print(sorted(p.name for p in OUT.glob("*.png")))

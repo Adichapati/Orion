@@ -32,6 +32,7 @@ func run() -> void:
 	await test_go_back()
 	await test_sky_clears_walls()
 	await test_title_floating_islands()
+	test_decor_on_plain_floor()
 	await test_playthrough()
 	await test_free_alcyone_ends_the_demo()
 	print("
@@ -964,3 +965,46 @@ func test_title_floating_islands() -> void:
 	check(began[0], "...and Begin the night still starts the run")
 	t.queue_free()
 	await get_tree().process_frame
+
+
+## Ruin props, moss, grass and vines are looks only: each stands on plain floor, clear of cracked
+## marble, pits, water, doors, chests, marks and Phineus's dais, its art exists, and no standing
+## prop sits on a guard's patrol line where it would hide him.
+func test_decor_on_plain_floor() -> void:
+	print("Ruin decor")
+	for data in Game.rooms:
+		var r := _make_room(data)
+		var beat := {}
+		for g in data.get("guards", []):
+			var pts: Array = g.get("path", [g.get("at", [0, 0])])
+			for i in pts.size():
+				var a := Vector2i(int(pts[i][0]), int(pts[i][1]))
+				var b := Vector2i(int(pts[mini(i + 1, pts.size() - 1)][0]), int(pts[mini(i + 1, pts.size() - 1)][1]))
+				var steps := maxi(absi(b.x - a.x), absi(b.y - a.y))
+				for s in steps + 1:
+					beat[a + (b - a) * s / maxi(steps, 1)] = true
+		for entry in Room.DECOR.get(r.id, []):
+			var c: Vector2i = entry[0]
+			var name: String = entry[1]
+			var bad: Array = []
+			for dy in range(-1, 2):
+				for dx in range(-1, 2):
+					var k := r.ch(c + Vector2i(dx, dy))
+					if k in ["x", "_", "W", "p", "D", "E", "C", "*", "H", "P"]:
+						bad.append("%s %s" % [c + Vector2i(dx, dy), k])
+			if not Room.decor_is_flat(name) and beat.has(c):
+				bad.append("a guard's beat")
+			check(r.ch(c) in [".", "m"] and r.is_walkable(c) and bad.is_empty() and Art.tex(name) != null,
+					"%s: the %s at %s stands on plain floor, clear of hazards, doors and guards%s" % [r.id, name, c, "" if bad.is_empty() else " (by %s)" % ", ".join(bad)])
+		# Tall pieces fade when Cedalion walks behind them, like columns.
+		var tall := 0
+		var fading := 0
+		for entry in Room.DECOR.get(r.id, []):
+			if Room.DECOR_TALL.has(entry[1]):
+				tall += 1
+		for f in r._fading:
+			for name: String in Room.DECOR_TALL:
+				if (f.node as Sprite2D).texture == Art.tex(name):
+					fading += 1
+		check(fading == tall, "%s: its %d tall ruin pieces fade when Cedalion is behind them" % [r.id, tall])
+		_free_room(r)
