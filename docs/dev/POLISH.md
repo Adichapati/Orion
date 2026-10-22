@@ -39,6 +39,12 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
 - Adithya asked for hearts instead of stars for health: the HUD draws pixel hearts, and every
   health line says hearts. (docs/GDD.md, a snapshot of the live doc, still says stars.)
 - 12:00, 56% of the 5-hour window, 175 tests pass. Not pushed: waiting for Adithya's OK.
+- The climb between islands plays a rush of air and a lyre chord (`rise`, generated last in
+  `tools/gen_audio.py` so the other sounds stay identical).
+- Projector readability: the objective and gear lines use the font's 2x scale.
+- Adithya asked for full screen: the game starts full screen and scales fractionally to fill any
+  screen (it scaled by whole numbers only, so a 1366x768 laptop showed it at 1x in a black
+  window). F11 toggles; `-- --windowed` starts windowed; screenshot runs stay windowed.
 
 ; stopped at about 55% of the 5-hour window)
 
