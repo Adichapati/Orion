@@ -1310,7 +1310,7 @@ def ruin_arch(img, d, w, h):
 
 def nike_statue(img, d, w, h):
     """Nike, the winged Victory: a marble figure in a long wind-blown chiton on a square plinth,
-    wings swept up and out, a victor's wreath raised in her right hand, moss at the plinth's foot."""
+    wings swept up and out, moss at the plinth's foot."""
     rnd = random.Random(302)
     cx = w // 2
     d.rectangle([cx - 8, h - 12, cx + 7, h - 3], fill=WALL_L)
@@ -1340,10 +1340,8 @@ def nike_statue(img, d, w, h):
     f.rectangle([cx + 1, base - 21, cx + 2, base - 15], fill=M)
     f.line([(cx - 3, base - 16), (cx + 2, base - 16)], fill=D)
     f.line([(cx + 3, base - 20), (cx + 4, base - 14)], fill=M)
-    # the right arm raised high with a wreath
-    f.line([(cx - 4, base - 20), (cx - 5, base - 25)], fill=L)
-    f.ellipse([cx - 8, base - 30, cx - 4, base - 26], outline=P["olive2"])
-    f.point((cx - 7, base - 27), fill=P["olive1"])
+    # the right arm reaching forward and down, as if alighting
+    f.line([(cx - 4, base - 20), (cx - 6, base - 16)], fill=L)
     # head, hair knotted at the back
     f.rectangle([cx - 2, base - 25, cx + 1, base - 22], fill=L)
     f.rectangle([cx, base - 25, cx + 1, base - 22], fill=M)
@@ -1426,7 +1424,7 @@ def moss_patch(name, seed):
             v = max(1.0 - math.hypot((x - bx) / (r * 1.6), (y - by) / (r * 0.8)) for bx, by, r in blobs)
             v += rnd.uniform(-0.18, 0.18)
             if v > 0.55:
-                img.putpixel((x, y), P["olive2"] if (v > 0.8 and (x + y) % 2) else P["olive1"])
+                img.putpixel((x, y), P["olive2"] if (v > 0.68 and (x + y) % 2) else P["olive1"])
             elif v > 0.32:
                 img.putpixel((x, y), P["olive0"] if (x + y) % 2 or v > 0.42 else CLEAR)
     save(img, name)
