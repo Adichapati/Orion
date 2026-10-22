@@ -140,15 +140,17 @@ func _draw_main_fx() -> void:
 	var f := 0.75 + 0.25 * sin(_t * 9.0) * sin(_t * 5.3 + 1.0)
 	var b := BRAZIER
 	for k in 3:
-		_fx.draw_circle(b + Vector2(0, -6), (8.0 + k * 6.0) * f, Color(1.0, 0.6, 0.25, 0.07))
+		_fx.draw_circle(b + Vector2(0, -10), (9.0 + k * 7.0) * f, Color(1.0, 0.6, 0.25, 0.08))
 	var flick := int(_t * 10.0)
-	var h: int = [6, 7, 5, 8, 6, 7][flick % 6]
+	var h: int = [10, 12, 9, 13, 11, 12][flick % 6]
 	for i in h:
-		var w := maxi(1, int((h - i) * 0.6))
+		var w := maxi(0, int((h - i) * 0.45))
 		var sway := int(round(sin(_t * 7.0 + i * 0.9) * (i * 0.25)))
-		var col := Color("ffc857") if i < h / 2 else Color("e0782c")
-		if i < 2:
+		var col := Color("ffc857") if i < h * 2 / 3 else Color("e0782c")
+		if i < 3 and w > 0:
 			col = Color("fff1c1")
+		if i == 0:
+			col = Color("e0782c")
 		_fx.draw_rect(Rect2(b.x - w + sway, b.y - 9 - i, w * 2 + 1, 1), col)
 	if flick % 3 == 0:
 		_fx.draw_rect(Rect2(b.x + 2 - (flick % 5), b.y - 11 - h, 1, 1), Color("ffc857"))
@@ -166,7 +168,7 @@ func _draw_main_fx() -> void:
 	var mist_y: float = CLOUDS[1][1] - MAIN_AT.y + 6.0
 	for i in 7:
 		var p := Vector2(FALLS_X + 3 + sin(_t * 0.8 + i * 1.9) * (6 + i), mist_y - 2 + fmod(i * 3.0, 5.0))
-		_fx.draw_rect(Rect2(p.round(), Vector2(4 + i % 3 * 2, 2)), Color("cfe3ff", 0.25 + 0.1 * sin(_t * 2.0 + i)))
+		_fx.draw_rect(Rect2(p.round(), Vector2(4 + i % 3 * 2, 2)), Color("cfe3ff", 0.4 + 0.15 * sin(_t * 2.0 + i)))
 
 
 func _draw_back_fx() -> void:
