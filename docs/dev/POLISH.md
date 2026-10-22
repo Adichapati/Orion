@@ -62,6 +62,14 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
   right). The sheet tool mirrored them to put the torch on the left; the artist had drawn them
   facing right. They are no longer mirrored, and the torch is found on the side opposite the
   sword hand (his golden hair fooled the flame finder).
+- 13:52, stopped at 95% of the 5-hour window (resets 15:50). Not pushed: the walk fix
+  (17f39a4) waits for Adithya's OK. Adithya sent a fuller Cedalion sheet, saved as
+  `art/generated/cedalion_sheet_v2.jpg` (8-direction idle, walk and attack, dodge roll, block,
+  jump, get-hit, lying). Plan after the reset: take the animations the game lacks first (dodge
+  roll -> dodge, block -> parry, get-hit -> hurt), cutting each frame's sword with
+  `SWORDS` lines in `tools/process_sheet.py` as before and dropping the painted swing arcs; keep
+  the current walk and idle (they work, and the new sheet's direction labels don't match its
+  rows). Then the chest and Alcyone once their images are in `art/generated/`.
 
 ; stopped at about 55% of the 5-hour window)
 
