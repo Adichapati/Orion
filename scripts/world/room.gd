@@ -372,7 +372,7 @@ func _build_solid(c: Vector2i) -> void:
 			body.add_child(ph)
 			_add_light(body, Vector2(0, -26 - lift), Color(1.0, 0.7, 0.4), 0.9, 70.0)
 			var talk := Interactable.new().setup("Talk to Phineus", "glyph_hand", 34.0 + lift)
-			talk.interact_range = 1.6
+			talk.interact_range = 2.2
 			body.add_child(talk)
 			interactables.append(talk)
 			talk.used.connect(func(_p): message.emit("shop"))

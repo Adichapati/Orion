@@ -15,6 +15,7 @@ func run() -> void:
 	test_final_art_matches_placeholders()
 	await test_rooms_build_and_connect()
 	await test_rooms_are_sealed()
+	await test_interactables_reachable()
 	await test_guard_sees_player()
 	await test_noise_makes_guard_suspicious()
 	await test_statue_guard_wakes()
@@ -246,6 +247,31 @@ func test_rooms_are_sealed() -> void:
 					leaks.append("%s %s to %s" % [c, "+".join(push), _escaped_to])
 		check(tried > 0 and leaks.is_empty(), "%s: Cedalion stays inside from %d pushes at the edges%s" % [
 				r.id, tried, "" if leaks.is_empty() else " (leaks: %s)" % ", ".join(leaks.slice(0, 6))])
+		_free_room(r)
+
+
+## Bug: Phineus stood on a raised floor with no steps. Every important interactable must be usable
+## (be the closest one in reach) from some cell reachable from the spawn by walking and jumping.
+func test_interactables_reachable() -> void:
+	print("Interactables are reachable")
+	for data in Game.rooms:
+		var r := _make_room(data)
+		await get_tree().physics_frame
+		var seen := _flood_with_jumps(r, r.player_spawn)
+		var count := 0
+		for it in r.interactables:
+			if not (it.verb in ["Talk to Phineus", "Take the Belt Star", "Enter", "Open", "Take the sword", "Read the mark"]):
+				continue
+			count += 1
+			var from := Vector2i(-1, -1)
+			for c in seen:
+				if r.closest_interactable(r.cell_center(c)) == it:
+					from = c
+					break
+			var at := Iso.cell_of_screen(it.global_position)
+			check(from != Vector2i(-1, -1), "%s: \"%s\" at %s can be used from a reachable cell%s" % [
+					r.id, it.verb, at, "" if from == Vector2i(-1, -1) else " (%s)" % from])
+		check(count > 0, "%s has interactables to check" % r.id)
 		_free_room(r)
 
 
