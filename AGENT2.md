@@ -169,3 +169,15 @@ Expected merge conflicts, easy to resolve:
 - `test_phineus_dais`
 - `test_go_back`
 - `test_sky_clears_walls`
+
+## Agent 1, back after the 15:50 reset (16:10)
+
+- Alcyone is bound beside the star shrine's altar (new tile `Y` in `rooms.json`, `Room._make_alcyone`):
+  a rope to the altar and a pale light. Before the Belt Star is taken, "Free Alcyone" only gets a
+  line from her; afterwards it cuts the rope, stops the floor collapsing and emits
+  `Room.alcyone_freed`, which `main._on_alcyone_freed` turns into the demo's ending (slow motion,
+  banner, her line, fade, Dawn Rank card). The exit door still works too. The objective reads
+  "Take the Belt Star, then free Alcyone." Test: `test_free_alcyone_ends_the_demo`. She uses the
+  old placeholder `alcyone_se` until Adithya's princess sheet is saved as
+  `art/generated/alcyone_sheet.png` (`SheetSprite.make("alcyone")` picks up an `alcyone_sheet` in
+  `art/final/` by itself).

@@ -29,7 +29,8 @@
     "p": "stepping stone",
     "P": "Phineus",
     "A": "altar with the Belt Star",
-    "*": "Alcyone's seven-dot mark"
+    "*": "Alcyone's seven-dot mark",
+    "Y": "Alcyone, bound to the altar"
   },
   "guardTypes": {
     "watchman": {
@@ -979,7 +980,7 @@
       "grid": [
         "#############",
         "####hhhhh####",
-        "###ShhAhhS###",
+        "###ShYAhhS###",
         "##o..^^^..o##",
         "#....xxx....#",
         "#o.xxxxxxx.o#",

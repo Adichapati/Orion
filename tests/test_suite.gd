@@ -32,6 +32,7 @@ func run() -> void:
 	await test_go_back()
 	await test_sky_clears_walls()
 	await test_playthrough()
+	await test_free_alcyone_ends_the_demo()
 	print("
 %d passed, %d failed" % [_passed, _failed])
 	finished.emit(_failed)
@@ -699,6 +700,32 @@ func _door(r: Room, verb: String) -> Interactable:
 		if is_instance_valid(it) and it.verb == verb:
 			return it
 	return null
+
+
+## Alcyone is bound beside the shrine's altar. She sends Cedalion to the star first; once he has
+## it, cutting her loose ends the demo on the Dawn Rank card.
+func test_free_alcyone_ends_the_demo() -> void:
+	print("Alcyone")
+	var main: Node = load("res://scenes/main.tscn").instantiate()
+	add_child(main)
+	await get_tree().process_frame
+	Game.reset_run()
+	main.load_room(Game.rooms.size() - 1)
+	await get_tree().physics_frame
+	var r: Room = main.room
+	var free_it := _door(r, "Free Alcyone")
+	check(r.id == "star-shrine" and free_it != null, "Alcyone is bound in the star shrine")
+	free_it.use(main.player)
+	await _seconds(0.3)
+	check(main.room == r and not (main._screen is EndCard) and free_it.enabled, "she can't be freed before the star is taken")
+	_door(r, "Take the Belt Star").use(main.player)
+	await _seconds(0.3)
+	free_it.use(main.player)
+	await _seconds(4.6)
+	check(main._screen is EndCard and Game.stats.end_msec > 0, "freeing her after taking the star ends the demo on the end card")
+	main.queue_free()
+	await get_tree().process_frame
+	Game.reset_run()
 
 
 ## Drives the real main scene: walks every exit, the shop, the star-shrine escape and a death.

@@ -147,6 +147,7 @@ func load_room(index: int, arrive := false, back := false) -> void:
 	player.died.connect(_on_player_died)
 
 	room.exit_reached.connect(_on_exit_reached)
+	room.alcyone_freed.connect(_on_alcyone_freed)
 	room.back_reached.connect(_on_back_reached)
 	room.message.connect(_on_room_message)
 	overlay = DebugOverlay.new()
@@ -218,6 +219,23 @@ func _on_back_reached() -> void:
 	await tw.finished
 	Game.take_snapshot()
 	load_room(Game.room_index - 1, true, true)
+	_busy = false
+
+
+## The end of the demo: Alcyone is free. A breath with her, then the Dawn Rank.
+func _on_alcyone_freed() -> void:
+	if _busy:
+		return
+	_busy = true
+	player.lock(true)
+	Juice.slowmo(get_tree(), 0.6, 0.5)
+	hud.show_banner("Alcyone is free")
+	Game.toast.emit("Alcyone: \"You came, little prince. Now run with me: Orion is setting, and the beacon waits.\"")
+	await get_tree().create_timer(3.2, true, false, true).timeout
+	await _fade(true)
+	Game.take_snapshot()
+	Game.finish_run()
+	_show_end()
 	_busy = false
 
 

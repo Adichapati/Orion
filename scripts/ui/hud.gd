@@ -24,7 +24,7 @@ const ROOMS := {
 	"statue-court": ["One of the stone men breathes. Reach the portico.", [
 		[1.5, "A white glint can be parried (K). A red glint can't: dodge it (C)."],
 		[11.0, "The fountain's song hides your footsteps."]]],
-	"star-shrine": ["Take the Belt Star, then run.", [
+	"star-shrine": ["Take the Belt Star, then free Alcyone.", [
 		[1.5, "A Hoplite's shield stops blows from the front. Get behind him, or thrust your torch (Q)."]]],
 }
 ## Rooms whose hints have been shown this session.

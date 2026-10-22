@@ -10,6 +10,8 @@ signal exit_reached
 ## The entrance door was used to go back to the previous room.
 signal back_reached
 signal star_taken
+## Cedalion cut Alcyone loose: the end of the demo.
+signal alcyone_freed
 signal player_fell
 signal message(text: String)
 
@@ -25,7 +27,7 @@ const BREAKABLE := "Ja"
 ## Prop collision footprint as a fraction of a full tile.
 const FOOTPRINT := {
 	"#": 1.0, "L": 1.0, "v": 1.0, "o": 0.55, "S": 0.7, "J": 0.9, "a": 0.55, "C": 0.75, "r": 0.8,
-	"T": 0.55, "w": 0.9, "B": 0.5, "K": 0.6, "F": 1.0, "P": 0.65, "A": 0.8,
+	"T": 0.55, "w": 0.9, "B": 0.5, "K": 0.6, "F": 1.0, "P": 0.65, "A": 0.8, "Y": 0.55,
 }
 const CRACK_SHAKE := 0.6
 const CRACK_BREAK := 1.2
@@ -484,6 +486,8 @@ func _build_solid(c: Vector2i) -> void:
 			body.add_child(talk)
 			interactables.append(talk)
 			talk.used.connect(func(_p): message.emit("shop"))
+		"Y":
+			_make_alcyone(body, c, lift)
 		"A":
 			_altar_cell = c
 			var altar := Art.feet_sprite("altar", 2)
@@ -1154,11 +1158,44 @@ func _restore_cracked() -> void:
 	rebuild_paths()
 
 
+## Alcyone, bound to the altar beside her with a rope. Until the Belt Star is taken she
+## sends Cedalion to it; afterwards he can cut her loose, which ends the demo.
+func _make_alcyone(body: Node2D, c: Vector2i, lift: float) -> void:
+	var her := SheetSprite.make("alcyone")
+	her.position.y = -lift
+	body.add_child(her)
+	_add_light(body, Vector2(0, -20 - lift), Color(0.65, 0.78, 1.0), 0.55, 46.0)
+	# The rope from her wrists to the altar beside her, sagging a little.
+	var to_altar := cell_center(c + Vector2i(1, 0)) - cell_center(c)
+	var rope := Line2D.new()
+	rope.width = 1.0
+	rope.default_color = Color(0.62, 0.46, 0.3)
+	rope.points = PackedVector2Array([
+		Vector2(3, -13 - lift), Vector2(7, -9 - lift), Vector2(11, -8 - lift),
+		to_altar + Vector2(-8, -10 - lift)])
+	body.add_child(rope)
+	var it := Interactable.new().setup("Free Alcyone", "glyph_hand", 36.0 + lift)
+	it.interact_range = 1.8
+	body.add_child(it)
+	interactables.append(it)
+	it.used.connect(func(_p):
+		if exit_locked:
+			Game.toast.emit("Alcyone: \"The star first, Cedalion. While it sleeps there, nothing here can be undone.\"")
+			return
+		it.enabled = false
+		rope.visible = false
+		_escape_active = false  # the floor stops falling
+		Fx.sparks(world, body.global_position + Vector2(8, -12 - lift), 10, true)
+		Fx.ring(world, body.global_position + Vector2(0, -16 - lift), Color(0.75, 0.85, 1.0))
+		Sfx.play("parry")
+		alcyone_freed.emit())
+
+
 ## Taking the Belt Star unseals the door and brings the cracked ring down behind you.
 func _begin_escape() -> void:
 	exit_locked = false
 	star_taken.emit()
-	Game.toast.emit("The Belt Star is yours. The floor groans. Run for the door, and jump the gap!")
+	Game.toast.emit("The Belt Star is yours, and the floor groans. Cut Alcyone loose, or run for the door!")
 	Sfx.play("star")
 	checkpoint = Vector2i(6, 3) if is_walkable(Vector2i(6, 3)) else player_spawn
 	_arm_escape(2.0)
