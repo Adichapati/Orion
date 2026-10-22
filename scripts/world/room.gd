@@ -7,6 +7,8 @@ extends Node2D
 ## room space; Iso converts to grid space (tiles) for distances, angles and cells.
 
 signal exit_reached
+## The entrance door was used to go back to the previous room.
+signal back_reached
 signal star_taken
 signal player_fell
 signal message(text: String)
@@ -385,6 +387,8 @@ func _build_solid(c: Vector2i) -> void:
 	if k in WALKABLE or k in HAZARD or k == "p" or k == " ":
 		if k == "D":
 			_make_door(c)
+		elif k == "E" and Game.rooms.map(func(r): return r.get("id", "")).find(id) > 0:
+			_make_back_door(c)
 		return
 	var lift := Iso.LEVEL_PX if (not (k in WALLS) and _prop_elevated(c)) else 0.0
 	var body := _body(c, k)
@@ -571,6 +575,28 @@ func _make_door(c: Vector2i) -> void:
 			Sfx.play("deny")
 		else:
 			exit_reached.emit())
+
+
+## The way in is also the way back: hold E in the entrance doorway to climb down to the previous
+## island (to fetch obols or smash pots missed there). Held briefly, so a tap meant for something
+## else by the spawn doesn't send him back.
+func _make_back_door(c: Vector2i) -> void:
+	var holder := Node2D.new()
+	holder.position = cell_center(c)
+	world.add_child(holder)
+	var it := Interactable.new().setup("Go back", "glyph_door", 22.0, 0.45)
+	holder.add_child(it)
+	interactables.append(it)
+	it.used.connect(func(_p): back_reached.emit())
+
+
+## The exit door's cell (the first "D"), or (-1, -1).
+func exit_cell() -> Vector2i:
+	for y in size.y:
+		for x in size.x:
+			if ch(Vector2i(x, y)) == "D":
+				return Vector2i(x, y)
+	return Vector2i(-1, -1)
 
 
 func _make_mark(c: Vector2i) -> void:

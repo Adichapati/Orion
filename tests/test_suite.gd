@@ -29,6 +29,7 @@ func run() -> void:
 	await test_duel_parry_and_hit()
 	await test_shop_buy_and_equip()
 	await test_phineus_dais()
+	await test_go_back()
 	await test_sky_clears_walls()
 	await test_playthrough()
 	print("
@@ -696,6 +697,73 @@ func _door(r: Room, verb: String) -> Interactable:
 
 
 ## Drives the real main scene: walks every exit, the shop, the star-shrine escape and a death.
+## Sathvik: "give option to go back to previous stages ... if I stand near that door I can click
+## on E and go back" (to pick up obols or smash pots missed there). From the second room on, the
+## entrance offers "Go back"; it loads the previous room with Cedalion just inside its exit door,
+## and rooms remember smashed pots and opened chests, so going back never refills them.
+func test_go_back() -> void:
+	print("Going back")
+	var main: Node = load("res://scenes/main.tscn").instantiate()
+	add_child(main)
+	await get_tree().process_frame
+	Game.reset_run()
+	main.load_room(0)
+	await get_tree().physics_frame
+	check(_door(main.room, "Go back") == null, "the first room has no way back")
+	main.load_room(1)
+	await get_tree().physics_frame
+	var r: Room = main.room
+	var back := _door(r, "Go back")
+	check(back != null, "%s's entrance offers a way back" % r.id)
+	var pot: Breakable = null
+	for b in get_tree().get_nodes_in_group("breakable"):
+		if b.room == r:
+			pot = b
+			break
+	var pot_cell := pot.cell if pot else Vector2i(-1, -1)
+	if pot:
+		pot.hits_left = 1
+		pot.hit(pot.global_position)
+	if back:
+		back.use(main.player)
+	await _seconds(1.3)
+	check(main.room.id == Game.rooms[0].id, "going back loads the previous room")
+	var d: Vector2i = main.room.exit_cell()
+	check(Vector2(main.player.cell()).distance_to(Vector2(d)) <= 1.5, "...with Cedalion just inside its exit door (at %s, door %s)" % [main.player.cell(), d])
+	_door(main.room, "Enter").use(main.player)
+	await _seconds(1.3)
+	check(main.room.id == Game.rooms[1].id, "its exit leads on again")
+	var again: Breakable = null
+	for body in main.room.world.get_children():
+		if body.has_meta("cell") and body.get_meta("cell") == pot_cell:
+			for c in body.get_children():
+				if c is Breakable:
+					again = c
+	check(again != null and not again.is_intact(), "the pot smashed before going back is still shards")
+	# A chest opened in the storerooms stays open (and empty) when the room is built again.
+	main.load_room(2)
+	await get_tree().physics_frame
+	var chest: Chest = null
+	for body in main.room.world.get_children():
+		for c in body.get_children():
+			if c is Chest:
+				chest = c
+	var found_chest := chest != null
+	if chest:
+		chest._open(main.player)
+	main.load_room(2)
+	await get_tree().physics_frame
+	var reopened := true
+	for body in main.room.world.get_children():
+		for c in body.get_children():
+			if c is Chest:
+				reopened = c._it.enabled
+	check(found_chest and not reopened, "an opened chest stays open when the room is built again")
+	main.queue_free()
+	await get_tree().process_frame
+	Game.reset_run()
+
+
 ## Bug (Sathvik: "my character is able to climb and walk like this near the merchant area"):
 ## Phineus's raised floor ran right up to the cistern's back wall, so Cedalion could walk round
 ## behind the seer and look as if he stood on the wall. The dais is now solid ("H") but for the

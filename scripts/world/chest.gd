@@ -21,11 +21,16 @@ func _ready() -> void:
 	add_child(_it)
 	room.interactables.append(_it)
 	_it.used.connect(_open)
+	# Opened on an earlier visit: it stays open and empty.
+	if Game.remembered(room.id, "opened", cell):
+		_it.enabled = false
+		_sprite.texture = Art.tex("chest_open")
 
 
 func _open(_p: Node) -> void:
 	_it.enabled = false
 	_sprite.texture = Art.tex("chest_open")
+	Game.remember(room.id, "opened", cell)
 	var pos: Vector2 = get_parent().global_position
 	Sfx.play("chest", pos)
 	NoiseBus.emit_noise(pos, 3.0, self)

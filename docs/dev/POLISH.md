@@ -119,6 +119,16 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
   dais is solid but for the landing at the top of its step. Test: only the landing is walkable,
   pushing every way from it never reaches the dais, and it is still reachable. 234 tests pass.
   (The Aseprite mock-up `art/maps/cistern.*` is not rebuilt: no Aseprite here.)
+- 15:46 Going back (Sathvik: "give option to go back to previous stages ... stand near that door
+  and click E"): from the second room on, the entrance offers "E — Go back (hold)" (held 0.45 s so
+  a tap by the spawn can't send him back). The climb runs in reverse and he arrives just inside the
+  previous room's exit door. Rooms remember smashed pots and opened chests for the run
+  (`Game.room_state`, in the snapshot, so a death still rewinds them), so going back never refills
+  them; guards are back at their posts. Test: no way back from the first room; going back and on
+  again; a smashed pot stays shards and an opened chest stays open. 241 tests pass.
+- Started three design agents in parallel worktrees (Sathvik: use ultracode for the design): the
+  floating-island title screen, ruin props and materials from his references, and the armour and
+  weapon sets (labrys, koryne, a mail shirt, armour bodies cut from his sheet).
 
 ; stopped at about 55% of the 5-hour window)
 

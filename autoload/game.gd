@@ -40,6 +40,9 @@ var armour_id := "tunic"
 var owned := {}
 var pomegranates := 0
 var snapshot := {}
+## What Cedalion has done to each room this run, so going back finds it as he left it:
+## room id -> {"broken": {cell: true}, "opened": {cell: true}} (pots smashed, chests opened).
+var room_state := {}
 var stats := {}
 var debug_overlay := false
 ## Multiplies every room's ambient light (the pause menu's brightness slider).
@@ -78,6 +81,7 @@ func load_data() -> void:
 
 func reset_run() -> void:
 	room_index = 0
+	room_state = {}
 	obols = 0
 	weapon_id = ""
 	armour_id = "tunic"
@@ -219,10 +223,21 @@ func eat_pomegranate() -> bool:
 
 # ------------------------------------------------------------------ checkpoints
 
+## Records that something in a room was used up ("broken" pots, "opened" chests).
+func remember(room_id: String, what: String, cell: Vector2i) -> void:
+	var st: Dictionary = room_state.get_or_add(room_id, {})
+	(st.get_or_add(what, {}) as Dictionary)[cell] = true
+
+
+func remembered(room_id: String, what: String, cell: Vector2i) -> bool:
+	return room_state.get(room_id, {}).get(what, {}).has(cell)
+
+
 func take_snapshot() -> void:
 	snapshot = {
 		"obols": obols, "weapon_id": weapon_id, "armour_id": armour_id,
 		"owned": owned.duplicate(), "pomegranates": pomegranates,
+		"room_state": room_state.duplicate(true),
 	}
 
 
@@ -232,6 +247,7 @@ func restore_snapshot() -> void:
 	armour_id = snapshot.get("armour_id", "tunic")
 	owned = snapshot.get("owned", {"tunic": true}).duplicate()
 	pomegranates = snapshot.get("pomegranates", 0)
+	room_state = snapshot.get("room_state", {}).duplicate(true)
 	hp = max_hp()
 	obols_changed.emit(obols)
 	health_changed.emit(hp, max_hp())

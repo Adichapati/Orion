@@ -22,6 +22,21 @@ func _ready() -> void:
 	add_to_group("breakable")
 	_sprite = Art.feet_sprite("jar" if kind == "J" else "amphora", 3)
 	add_child(_sprite)
+	# Smashed on an earlier visit: just shards, no obols, no noise.
+	if Game.remembered(room.id, "broken", cell):
+		hits_left = 0
+		_shatter_sprite()
+		var body := get_parent() as StaticBody2D
+		if body:
+			body.collision_layer = 0
+		# the room is still being built: mark the cell, and its paths are built with it
+		room._broken[cell] = true
+		remove_from_group("breakable")
+
+
+func _shatter_sprite() -> void:
+	_sprite.texture = Art.tex("shards")
+	_sprite.offset = Vector2(-8, -7)
 
 
 func hit(_from: Vector2) -> void:
@@ -38,8 +53,8 @@ func hit(_from: Vector2) -> void:
 		return
 	Sfx.play("pot_smash", pos)
 	NoiseBus.emit_noise(pos, 6.0, self)
-	_sprite.texture = Art.tex("shards")
-	_sprite.offset = Vector2(-8, -7)
+	_shatter_sprite()
+	Game.remember(room.id, "broken", cell)
 	var amount := randi_range(5, 8) if kind == "J" else randi_range(1, 3)
 	room.spawn_obols(pos, amount)
 	var body := get_parent() as StaticBody2D

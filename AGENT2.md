@@ -50,16 +50,19 @@ stable build: all tests pass.
 5. `scripts/dev/autoshot.gd`: `--script=turns` (walk four ways, traced) and `--script=ledge`
    (cistern dais probe); the `info` call prints the cell, its tile and the elevation.
 
+6. Going back: `Room.back_reached` (entrance `E` interactable "Go back", hold 0.45 s, from the
+   second room on), `Room.exit_cell()`, `main._on_back_reached()` and `load_room(index, arrive,
+   back)`. `Game.room_state` (+ `remember()` / `remembered()`, saved in the snapshot) keeps
+   smashed pots (`Breakable`) and opened chests (`Chest`) used up for the run. Test `test_go_back`.
+
 ## Tests
 
-234 pass (`tests/run_tests.gd`). New tests: `test_cedalion_moves`,
+241 pass (`tests/run_tests.gd`). New tests: `test_cedalion_moves`,
 `test_cedalion_faces_where_he_walks`, `test_medallions_on_plain_floor` (also covers cracked walls
 and clutter), `test_sky_clears_walls`.
 
 ## In progress here next (avoid these files for now, or tell Sathvik)
 
-- Going back through a room's entrance door with E (`scripts/main.gd`, `scripts/world/room.gd`,
-  `autoload/game.gd`).
 - Title screen as floating platforms (`scripts/ui/title_screen.gd`, a new generator in `tools/`).
 - Ruin props from Sathvik's references: arches, fallen columns, a winged statue, moss and vines.
 - Armour and weapon sets from Sathvik's sheet (leather, chainmail, plate × mace, axe, sword), plus a

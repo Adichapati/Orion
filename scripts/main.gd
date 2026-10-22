@@ -122,8 +122,9 @@ func _clear_room() -> void:
 	overlay = null
 
 
-## Builds room `index` from Game.rooms and drops Cedalion at its entrance.
-func load_room(index: int, arrive := false) -> void:
+## Builds room `index` from Game.rooms and drops Cedalion at its entrance (or, coming `back`
+## from the next room, just inside its exit door).
+func load_room(index: int, arrive := false, back := false) -> void:
 	_clear_room()
 	_set_screen(null)
 	Game.room_index = index
@@ -132,6 +133,9 @@ func load_room(index: int, arrive := false) -> void:
 	world_viewport.add_child(room)
 	room.build(Game.rooms[index])
 	room.spawn_guards()
+	if back and room.exit_cell().x >= 0:
+		room.player_spawn = room._step_inside(room.exit_cell())
+		room.checkpoint = room.player_spawn
 
 	player = Player.new()
 	player.name = "Cedalion"
@@ -143,6 +147,7 @@ func load_room(index: int, arrive := false) -> void:
 	player.died.connect(_on_player_died)
 
 	room.exit_reached.connect(_on_exit_reached)
+	room.back_reached.connect(_on_back_reached)
 	room.message.connect(_on_room_message)
 	overlay = DebugOverlay.new()
 	overlay.room = room
@@ -155,10 +160,11 @@ func load_room(index: int, arrive := false) -> void:
 	Sfx.start_music()
 	Sfx.set_ambience({"storerooms": "indoor", "cistern": "cistern"}.get(room.id, "night"))
 	if arrive:
-		# Arriving from below: the island settles into place as the dark lifts.
+		# Arriving from below (or, going back, from above): the island settles into place as
+		# the dark lifts.
 		var cam := player.camera
 		var base := cam.base_offset
-		cam.base_offset.y = base.y + RISE_PX
+		cam.base_offset.y = base.y + (-RISE_PX if back else RISE_PX)
 		player.lock(true)
 		var tw := create_tween().set_parallel(true)
 		tw.tween_property(cam, "base_offset:y", base.y, 0.8).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
@@ -193,6 +199,25 @@ func _on_exit_reached() -> void:
 	else:
 		Game.finish_run()
 		_show_end()
+	_busy = false
+
+
+## Going back: the climb in reverse. The camera sinks, so this island rises away above and the
+## previous one comes up into view from below, with Cedalion at its exit door.
+func _on_back_reached() -> void:
+	if _busy or Game.room_index <= 0:
+		return
+	_busy = true
+	player.lock(true)
+	Sfx.play("rise", null, -3.0, 0.0)
+	var cam := player.camera
+	var base := cam.base_offset
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(cam, "base_offset:y", base.y + RISE_PX, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tw.tween_property(_fader, "color:a", 1.0, 0.3).set_delay(0.25)
+	await tw.finished
+	Game.take_snapshot()
+	load_room(Game.room_index - 1, true, true)
 	_busy = false
 
 
