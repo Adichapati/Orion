@@ -1,0 +1,86 @@
+{
+ "frames": [
+  {
+   "filename": "phineus 0",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "duration": 700
+  },
+  {
+   "filename": "phineus 1",
+   "frame": {
+    "x": 32,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "duration": 700
+  },
+  {
+   "filename": "phineus 2",
+   "frame": {
+    "x": 64,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "duration": 160
+  },
+  {
+   "filename": "phineus 3",
+   "frame": {
+    "x": 96,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "duration": 160
+  },
+  {
+   "filename": "phineus 4",
+   "frame": {
+    "x": 128,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "duration": 160
+  },
+  {
+   "filename": "phineus 5",
+   "frame": {
+    "x": 160,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "duration": 160
+  }
+ ],
+ "meta": {
+  "app": "tools/animate_stills.py",
+  "image": "phineus_sheet.png",
+  "size": {
+   "w": 256,
+   "h": 32
+  },
+  "frameTags": [
+   {
+    "name": "idle_se",
+    "from": 0,
+    "to": 1,
+    "direction": "forward"
+   },
+   {
+    "name": "talk_se",
+    "from": 2,
+    "to": 5,
+    "direction": "forward"
+   }
+  ]
+ }
+}

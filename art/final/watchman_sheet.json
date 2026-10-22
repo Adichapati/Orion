@@ -1,0 +1,242 @@
+{
+ "frames": [
+  {
+   "filename": "watchman 0",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 400
+  },
+  {
+   "filename": "watchman 1",
+   "frame": {
+    "x": 40,
+    "y": 0,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 150
+  },
+  {
+   "filename": "watchman 2",
+   "frame": {
+    "x": 80,
+    "y": 0,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 150
+  },
+  {
+   "filename": "watchman 3",
+   "frame": {
+    "x": 120,
+    "y": 0,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 150
+  },
+  {
+   "filename": "watchman 4",
+   "frame": {
+    "x": 160,
+    "y": 0,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 150
+  },
+  {
+   "filename": "watchman 5",
+   "frame": {
+    "x": 200,
+    "y": 0,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 120
+  },
+  {
+   "filename": "watchman 6",
+   "frame": {
+    "x": 240,
+    "y": 0,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 120
+  },
+  {
+   "filename": "watchman 7",
+   "frame": {
+    "x": 280,
+    "y": 0,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 120
+  },
+  {
+   "filename": "watchman 8",
+   "frame": {
+    "x": 0,
+    "y": 40,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 200
+  },
+  {
+   "filename": "watchman 9",
+   "frame": {
+    "x": 40,
+    "y": 40,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 400
+  },
+  {
+   "filename": "watchman 10",
+   "frame": {
+    "x": 80,
+    "y": 40,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 150
+  },
+  {
+   "filename": "watchman 11",
+   "frame": {
+    "x": 120,
+    "y": 40,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 150
+  },
+  {
+   "filename": "watchman 12",
+   "frame": {
+    "x": 160,
+    "y": 40,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 150
+  },
+  {
+   "filename": "watchman 13",
+   "frame": {
+    "x": 200,
+    "y": 40,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 150
+  },
+  {
+   "filename": "watchman 14",
+   "frame": {
+    "x": 240,
+    "y": 40,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 120
+  },
+  {
+   "filename": "watchman 15",
+   "frame": {
+    "x": 280,
+    "y": 40,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 120
+  },
+  {
+   "filename": "watchman 16",
+   "frame": {
+    "x": 0,
+    "y": 80,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 120
+  },
+  {
+   "filename": "watchman 17",
+   "frame": {
+    "x": 40,
+    "y": 80,
+    "w": 40,
+    "h": 40
+   },
+   "duration": 200
+  }
+ ],
+ "meta": {
+  "app": "tools/animate_stills.py",
+  "image": "watchman_sheet.png",
+  "size": {
+   "w": 320,
+   "h": 120
+  },
+  "frameTags": [
+   {
+    "name": "idle_se",
+    "from": 0,
+    "to": 0,
+    "direction": "forward"
+   },
+   {
+    "name": "walk_se",
+    "from": 1,
+    "to": 4,
+    "direction": "forward"
+   },
+   {
+    "name": "attack_se",
+    "from": 5,
+    "to": 7,
+    "direction": "forward"
+   },
+   {
+    "name": "hurt_se",
+    "from": 8,
+    "to": 8,
+    "direction": "forward"
+   },
+   {
+    "name": "idle_ne",
+    "from": 9,
+    "to": 9,
+    "direction": "forward"
+   },
+   {
+    "name": "walk_ne",
+    "from": 10,
+    "to": 13,
+    "direction": "forward"
+   },
+   {
+    "name": "attack_ne",
+    "from": 14,
+    "to": 16,
+    "direction": "forward"
+   },
+   {
+    "name": "hurt_ne",
+    "from": 17,
+    "to": 17,
+    "direction": "forward"
+   }
+  ]
+ }
+}

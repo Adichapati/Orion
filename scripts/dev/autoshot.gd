@@ -313,4 +313,6 @@ func _run(e: Array) -> void:
 			var at := ""
 			if main.player and is_instance_valid(main.player):
 				at = " player at ui %s" % main.world_to_ui(main.player.global_position)
+			if main.room and not main.room.guards.is_empty():
+				at += " guard at ui %s" % main.world_to_ui(main.room.guards[0].global_position)
 			print("autoshot: ", path, at)

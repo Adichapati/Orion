@@ -1,0 +1,242 @@
+{
+ "frames": [
+  {
+   "filename": "hoplite 0",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 400
+  },
+  {
+   "filename": "hoplite 1",
+   "frame": {
+    "x": 48,
+    "y": 0,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 150
+  },
+  {
+   "filename": "hoplite 2",
+   "frame": {
+    "x": 96,
+    "y": 0,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 150
+  },
+  {
+   "filename": "hoplite 3",
+   "frame": {
+    "x": 144,
+    "y": 0,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 150
+  },
+  {
+   "filename": "hoplite 4",
+   "frame": {
+    "x": 192,
+    "y": 0,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 150
+  },
+  {
+   "filename": "hoplite 5",
+   "frame": {
+    "x": 240,
+    "y": 0,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 120
+  },
+  {
+   "filename": "hoplite 6",
+   "frame": {
+    "x": 288,
+    "y": 0,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 120
+  },
+  {
+   "filename": "hoplite 7",
+   "frame": {
+    "x": 336,
+    "y": 0,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 120
+  },
+  {
+   "filename": "hoplite 8",
+   "frame": {
+    "x": 0,
+    "y": 48,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 200
+  },
+  {
+   "filename": "hoplite 9",
+   "frame": {
+    "x": 48,
+    "y": 48,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 400
+  },
+  {
+   "filename": "hoplite 10",
+   "frame": {
+    "x": 96,
+    "y": 48,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 150
+  },
+  {
+   "filename": "hoplite 11",
+   "frame": {
+    "x": 144,
+    "y": 48,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 150
+  },
+  {
+   "filename": "hoplite 12",
+   "frame": {
+    "x": 192,
+    "y": 48,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 150
+  },
+  {
+   "filename": "hoplite 13",
+   "frame": {
+    "x": 240,
+    "y": 48,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 150
+  },
+  {
+   "filename": "hoplite 14",
+   "frame": {
+    "x": 288,
+    "y": 48,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 120
+  },
+  {
+   "filename": "hoplite 15",
+   "frame": {
+    "x": 336,
+    "y": 48,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 120
+  },
+  {
+   "filename": "hoplite 16",
+   "frame": {
+    "x": 0,
+    "y": 96,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 120
+  },
+  {
+   "filename": "hoplite 17",
+   "frame": {
+    "x": 48,
+    "y": 96,
+    "w": 48,
+    "h": 48
+   },
+   "duration": 200
+  }
+ ],
+ "meta": {
+  "app": "tools/animate_stills.py",
+  "image": "hoplite_sheet.png",
+  "size": {
+   "w": 384,
+   "h": 144
+  },
+  "frameTags": [
+   {
+    "name": "idle_se",
+    "from": 0,
+    "to": 0,
+    "direction": "forward"
+   },
+   {
+    "name": "walk_se",
+    "from": 1,
+    "to": 4,
+    "direction": "forward"
+   },
+   {
+    "name": "attack_se",
+    "from": 5,
+    "to": 7,
+    "direction": "forward"
+   },
+   {
+    "name": "hurt_se",
+    "from": 8,
+    "to": 8,
+    "direction": "forward"
+   },
+   {
+    "name": "idle_ne",
+    "from": 9,
+    "to": 9,
+    "direction": "forward"
+   },
+   {
+    "name": "walk_ne",
+    "from": 10,
+    "to": 13,
+    "direction": "forward"
+   },
+   {
+    "name": "attack_ne",
+    "from": 14,
+    "to": 16,
+    "direction": "forward"
+   },
+   {
+    "name": "hurt_ne",
+    "from": 17,
+    "to": 17,
+    "direction": "forward"
+   }
+  ]
+ }
+}

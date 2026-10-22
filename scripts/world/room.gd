@@ -66,6 +66,8 @@ var _door_motes: Array[CPUParticles2D] = []
 ## Moonlight pools as (x, y, radius in px), so the torch can ease off inside them.
 var moon_pools: Array[Vector3] = []
 var _ambient: CanvasModulate
+## Phineus's sprite, so he can gesture while Cedalion is close enough to talk.
+var _phineus: SheetSprite
 var _ambient_base := Color.WHITE
 
 
@@ -367,8 +369,10 @@ func _build_solid(c: Vector2i) -> void:
 			body.add_child(f)
 			_fountains.append(c)
 		"P":
-			var ph := Art.feet_sprite("phineus_se", 3)
+			var ph := SheetSprite.make("phineus", 3)
 			ph.position.y = -lift
+			if ph is SheetSprite:
+				_phineus = ph
 			body.add_child(ph)
 			_add_light(body, Vector2(0, -26 - lift), Color(1.0, 0.7, 0.4), 0.9, 70.0)
 			var talk := Interactable.new().setup("Talk to Phineus", "glyph_hand", 34.0 + lift)
@@ -1029,6 +1033,8 @@ func _process(_delta: float) -> void:
 	if player == null or not is_instance_valid(player):
 		return
 	var pp: Vector2 = player.global_position
+	if _phineus:
+		_phineus.clip = "talk" if Iso.tiles_between(_phineus.global_position, pp) <= 2.4 else "idle"
 	for it in interactables:
 		if is_instance_valid(it):
 			it.refresh(pp)

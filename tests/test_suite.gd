@@ -17,6 +17,7 @@ func run() -> void:
 	await test_rooms_are_sealed()
 	await test_interactables_reachable()
 	await test_cedalion_sword()
+	await test_guard_animation()
 	await test_guard_sees_player()
 	await test_noise_makes_guard_suspicious()
 	await test_statue_guard_wakes()
@@ -315,6 +316,55 @@ func test_cedalion_sword() -> void:
 		frames[p.sword.frame] = true
 		await get_tree().physics_frame
 	check(frames.size() >= 5, "a swing sweeps the blade through %d angles" % frames.size())
+	Game.reset_run()
+	_free_room(r)
+
+
+## The guards and Phineus had single stills. Each now has a sheet (built from the stills by
+## tools/animate_stills.py until hand-made ones arrive): a walk that cycles while he moves, and
+## wind-up and strike frames in step with his attack.
+func test_guard_animation() -> void:
+	print("Guard animation")
+	for n in ["watchman", "spearman", "hoplite"]:
+		var a := SheetAnim.load_for(n)
+		var ok := a != null
+		if ok:
+			for clip in ["idle_se", "idle_ne", "walk_se", "walk_ne", "attack_se", "attack_ne", "hurt_se"]:
+				ok = ok and a.clips.has(clip)
+		check(ok, "%s has idle, walk, attack and hurt clips, front and back" % n)
+	var ph := SheetAnim.load_for("phineus")
+	check(ph != null and ph.clips.has("idle_se") and ph.clips.has("talk_se"), "Phineus has idle and talk clips")
+
+	var r := _open_room([{"id": "g", "type": "watchman", "at": [2, 2], "face": [1, 0], "path": [[2, 2], [9, 2]]}])
+	r.spawn_guards()
+	var g: Guard = r.guards[0]
+	var seen := {}
+	for i in 60:
+		await get_tree().physics_frame
+		seen[g.sprite.texture] = true
+	check(seen.size() >= 3, "a patrolling guard walks through %d frames in a second" % seen.size())
+	_free_room(r)
+
+	Game.reset_run()
+	r = _open_room([{"id": "g", "type": "watchman", "at": [5, 2], "face": [-1, 0], "path": [[5, 2]]}])
+	r.spawn_guards()
+	var p := _add_player(r, Vector2i(4, 2))
+	g = r.guards[0]
+	var t := 0.0
+	while t < 4.0 and g._phase != "windup":
+		await get_tree().physics_frame
+		t += 1.0 / 60.0
+	await get_tree().physics_frame
+	var clip: SheetAnim.Clip = g._anim.pick("attack", Iso.screen_dir(g.facing)).clip
+	check(g._phase == "windup" and g.sprite.texture == clip.frames[0], "a winding-up guard shows his wind-up frame")
+	while t < 6.0 and g._phase != "recover":
+		await get_tree().physics_frame
+		t += 1.0 / 60.0
+	# Real time: the strike lands on Cedalion and the hit-stop freezes the game for a moment.
+	await _seconds(0.16)
+	check(g.sprite.texture == clip.frames[1] and g._lunge > 0.0, "...then lunges into his strike frame (frame %d, lunge %.1f px, %s %.2f s)" % [
+			clip.frames.find(g.sprite.texture), g._lunge, g._phase, g._phase_t])
+	p.queue_free()
 	Game.reset_run()
 	_free_room(r)
 

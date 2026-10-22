@@ -1,0 +1,242 @@
+{
+ "frames": [
+  {
+   "filename": "spearman 0",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 400
+  },
+  {
+   "filename": "spearman 1",
+   "frame": {
+    "x": 56,
+    "y": 0,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 150
+  },
+  {
+   "filename": "spearman 2",
+   "frame": {
+    "x": 112,
+    "y": 0,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 150
+  },
+  {
+   "filename": "spearman 3",
+   "frame": {
+    "x": 168,
+    "y": 0,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 150
+  },
+  {
+   "filename": "spearman 4",
+   "frame": {
+    "x": 224,
+    "y": 0,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 150
+  },
+  {
+   "filename": "spearman 5",
+   "frame": {
+    "x": 280,
+    "y": 0,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 120
+  },
+  {
+   "filename": "spearman 6",
+   "frame": {
+    "x": 336,
+    "y": 0,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 120
+  },
+  {
+   "filename": "spearman 7",
+   "frame": {
+    "x": 392,
+    "y": 0,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 120
+  },
+  {
+   "filename": "spearman 8",
+   "frame": {
+    "x": 0,
+    "y": 44,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 200
+  },
+  {
+   "filename": "spearman 9",
+   "frame": {
+    "x": 56,
+    "y": 44,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 400
+  },
+  {
+   "filename": "spearman 10",
+   "frame": {
+    "x": 112,
+    "y": 44,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 150
+  },
+  {
+   "filename": "spearman 11",
+   "frame": {
+    "x": 168,
+    "y": 44,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 150
+  },
+  {
+   "filename": "spearman 12",
+   "frame": {
+    "x": 224,
+    "y": 44,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 150
+  },
+  {
+   "filename": "spearman 13",
+   "frame": {
+    "x": 280,
+    "y": 44,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 150
+  },
+  {
+   "filename": "spearman 14",
+   "frame": {
+    "x": 336,
+    "y": 44,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 120
+  },
+  {
+   "filename": "spearman 15",
+   "frame": {
+    "x": 392,
+    "y": 44,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 120
+  },
+  {
+   "filename": "spearman 16",
+   "frame": {
+    "x": 0,
+    "y": 88,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 120
+  },
+  {
+   "filename": "spearman 17",
+   "frame": {
+    "x": 56,
+    "y": 88,
+    "w": 56,
+    "h": 44
+   },
+   "duration": 200
+  }
+ ],
+ "meta": {
+  "app": "tools/animate_stills.py",
+  "image": "spearman_sheet.png",
+  "size": {
+   "w": 448,
+   "h": 132
+  },
+  "frameTags": [
+   {
+    "name": "idle_se",
+    "from": 0,
+    "to": 0,
+    "direction": "forward"
+   },
+   {
+    "name": "walk_se",
+    "from": 1,
+    "to": 4,
+    "direction": "forward"
+   },
+   {
+    "name": "attack_se",
+    "from": 5,
+    "to": 7,
+    "direction": "forward"
+   },
+   {
+    "name": "hurt_se",
+    "from": 8,
+    "to": 8,
+    "direction": "forward"
+   },
+   {
+    "name": "idle_ne",
+    "from": 9,
+    "to": 9,
+    "direction": "forward"
+   },
+   {
+    "name": "walk_ne",
+    "from": 10,
+    "to": 13,
+    "direction": "forward"
+   },
+   {
+    "name": "attack_ne",
+    "from": 14,
+    "to": 16,
+    "direction": "forward"
+   },
+   {
+    "name": "hurt_ne",
+    "from": 17,
+    "to": 17,
+    "direction": "forward"
+   }
+  ]
+ }
+}

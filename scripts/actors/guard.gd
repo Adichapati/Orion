@@ -73,6 +73,13 @@ var daze: DazeStars
 var _shape: CollisionShape2D
 var _shake_t := 0.0
 var _ghost: Sprite2D
+## Frame animations from art/final/<type>_sheet.* (hand-made, or built from the stills by
+## tools/animate_stills.py); null = the single stills.
+var _anim: SheetAnim
+var _anim_base := ""
+var _anim_t := 0.0
+var _hurt_t := 0.0
+var _lunge := 0.0
 ## A guard posing as a statue (rooms.json "statue": true): stone-coloured, lantern dark, senses
 ## off, but still breathing (the tell). He wakes when Cedalion comes within WAKE_RANGE tiles,
 ## when a noise reaches him, when another guard raises the alarm, or when he is struck.
@@ -135,6 +142,9 @@ func _ready() -> void:
 	body_node = Node2D.new()
 	add_child(body_node)
 	sprite = Art.feet_sprite(type.sprite_se)
+	_anim = SheetAnim.load_for(type.sprite_se.trim_suffix("_se"))
+	if _anim:
+		sprite.offset = _anim.sprite_offset()
 	# A faint red outline drawn over everything while a wall hides him, so a guard behind a wall
 	# is never invisible.
 	_ghost = Sprite2D.new()
@@ -740,6 +750,7 @@ func take_damage(dmg: int, from_screen_pos: Vector2, force := 1.0) -> void:
 	hp -= dmg
 	Juice.flash(sprite, 0.07)
 	_shake_t = 0.14
+	_hurt_t = 0.24
 	life.squash(Vector2(0.84, 1.12) if force > 1.0 else Vector2(0.9, 1.07))
 	var away := (grid_pos() - Iso.screen_to_grid(from_screen_pos)).normalized()
 	if hp <= 0:
@@ -865,18 +876,26 @@ func _update_visuals(delta: float) -> void:
 		return
 	var target_elev := room.elevation_px(cell())
 	elev = move_toward(elev, target_elev, delta * 90.0)
-	if state != S.FALLING:
-		body_node.position.y = -roundf(elev)
 	life.ground_y = elev
-	# Stagger: a short horizontal shudder when hit or stunned.
-	_shake_t = maxf(0.0, _shake_t - delta)
-	sprite.position.x = roundf(sin(_shake_t * 110.0) * 1.4) if _shake_t > 0.0 else 0.0
-	daze.visible = state == S.STUNNED and _stun_t > 0.5
-
 	var sd := Iso.screen_dir(facing)
 	var front := sd.y >= -0.01
-	sprite.texture = Art.tex(type.sprite_se if front else type.sprite_ne)
-	sprite.flip_h = sd.x < 0.0
+	if not (_anim and _animate(delta, sd)):
+		sprite.texture = Art.tex(type.sprite_se if front else type.sprite_ne)
+		sprite.flip_h = sd.x < 0.0
+	# The lunge: he draws back through the wind-up and drives forward on the strike.
+	var lunge_to := 0.0
+	if _attack and _phase == "windup":
+		lunge_to = -1.5 * clampf(_phase_t / _attack.windup, 0.0, 1.0)
+	elif _attack and _phase == "recover" and _phase_t < 0.22:
+		lunge_to = 4.0
+	_lunge = move_toward(_lunge, lunge_to, delta * (60.0 if lunge_to > _lunge else 18.0))
+	var lunge := sd.normalized() * _lunge
+	body_node.position.y = -roundf(elev) + roundf(lunge.y) if state != S.FALLING else body_node.position.y
+	# Stagger: a short horizontal shudder when hit or stunned.
+	_shake_t = maxf(0.0, _shake_t - delta)
+	_hurt_t = maxf(0.0, _hurt_t - delta)
+	sprite.position.x = roundf(lunge.x) + (roundf(sin(_shake_t * 110.0) * 1.4) if _shake_t > 0.0 else 0.0)
+	daze.visible = state == S.STUNNED and _stun_t > 0.5
 	lantern_rot.rotation = atan2(sd.y * 2.0, sd.x)
 	lantern.texture_scale = sight_range() * 22.6 / 64.0
 	# Lights add up: where the lantern lands on Cedalion's torch pool the floor clips to white,
@@ -929,6 +948,44 @@ func _update_visuals(delta: float) -> void:
 		cone.polygon = PackedVector2Array()
 		meter.visible = false
 		mark.visible = false
+
+
+## Picks the frame for the current state: walking by speed, the attack's wind-up, strike and
+## settle in step with its phases, a flinch when hit or stunned. Returns false if the sheet has
+## nothing for it.
+func _animate(delta: float, sd: Vector2) -> bool:
+	var base := "idle"
+	var rate := 1.0
+	var frame := -1
+	var speed := Iso.screen_to_grid(velocity).length()
+	if dormant:
+		base = "idle"
+	elif _hurt_t > 0.0 or state == S.STUNNED or state == S.SHOVED:
+		base = "hurt"
+	elif _attack and _phase == "windup":
+		base = "attack"
+		frame = 0
+	elif _attack and _phase == "recover" and _phase_t < _attack.recover * 0.75:
+		base = "attack"
+		frame = 1 if _phase_t < 0.2 else 2
+	elif speed > 0.25:
+		base = "walk"
+		rate = clampf(speed / type.walk_speed, 0.6, 2.2)
+	if not _anim.has(base):
+		base = "idle"
+	var pick := _anim.pick(base, sd)
+	if pick.is_empty():
+		return false
+	if base != _anim_base:
+		_anim_base = base
+		_anim_t = 0.0
+	else:
+		_anim_t += delta * rate
+	var clip: SheetAnim.Clip = pick.clip
+	var i := clampi(frame, 0, clip.frames.size() - 1) if frame >= 0 else clip.index_at(_anim_t, true)
+	sprite.texture = clip.frames[i]
+	sprite.flip_h = pick.flip
+	return true
 
 
 func _update_cone() -> void:
