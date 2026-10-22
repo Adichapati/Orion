@@ -282,6 +282,7 @@ func _place_clutter() -> void:
 const DECOR := {
 	"lion-gate": [
 		[Vector2i(14, 1), "ruin_arch", Vector2(0.1, -0.3)],
+		[Vector2i(14, 3), "amphora_plinth", Vector2(0.3, 0)],
 		[Vector2i(1, 8), "column_snapped", Vector2(-0.3, 0)],
 		[Vector2i(3, 10), "fallen_drums", Vector2(-0.1, 0.1)],
 		[Vector2i(3, 1), "moss_patch_0", Vector2(0, -0.2)],
