@@ -14,6 +14,7 @@ func run() -> void:
 	test_iso_round_trip()
 	test_final_art_matches_placeholders()
 	await test_rooms_build_and_connect()
+	test_medallions_on_plain_floor()
 	await test_rooms_are_sealed()
 	await test_interactables_reachable()
 	await test_cedalion_sword()
@@ -134,6 +135,35 @@ func test_rooms_build_and_connect() -> void:
 		check(r.guards.size() == data.get("guards", []).size(), "%s spawns %d guards" % [r.id, r.guards.size()])
 		check(r.get_node_or_null("Island") != null and r.get_node_or_null("Cliffs") != null,
 				"%s stands on its floating island (drawn for its grid size)" % r.id)
+		_free_room(r)
+
+
+## Floor mosaics must keep cracked marble, pits and water readable: no medallion's ring may reach
+## over one, in any room, and each lies on plain floor.
+func test_medallions_on_plain_floor() -> void:
+	print("Mosaics")
+	for data in Game.rooms:
+		var r := _make_room(data)
+		for entry in Room.MEDALLIONS.get(r.id, []):
+			var c: Vector2i = entry[0] if entry is Array else entry
+			var bad: Array = []
+			var reach := ceili(Room.MEDALLION_R)
+			for dy in range(-reach, reach + 1):
+				for dx in range(-reach, reach + 1):
+					# the ring overlaps a cell if the cell's nearest point is inside it
+					var near := Vector2(maxf(0.0, absf(dx) - 0.5), maxf(0.0, absf(dy) - 0.5))
+					var k := r.ch(c + Vector2i(dx, dy))
+					if near.length() < Room.MEDALLION_R and k in ["x", "_", "W", "p"]:
+						bad.append("%s %s" % [c + Vector2i(dx, dy), k])
+			check(r.ch(c) in [".", "m"] and bad.is_empty(),
+					"%s: the mosaic at %s lies on plain floor, clear of cracks, pits and water%s" % [r.id, c, "" if bad.is_empty() else " (over %s)" % ", ".join(bad)])
+		# Broken walls are looks only: plain tall walls, away from doors and lamps, still solid.
+		for c in Room.BROKEN_WALLS.get(r.id, []):
+			var near_door := false
+			for n in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+				near_door = near_door or r.ch(c + n) in ["D", "E", "L", "v"]
+			check(r.ch(c) == "#" and r._wall_is_tall(c) and not near_door and not r.is_walkable(c),
+					"%s: the broken wall at %s is a plain tall wall, away from doors and lamps, and still blocks" % [r.id, c])
 		_free_room(r)
 
 

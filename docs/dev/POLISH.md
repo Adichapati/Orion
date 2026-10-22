@@ -83,6 +83,15 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
   and pale shield removed); a hit shows the flinch, front and back. Screenshots: `--script=moves`.
   Test: the roll, block and get-hit clips exist and play, and the sword hides through the roll.
   185 tests pass.
+- 14:47 Environment: a Vergina-sun mosaic on the statue court's path to the fountain, and a new
+  star mosaic in the star shrine (a silver eight-pointed star round Orion's belt) before the
+  entrance, clear of the cracked ring. A broken-wall variant (`wall_tall_broken`: courses
+  knocked off the top, the gap showing sky) on two or three back walls per room, away from doors
+  and lamps; looks only. Both are generated last in `tools/gen_greybox.py` (its older output
+  differs by a few pixels on this machine's Python and Pillow, so only the new files are
+  committed). Test: no mosaic reaches over cracks, pits or water, and every broken wall is a
+  plain tall wall that still blocks. 201 tests pass. Not yet asked: Adithya's chest and Alcyone
+  images.
 
 ; stopped at about 55% of the 5-hour window)
 

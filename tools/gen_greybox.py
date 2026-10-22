@@ -264,9 +264,10 @@ for n, axis, side in (("w", "x", -1), ("e", "x", 1), ("n", "y", -1), ("s", "y", 
     edge_band(f"water_shade_{n}", axis, side, 0.3,
               lambda a, t: P["night1"][:3] + (200,) if a < 0.5 else (P["night1"][:3] + (110,) if (a < 0.8) else None))
 
-def medallion(name, r=1.4):
+def medallion(name, r=1.4, motif="sun"):
     """A floor mosaic laid out in grid space, so it lies flat on the iso floor: a dark border, a
-    band of alternating stones, and a Vergina sun (sixteen rays round a disk) in gold."""
+    band of alternating stones, and a Vergina sun (sixteen rays round a disk) in gold; or, for
+    motif "star", the star shrine's eight-pointed star in silver round Orion's three belt stars."""
     w, h = int(r * 22.63 * 2) + 2, int(r * 11.32 * 2) + 2
     img = Image.new("RGBA", (w, h), CLEAR)
     dark, ground = hexc("3e3a36"), hexc("6a645b")
@@ -285,6 +286,19 @@ def medallion(name, r=1.4):
                 c = P["marble2"] if seg % 2 == 0 else P["marble0"]
             elif rho > r - 0.38:
                 c = dark
+            elif motif == "star":
+                c = P["night2"]
+                k = phi / (2 * math.pi) * 8
+                off = abs(k - round(k))  # 0 on a point's axis, 0.5 between points
+                # long points on the grid axes, short ones between them
+                reach = (r - 0.46) if round(k) % 2 == 0 else (r - 0.46) * 0.62
+                if rho < reach and off < 0.5 * (1 - rho / reach):
+                    c = P["moon1"] if off < 0.12 else P["silver"]
+                # Orion's belt: three stars in a slanting row across the middle
+                for bu, bv in ((-0.34, -0.12), (0.0, 0.0), (0.34, 0.12)):
+                    d = math.hypot(u - bu, v - bv)
+                    if d < 0.11:
+                        c = P["fire3"] if d < 0.05 else P["fire2"]
             else:
                 c = ground
                 k = phi / (2 * math.pi) * 16
@@ -298,6 +312,7 @@ def medallion(name, r=1.4):
 
 
 medallion("floor_medallion")
+medallion("floor_medallion_star", motif="star")
 
 key_border("floor_key_w", "x", -1)   # wall on the -x side
 key_border("floor_key_e", "x", 1)    # wall on the +x side
@@ -1068,6 +1083,50 @@ def cone(name, size, half_deg):
 
 
 cone("light_cone", 128, 50)
+
+
+def broken_wall(name, src, seed, centre=15, half=11, deep=14):
+    """A tall wall with a bite knocked out of its top: courses of stone broken off at different
+    heights, each lowered column keeping a top face as deep as the wall's cap there (so the gap
+    reads as solid stone, not a hollow shell), lit on the left and shaded on the right, with a dark
+    lip under it. Drawn from the finished `src` wall, last, with its own random generator, so
+    nothing generated before it changes."""
+    rnd = random.Random(seed)
+    img = Image.open(OUT / f"{src}.png").convert("RGBA")
+    w, h = img.size
+    lit_top, shade_top = WALL_TOP, hexc("8f8a7e")
+    lip_lit, lip_shade = hexc("6f695f"), hexc("3c3a4e")
+    step = 0
+    for x in range(w):
+        col = [y for y in range(h) if img.getpixel((x, y))[3] > 0]
+        if not col:
+            continue
+        t = (x - centre) / half
+        if abs(t) >= 1:
+            continue
+        if x % 4 == 0:
+            step = rnd.randint(-1, 1)
+        # courses are 4 px: the break follows them, unevenly
+        depth = max(0, 4 * round(deep * (1 - t * t) / 4) + step)
+        if depth <= 2:
+            continue
+        # the cap's depth in this column: from the top edge down to the faces' top edge
+        face_top = (8 + x // 2) if x < 16 else (15 - (x - 16) // 2)
+        cap = max(2, face_top - col[0])
+        cut = col[0] + depth
+        for y in range(col[0], min(cut, h)):
+            img.putpixel((x, y), CLEAR)
+        lit = x < 16
+        for y in range(cut, min(cut + cap, h)):
+            if img.getpixel((x, y))[3] > 0:
+                img.putpixel((x, y), lit_top if lit else shade_top)
+        if cut + cap < h:
+            img.putpixel((x, cut + cap), lip_lit if lit else lip_shade)
+    save(img, name)
+
+
+# Added after everything else on 2026-10-22 so the earlier art stays byte-identical.
+broken_wall("wall_tall_broken", "wall_tall", 11)
 
 print("greybox art written to", OUT)
 print(sorted(p.name for p in OUT.glob("*.png")))

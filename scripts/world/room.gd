@@ -219,14 +219,35 @@ func _build_floor(c: Vector2i) -> void:
 	_add_key_border(c, k)
 
 
-## Mosaic medallions (a Vergina sun in a ring) at a few rooms' focal points, on plain floor only.
-const MEDALLIONS := {"lion-gate": [Vector2i(7, 2)], "colonnade": [Vector2i(10, 5)]}
+## Mosaic medallions at a few rooms' focal points, on plain floor only (never over cracked
+## marble): a Vergina sun in a ring, or in the star shrine a silver star round Orion's belt.
+const MEDALLIONS := {
+	"lion-gate": [Vector2i(7, 2)], "colonnade": [Vector2i(10, 5)],
+	# on the way in from the entrance to the fountain
+	"statue-court": [Vector2i(7, 11)],
+	# before the entrance, short of the cracked ring
+	"star-shrine": [[Vector2i(6, 10), "floor_medallion_star"]],
+}
+## How far a medallion reaches from its cell, in tiles (its ring's radius in gen_greybox.py).
+const MEDALLION_R := 1.4
+
+## Back-wall cells drawn with a bite out of their top (the citadel is old), only on plain tall
+## walls and away from doors and lamps. Looks only: the wall still blocks as before.
+const BROKEN_WALLS := {
+	"lion-gate": [Vector2i(3, 0), Vector2i(12, 0), Vector2i(0, 7)],
+	"colonnade": [Vector2i(8, 0), Vector2i(0, 5)],
+	"storerooms": [Vector2i(8, 0), Vector2i(0, 7)],
+	"cistern": [Vector2i(9, 0), Vector2i(0, 7)],
+	"statue-court": [Vector2i(3, 0), Vector2i(11, 0), Vector2i(0, 10)],
+}
 
 
 func _lay_medallions() -> void:
-	for c in MEDALLIONS.get(id, []):
+	for entry in MEDALLIONS.get(id, []):
+		var c: Vector2i = entry[0] if entry is Array else entry
+		var tex: String = entry[1] if entry is Array else "floor_medallion"
 		if ch(c) in ".m":
-			var m := Art.tile_sprite("floor_medallion")
+			var m := Art.tile_sprite(tex)
 			m.position = cell_center(c)
 			floor_layer.add_child(m)
 
@@ -340,6 +361,8 @@ func _build_solid(c: Vector2i) -> void:
 		"#", "L", "v":
 			var tall := _wall_is_tall(c)
 			var name := "wall_tall" if tall else "wall_low"
+			if tall and k == "#" and c in BROKEN_WALLS.get(id, []):
+				name = "wall_tall_broken"
 			if k == "v":
 				name = "wall_tall_ivy"
 			body.add_child(Art.block_sprite(name))
