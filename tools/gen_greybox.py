@@ -240,7 +240,32 @@ def wall_joints(img, d, h):
             img.putpixel((16 + jx, y), hexc("4c4a5c"))
 
 
-block("wall_tall", 32, WALL_TOP, WALL_L, WALL_R, EDGE, side_extra=wall_joints)
+def frieze(img):
+    """A cornice lip and a Greek fret (a square-wave meander between two rails) under the top of
+    both faces of a tall wall, following the faces' slope."""
+    for face in ("left", "right"):
+        lit = face == "left"
+        lip = P["marble2"] if lit else hexc("8a879c")
+        ground = hexc("b0a898") if lit else hexc("6c6a80")
+        line = hexc("5e584e") if lit else hexc("3c3a4e")
+        for i in range(16):
+            x = i if lit else 16 + i
+            top = (8 + i // 2) if lit else (15 - i // 2)  # the face's top edge at this column
+            img.putpixel((x, top), lip)
+            img.putpixel((x, top + 2), line)
+            img.putpixel((x, top + 6), line)
+            for v in (3, 4, 5):
+                k = i % 8
+                on = k % 4 == 0 or (v == 3 and k < 4) or (v == 5 and k >= 4)
+                img.putpixel((x, top + v), line if on else ground)
+
+
+def wall_joints_frieze(img, d, h):
+    wall_joints(img, d, h)
+    frieze(img)
+
+
+block("wall_tall", 32, WALL_TOP, WALL_L, WALL_R, EDGE, side_extra=wall_joints_frieze)
 block("wall_low", 8, WALL_TOP, WALL_L, WALL_R, EDGE)
 
 
@@ -275,7 +300,7 @@ def ivy(img, d, h):
             leaf(i, y + dy, i < 16)
 
 
-block("wall_tall_ivy", 32, WALL_TOP, WALL_L, WALL_R, EDGE, side_extra=lambda img, d, h: (wall_joints(img, d, h), ivy(img, d, h)))
+block("wall_tall_ivy", 32, WALL_TOP, WALL_L, WALL_R, EDGE, side_extra=lambda img, d, h: (wall_joints_frieze(img, d, h), ivy(img, d, h)))
 
 
 def lion_gate():
