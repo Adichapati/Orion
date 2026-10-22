@@ -348,8 +348,18 @@ static func _gear_timeline() -> Array:
 	out.append([t + 0.1, "press", "attack"])
 	out.append([t + 0.25, "shot", "", "swing"])
 	out.append([t + 0.3, "release", "attack"])
-	out.append([t + 1.0, "call", "shop"])
-	out.append([t + 1.5, "shot", "", "shop"])
+	# Walk away and back in the mail shirt with the axe: the back and front walks, torch in hand.
+	t += 1.0
+	out.append([t, "call", "equip", "mail"])
+	out.append([t, "call", "equip", "labrys"])
+	out.append([t + 0.1, "press", "move_up"])
+	out.append([t + 0.5, "shot", "", "walk_away"])
+	out.append([t + 0.6, "release", "move_up"])
+	out.append([t + 0.7, "press", "move_down"])
+	out.append([t + 1.1, "shot", "", "walk_back"])
+	out.append([t + 1.2, "release", "move_down"])
+	out.append([t + 2.0, "call", "shop"])
+	out.append([t + 2.5, "shot", "", "shop"])
 	return out
 
 var prefix := ""

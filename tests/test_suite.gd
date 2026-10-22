@@ -854,15 +854,16 @@ func test_axe_mace_and_mail() -> void:
 	_free_room(r)
 
 
-## Each armour has its own body (art/final/cedalion_<look>_sheet.*, from Sathvik's armour sheet,
-## once it is there) and putting it on swaps Cedalion's sheet at once; the tunic keeps his own.
-## Any armour sheet that exists must have every move, a sword hand on every frame but a tucked
+## Each armour has its own body (art/final/cedalion_<look>_sheet.*, from Sathvik's armour sheet)
+## and putting it on swaps Cedalion's sheet at once; the tunic keeps his own.
+## Every armour sheet must have every move, a sword hand on every frame but a tucked
 ## roll, and face the way he moves in every clip but the glance back.
 func test_armour_swaps_body() -> void:
 	print("Armour swaps Cedalion's body")
 	for look: String in Player.ARMOUR_LOOKS.values():
 		var path := "res://art/final/cedalion_%s_sheet.json" % look
 		if not FileAccess.file_exists(path):
+			check(false, "the %s armour has its body sheet" % look)
 			continue
 		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 		var tags := {}
