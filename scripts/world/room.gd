@@ -243,7 +243,7 @@ func _add_key_border(c: Vector2i, k: String) -> void:
 		var nk := ch(c + n)
 		var dir: String = String(KEY_BORDER[n]).trim_prefix("floor_key_")
 		var over := ""
-		if k in ".m*xED^" and nk == "W":
+		if k in ".m*xED^" and (nk == "W" or nk == "F"):
 			over = "floor_coping_" + dir
 		elif k == "W" and (nk in ".m*xED^"):
 			over = "water_shade_" + dir
