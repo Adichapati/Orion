@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"koryne"
+display_name = "Iron koryne"
+description = "A studded mace, like the one Periphetes swung at the roadside. Short and heavy."
+price = 60
+damage = 2
+swing_time = 0.6
+reach = 0.9
+parry_window = 0.1

@@ -1,0 +1,526 @@
+{
+ "frames": [
+  {
+   "filename": "cedalion_mail 0",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 400,
+   "torch": {
+    "x": 4,
+    "y": -15
+   },
+   "hand": {
+    "x": -5,
+    "y": -7,
+    "angle": -136
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 1",
+   "frame": {
+    "x": 34,
+    "y": 0,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 400,
+   "torch": {
+    "x": -7,
+    "y": -15
+   },
+   "hand": {
+    "x": 7,
+    "y": -7,
+    "angle": -44
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 2",
+   "frame": {
+    "x": 68,
+    "y": 0,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 400,
+   "torch": {
+    "x": 6,
+    "y": -15
+   },
+   "hand": {
+    "x": -6,
+    "y": -5,
+    "angle": -136
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 3",
+   "frame": {
+    "x": 102,
+    "y": 0,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 400,
+   "torch": {
+    "x": -6,
+    "y": -15
+   },
+   "hand": {
+    "x": 6,
+    "y": -7,
+    "angle": -44
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 4",
+   "frame": {
+    "x": 136,
+    "y": 0,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 150,
+   "torch": {
+    "x": 6,
+    "y": -15
+   },
+   "hand": {
+    "x": -6,
+    "y": -5,
+    "angle": -136
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 5",
+   "frame": {
+    "x": 170,
+    "y": 0,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 150,
+   "torch": {
+    "x": 4,
+    "y": -15
+   },
+   "hand": {
+    "x": -5,
+    "y": -7,
+    "angle": -136
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 6",
+   "frame": {
+    "x": 204,
+    "y": 0,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 150,
+   "torch": {
+    "x": -7,
+    "y": -15
+   },
+   "hand": {
+    "x": 7,
+    "y": -7,
+    "angle": -44
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 7",
+   "frame": {
+    "x": 238,
+    "y": 0,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 150,
+   "torch": {
+    "x": -6,
+    "y": -15
+   },
+   "hand": {
+    "x": 6,
+    "y": -7,
+    "angle": -44
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 8",
+   "frame": {
+    "x": 0,
+    "y": 30,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 300,
+   "torch": {
+    "x": -6,
+    "y": -14
+   },
+   "hand": {
+    "x": 5,
+    "y": -7,
+    "angle": -45
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 9",
+   "frame": {
+    "x": 34,
+    "y": 30,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 300,
+   "torch": {
+    "x": -6,
+    "y": -16
+   },
+   "hand": {
+    "x": 6,
+    "y": -7,
+    "angle": -45
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 10",
+   "frame": {
+    "x": 68,
+    "y": 30,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 300,
+   "torch": {
+    "x": -6,
+    "y": -14
+   },
+   "hand": {
+    "x": 5,
+    "y": -7,
+    "angle": -45
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 11",
+   "frame": {
+    "x": 102,
+    "y": 30,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 300,
+   "torch": {
+    "x": -6,
+    "y": -16
+   },
+   "hand": {
+    "x": 6,
+    "y": -7,
+    "angle": -45
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 12",
+   "frame": {
+    "x": 136,
+    "y": 30,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 300,
+   "torch": {
+    "x": -6,
+    "y": -14
+   },
+   "hand": {
+    "x": 5,
+    "y": -7,
+    "angle": -45
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 13",
+   "frame": {
+    "x": 170,
+    "y": 30,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 300,
+   "torch": {
+    "x": -6,
+    "y": -16
+   },
+   "hand": {
+    "x": 6,
+    "y": -7,
+    "angle": -45
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 14",
+   "frame": {
+    "x": 204,
+    "y": 30,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 300,
+   "torch": {
+    "x": 6,
+    "y": -15
+   },
+   "hand": {
+    "x": -6,
+    "y": -5,
+    "angle": -136
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 15",
+   "frame": {
+    "x": 238,
+    "y": 30,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 300,
+   "torch": {
+    "x": -6,
+    "y": -15
+   },
+   "hand": {
+    "x": 6,
+    "y": -7,
+    "angle": -44
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 16",
+   "frame": {
+    "x": 0,
+    "y": 60,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 300,
+   "torch": {
+    "x": 6,
+    "y": -15
+   },
+   "hand": {
+    "x": -6,
+    "y": -5,
+    "angle": -136
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 17",
+   "frame": {
+    "x": 34,
+    "y": 60,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 300,
+   "torch": {
+    "x": -6,
+    "y": -15
+   },
+   "hand": {
+    "x": 6,
+    "y": -7,
+    "angle": -44
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 18",
+   "frame": {
+    "x": 68,
+    "y": 60,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 300,
+   "torch": {
+    "x": 4,
+    "y": -15
+   },
+   "hand": {
+    "x": -5,
+    "y": -7,
+    "angle": -136
+   },
+   "faces": "right"
+  },
+  {
+   "filename": "cedalion_mail 19",
+   "frame": {
+    "x": 102,
+    "y": 60,
+    "w": 34,
+    "h": 30
+   },
+   "duration": 300,
+   "torch": {
+    "x": -6,
+    "y": -15
+   },
+   "hand": {
+    "x": 6,
+    "y": -7,
+    "angle": -44
+   },
+   "faces": "right"
+  }
+ ],
+ "meta": {
+  "app": "tools/process_sheet.py",
+  "image": "cedalion_mail_sheet.png",
+  "size": {
+   "w": 272,
+   "h": 90
+  },
+  "pivot": {
+   "x": 17,
+   "y": 29
+  },
+  "frameTags": [
+   {
+    "name": "idle_se",
+    "from": 0,
+    "to": 0,
+    "direction": "forward"
+   },
+   {
+    "name": "idle_ne",
+    "from": 1,
+    "to": 1,
+    "direction": "forward"
+   },
+   {
+    "name": "look_se",
+    "from": 2,
+    "to": 2,
+    "direction": "forward"
+   },
+   {
+    "name": "look_ne",
+    "from": 3,
+    "to": 3,
+    "direction": "forward"
+   },
+   {
+    "name": "walk_se",
+    "from": 4,
+    "to": 5,
+    "direction": "forward"
+   },
+   {
+    "name": "walk_ne",
+    "from": 6,
+    "to": 7,
+    "direction": "forward"
+   },
+   {
+    "name": "attack_se",
+    "from": 8,
+    "to": 8,
+    "direction": "forward"
+   },
+   {
+    "name": "attack_ne",
+    "from": 9,
+    "to": 9,
+    "direction": "forward"
+   },
+   {
+    "name": "parry_se",
+    "from": 10,
+    "to": 10,
+    "direction": "forward"
+   },
+   {
+    "name": "parry_ne",
+    "from": 11,
+    "to": 11,
+    "direction": "forward"
+   },
+   {
+    "name": "lunge_se",
+    "from": 12,
+    "to": 12,
+    "direction": "forward"
+   },
+   {
+    "name": "lunge_ne",
+    "from": 13,
+    "to": 13,
+    "direction": "forward"
+   },
+   {
+    "name": "jump_se",
+    "from": 14,
+    "to": 14,
+    "direction": "forward"
+   },
+   {
+    "name": "jump_ne",
+    "from": 15,
+    "to": 15,
+    "direction": "forward"
+   },
+   {
+    "name": "dodge_se",
+    "from": 16,
+    "to": 16,
+    "direction": "forward"
+   },
+   {
+    "name": "dodge_ne",
+    "from": 17,
+    "to": 17,
+    "direction": "forward"
+   },
+   {
+    "name": "hurt_se",
+    "from": 18,
+    "to": 18,
+    "direction": "forward"
+   },
+   {
+    "name": "hurt_ne",
+    "from": 19,
+    "to": 19,
+    "direction": "forward"
+   }
+  ]
+ }
+}

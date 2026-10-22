@@ -26,6 +26,7 @@ automatically (labels are skipped), scaled to the height of the character's curr
 the stills are rewritten to match.
 
     python tools/process_sheet.py cedalion [preview dir]
+    python tools/process_sheet.py cedalion_leather   # also cedalion_mail, cedalion_plate: his armour bodies
     python tools/process_sheet.py watchman [--mirror] [--paper] [--attack-front=N] [preview dir]
 """
 from collections import deque
@@ -182,6 +183,109 @@ CONFIGS = {
     ),
 }
 
+# ---------------------------------------------------------------- Cedalion's armour bodies
+# Sathvik's armour sheet (art/generated/cedalion_armour_sheet.webp) is a 3x3 grid: rows Leather,
+# Chainmail, Plate; columns Mace, Axe, Sword. Only each armour's "+ Sword" block is used, and in
+# it only the poses that hold no weapon (the game draws the weapon itself): of the five walk-row
+# figures, the two front views without a sword (w2, w4) and the two back views (w1, whose club is
+# cut away, and w5). The front views look left as drawn (eyes left of the face's middle), so both
+# are mirrored to face screen-right; the back views look away up-right. The sheet's figures stand
+# square to the viewer and barely change pose, so every move is built from these four frames.
+# They hold no torch: one is drawn into the off hand (draw_torch) and its flame recorded.
+ARMOUR_FACES = {"w1": "right", "w2": "left", "w4": "left", "w5": "right", "a3": "right", "a4": "right"}
+# Leather's boxes and points, in sheet pixels; the other blocks sit lower by their own offsets.
+ARMOUR_BOXES = {
+    "w1": (1122, 71, 1162, 147), "w2": (1198, 71, 1237, 146),
+    "w4": (1349, 70, 1390, 146), "w5": (1418, 71, 1456, 146),
+    "a3": (1266, 171, 1312, 236), "a4": (1349, 171, 1392, 236),
+}
+# (club tip, club neck, sword hand) - only w1 holds anything (a club, cut out)
+ARMOUR_SWORDS = {
+    "w1": ((1178, 115), (1165, 125), (1158, 124)),
+    "w2": (None, None, (1229, 124)),
+    "w4": (None, None, (1384, 127)),
+    "w5": (None, None, (1450, 124)),
+    "a3": ((1320, 197), (1302, 215), (1299, 219)),
+    "a4": ((1405, 196), (1385, 216), (1381, 219)),
+}
+ARMOUR_TORCH_HANDS = {"w1": (1129, 124), "w2": (1205, 124), "w4": (1355, 124), "w5": (1417, 124),
+                      "a3": (1270, 222), "a4": (1352, 217)}
+# Where each block's figures sit, per frame (found by detect_rows): leather's boxes moved by these.
+ARMOUR_BLOCKS = {
+    "leather": {"w1": (1122, 71), "w2": (1198, 71), "w4": (1349, 70), "w5": (1418, 71), "a3": (1266, 171), "a4": (1349, 171)},
+    "mail": {"w1": (1118, 408), "w2": (1195, 408), "w4": (1351, 408), "w5": (1420, 408), "a3": (1265, 516), "a4": (1350, 517)},
+    "plate": {"w1": (1121, 756), "w2": (1197, 756), "w4": (1349, 755), "w5": (1418, 755), "a3": (1263, 855), "a4": (1351, 855)},
+}
+ARMOUR_TAGS = [
+    ("idle_se", ["w2"], 400), ("idle_ne", ["w5"], 400),
+    ("look_se", ["w4"], 400), ("look_ne", ["w1"], 400),
+    ("walk_se", ["w4", "w2"], 150), ("walk_ne", ["w5", "w1"], 150),
+    ("attack_se", ["a3"], 300), ("attack_ne", ["a4"], 300),
+    ("parry_se", ["a3"], 300), ("parry_ne", ["a4"], 300),
+    ("lunge_se", ["a3"], 300), ("lunge_ne", ["a4"], 300),
+    ("jump_se", ["w4"], 300), ("jump_ne", ["w1"], 300),
+    ("dodge_se", ["w4"], 300), ("dodge_ne", ["w1"], 300),
+    ("hurt_se", ["w2"], 300), ("hurt_ne", ["w1"], 300),
+]
+TORCH_PAD = 3
+
+
+def draw_torch(img, x, y):
+    """A small torch held in the fist at (x, y): a leather-bound haft and a flame in the ORION
+    fire colours, outlined in ink. Returns the flame's centre."""
+    px = img.load()
+    leather, bronze = (74, 51, 38), (168, 105, 58)
+    f1, f2, f3 = (224, 120, 44), (255, 200, 87), (255, 241, 193)
+    pts = {}
+    for yy in (y + 1, y + 2):
+        pts[(x, yy)] = leather
+    for yy in range(y - 6, y):
+        pts[(x, yy)] = bronze if yy <= y - 5 else leather
+    pts.update({(x - 1, y - 7): f1, (x, y - 7): f2, (x + 1, y - 7): f1,
+                (x - 1, y - 8): f2, (x, y - 8): f3, (x + 1, y - 8): f2,
+                (x - 1, y - 9): f1, (x, y - 9): f3, (x + 1, y - 9): f1,
+                (x, y - 10): f2, (x, y - 11): f1})
+    for (a, b), c in pts.items():
+        if 0 <= a < img.width and 0 <= b < img.height:
+            px[a, b] = c + (255,)
+    for (a, b) in list(pts):
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            n = (a + dx, b + dy)
+            if n not in pts and 0 <= n[0] < img.width and 0 <= n[1] < img.height and px[n][3] == 0:
+                px[n] = (26, 20, 18, 255)
+    return (x, y - 8)
+
+
+def armour_config(look):
+    def moved(key, p):
+        if p is None:
+            return None
+        bx, by = ARMOUR_BLOCKS[look][key]
+        lx, ly = ARMOUR_BLOCKS["leather"][key]
+        return (p[0] + bx - lx, p[1] + by - ly)
+    boxes, swords, torches = {}, {}, {}
+    for key, box in ARMOUR_BOXES.items():
+        a, b = moved(key, box[:2]), moved(key, box[2:])
+        boxes[key] = ((a[0], a[1], b[0], b[1]), ARMOUR_FACES[key] == "left", "stand")
+        swords[key] = tuple(moved(key, p) for p in ARMOUR_SWORDS[key])
+        torches[key] = moved(key, ARMOUR_TORCH_HANDS[key])
+    return dict(
+        source=GENERATED / "cedalion_armour_sheet.webp",
+        boxes=boxes, tags=ARMOUR_TAGS, swords=swords, torch_hands=torches,
+        # front views rest the blade up and back over the shoulder, back views up and forward,
+        # like the tunic sheet's walk
+        angles={"w2": -136, "w4": -136, "w1": -44, "w5": -44},
+        blade_r=4, guard_r=3, guard_half=4,
+        scale=0.40, palette=22, background="paper", is_bg=lambda c: is_paper(c) or is_paper_jpg(c),
+        # the leather is the colour of his skin: firmer contrast keeps his face apart from it
+        enhance=(1.3, 1.2, 1.5) if look == "leather" else None,
+        torch=True, stills=None, faces=ARMOUR_FACES,
+    )
+
+
+for _look in ("leather", "mail", "plate"):
+    CONFIGS["cedalion_" + _look] = armour_config(_look)
+
 
 def is_paper(c):
     """The sheet's blue-grey paper, grid and drop shadow. Cream tunics and the pale swing arc lean
@@ -326,12 +430,13 @@ def cut_sword(img: Image.Image, key, origin, cfg):
     tip, guard, _hand = cfg.get("swords", {}).get(key, (None, None, None))
     caps = []
     if tip:
+        br, gr, gh = cfg.get("blade_r", BLADE_R), cfg.get("guard_r", GUARD_R), cfg.get("guard_half", GUARD_HALF)
         dx, dy = guard[0] - tip[0], guard[1] - tip[1]
         n = (dx * dx + dy * dy) ** 0.5
         ux, uy = dx / n, dy / n
-        caps.append((tip, (guard[0] + ux * 3, guard[1] + uy * 3), BLADE_R, False))
-        caps.append(((guard[0] - uy * GUARD_HALF, guard[1] + ux * GUARD_HALF),
-                     (guard[0] + uy * GUARD_HALF, guard[1] - ux * GUARD_HALF), GUARD_R, False))
+        caps.append((tip, (guard[0] + ux * 3, guard[1] + uy * 3), br, False))
+        caps.append(((guard[0] - uy * gh, guard[1] + ux * gh),
+                     (guard[0] + uy * gh, guard[1] - ux * gh), gr, False))
     for x0, y0, x1, y1, r in cfg.get("arcs", {}).get(key, []):
         caps.append(((x0, y0), (x1, y1), r, True))
     if not caps:
@@ -475,6 +580,7 @@ def flame_of(f: Image.Image, side=0):
 def process(name, cfg, preview=None):
     raw = {}
     hands = {}
+    torch_hands = {}
     mirrors = {}
     first = None
     # The main sheet, then any extra sheets ("more": their own source, boxes, swords, arcs and
@@ -508,18 +614,40 @@ def process(name, cfg, preview=None):
                         dx = -dx
                     angle = math.degrees(math.atan2(dy, dx))
                 hands[key] = [(hx - bb[0]) * sx, (hy - bb[1]) * sy, angle]
+            th = part.get("torch_hands", {}).get(key)
+            if th:
+                # the off hand, where a torch is drawn in (armour sheets show no torch)
+                tx, ty = th[0] - origin[0], th[1] - origin[1]
+                if mirror:
+                    tx = crop.width - 1 - tx
+                sx, sy = small.width / (bb[2] - bb[0]), small.height / (bb[3] - bb[1])
+                torch_hands[key] = ((tx - bb[0]) * sx, (ty - bb[1]) * sy)
             raw[key] = (small, kind)
         if first is None:
             first = list(raw)
     for key, src in cfg.get("angle_from", {}).items():
         if key in hands and src in hands:
             hands[key][2] = hands[src][2]
+    for key, a in cfg.get("angles", {}).items():
+        if key in hands:
+            hands[key][2] = a
     # The palette comes from the main sheet alone, so extra frames never shift its colours.
     pal = build_palette([raw[k][0] for k in first], cfg.get("palette", 22))
     ink = min(pal, key=lambda p: p[0] + p[1] + p[2])
     frames = {}
     for key, (f, kind) in raw.items():
         frames[key] = (finish(f, pal, ink), kind)
+    # Armour sheets show no torch, but Cedalion always carries the last flame: draw one into the
+    # off hand, after the palette so its fire stays bright, and remember where its flame is.
+    flames = {}
+    for key, at in torch_hands.items():
+        f, kind = frames[key]
+        padded = Image.new("RGBA", (f.width + 2 * TORCH_PAD, f.height), (0, 0, 0, 0))
+        padded.alpha_composite(f, (TORCH_PAD, 0))
+        flames[key] = draw_torch(padded, round(at[0]) + TORCH_PAD, round(at[1]))
+        if key in hands:
+            hands[key][0] += TORCH_PAD
+        frames[key] = (padded, kind)
 
     # one canvas for every frame, feet on a shared pivot
     ext = [0, 0, 0]  # left, right, up (from the anchor)
@@ -556,6 +684,8 @@ def process(name, cfg, preview=None):
         if k in hands:
             side = 1 if hands[k][0] < f.width / 2 else -1
         fl = flame_of(f, side) if cfg.get("torch") else None
+        if k in flames:
+            fl = flames[k]
         if fl:
             entry["torch"] = {"x": round(fl[0] - ax), "y": round(fl[1] - ay)}
         if k in hands:
@@ -582,7 +712,7 @@ def process(name, cfg, preview=None):
     (OUT / f"{name}_sheet.json").write_text(json.dumps(meta, indent=1), newline="\n")
 
     # stills for anything that still asks for <name>_se / <name>_ne
-    for still, key in ((f"{name}_se", cfg["stills"][0]), (f"{name}_ne", cfg["stills"][1])):
+    for still, key in ((f"{name}_se", cfg["stills"][0]), (f"{name}_ne", cfg["stills"][1])) if cfg.get("stills") else ():
         f, _ = frames[key]
         ax, ay = anchors[key]
         img = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))

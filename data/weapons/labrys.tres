@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"labrys"
+display_name = "Bronze labrys"
+description = "The double axe of the old palaces. Bites deep and swings slow."
+price = 70
+damage = 2
+swing_time = 0.55
+reach = 1.0
+parry_window = 0.1

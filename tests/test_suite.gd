@@ -33,6 +33,8 @@ func run() -> void:
 	await test_sky_clears_walls()
 	await test_title_floating_islands()
 	test_decor_on_plain_floor()
+	await test_axe_mace_and_mail()
+	await test_armour_swaps_body()
 	await test_playthrough()
 	await test_free_alcyone_ends_the_demo()
 	print("
@@ -1008,3 +1010,76 @@ func test_decor_on_plain_floor() -> void:
 					fading += 1
 		check(fading == tall, "%s: its %d tall ruin pieces fade when Cedalion is behind them" % [r.id, tall])
 		_free_room(r)
+
+
+## Sathvik's armour sheet adds an axe and a mace: the bronze labrys and the iron koryne, each a
+## 32-angle sprite drawn in Cedalion's hand, and an iron mail shirt; Phineus sells all three.
+func test_axe_mace_and_mail() -> void:
+	print("Labrys, koryne and mail")
+	var shop := ShopPanel.new()
+	var stock: Array = shop._items()
+	for id: String in ["labrys", "koryne", "mail"]:
+		check(Game.SHOP_STOCK.has(id) and stock.has(id), "Phineus sells the %s" % id)
+		check(shop._icon_of(id) == "item_" + id, "the %s has its own shop icon" % id)
+	shop.free()
+	check(Game.armours.has("mail") and Game.armours.mail.hp_bonus == 2, "the mail shirt loads as armour")
+	Game.reset_run()
+	var r := _open_room([])
+	var p := _add_player(r, Vector2i(4, 3))
+	for id: String in ["labrys", "koryne"]:
+		var w: WeaponData = Game.weapons.get(id)
+		check(w != null and w.damage == 2 and w.price > 0, "the %s loads as a weapon" % id)
+		var t := Art.tex("sword_" + id)
+		check(t != null and t.get_width() == 32 * 32 and t.get_height() == 32, "sword_%s is a strip of 32 angles" % id)
+		Game.give_weapon(id)
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		check(p.sword.visible and p.sword.texture == t, "equipping the %s puts it in Cedalion's hand" % id)
+	Game.reset_run()
+	_free_room(r)
+
+
+## Each armour has its own body (art/final/cedalion_<look>_sheet.*, from Sathvik's armour sheet)
+## and putting it on swaps Cedalion's sheet at once; the tunic keeps his own.
+## Every armour sheet must have every move, a sword hand on every frame but a tucked
+## roll, and face the way he moves in every clip but the glance back.
+func test_armour_swaps_body() -> void:
+	print("Armour swaps Cedalion's body")
+	for look: String in Player.ARMOUR_LOOKS.values():
+		var path := "res://art/final/cedalion_%s_sheet.json" % look
+		if not FileAccess.file_exists(path):
+			check(false, "the %s armour has its body sheet" % look)
+			continue
+		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+		var tags := {}
+		for tag in data.meta.frameTags:
+			tags[String(tag.name)] = tag
+		var bad: Array = []
+		for base: String in ["idle", "look", "walk", "attack", "parry", "lunge", "jump", "dodge", "hurt"]:
+			for d: String in ["se", "ne"]:
+				var tag: Variant = tags.get(base + "_" + d)
+				if tag == null:
+					bad.append("no %s_%s" % [base, d])
+					continue
+				for i in range(int(tag.from), int(tag.to) + 1):
+					var f: Dictionary = data.frames[i]
+					if base != "dodge" and not f.has("hand"):
+						bad.append("%s_%s#%d has no hand" % [base, d, i - int(tag.from)])
+					if base != "look" and String(f.get("faces", "")) != "right":
+						bad.append("%s_%s#%d faces %s" % [base, d, i - int(tag.from), f.get("faces", "?")])
+		check(bad.is_empty(), "the %s sheet has every move, hands and facing%s" % [look, "" if bad.is_empty() else " (%s)" % ", ".join(bad)])
+	Game.reset_run()
+	var r := _open_room([])
+	var p := _add_player(r, Vector2i(4, 3))
+	await get_tree().physics_frame
+	check(p.sheet_name == "cedalion", "in the tunic he wears his own sheet")
+	for id: String in Player.ARMOUR_LOOKS:
+		Game.owned[id] = true
+		Game.equip(id)
+		var want := "cedalion_" + String(Player.ARMOUR_LOOKS[id])
+		var expect := want if SheetAnim.load_for(want) != null else "cedalion"
+		check(p.sheet_name == expect, "putting on the %s shows %s (showing %s)" % [id, expect, p.sheet_name])
+	Game.equip("tunic")
+	check(p.sheet_name == "cedalion", "back in the tunic he wears his own sheet again")
+	Game.reset_run()
+	_free_room(r)

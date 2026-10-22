@@ -67,7 +67,14 @@ func _ready() -> void:
 	_obols = UiKit.label("", 16, UiKit.GOLD)
 	purse.add_child(_obols)
 	_rows = UiKit.vbox(4)
-	v.add_child(_rows)
+	_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# The goods scroll (following the focused button) so the full stock fits on screen.
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.follow_focus = true
+	scroll.custom_minimum_size = Vector2(0, 300)
+	scroll.add_child(_rows)
+	v.add_child(scroll)
 	_status = UiKit.label("", 14, UiKit.DIM, HORIZONTAL_ALIGNMENT_CENTER)
 	v.add_child(_status)
 	var buttons := UiKit.hbox(12)
@@ -102,7 +109,7 @@ func _build_rows() -> void:
 	_obols.text = str(Game.obols)
 	var section := ""
 	for id in _items():
-		var kind := "Swords" if Game.weapons.has(id) else ("Armour" if Game.armours.has(id) else "Supplies")
+		var kind := "Weapons" if Game.weapons.has(id) else ("Armour" if Game.armours.has(id) else "Supplies")
 		if kind != section:
 			section = kind
 			_rows.add_child(_section(kind))
@@ -157,7 +164,10 @@ func _section(t: String) -> Control:
 
 func _icon_of(id: String) -> String:
 	var name := "item_" + id
-	return name if ResourceLoader.exists("res://art/greybox/%s.png" % name) else "item_xiphos"
+	for dir in Art.SEARCH:
+		if ResourceLoader.exists(dir + name + ".png"):
+			return name
+	return "item_xiphos"
 
 
 func _is_equipped(id: String) -> bool:

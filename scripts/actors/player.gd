@@ -58,8 +58,15 @@ var _aim_t := 0.0
 var _aim_preview: AimPreview
 var _ghost: Sprite2D
 
+## The body each armour wears: art/final/cedalion_<look>_sheet.* (from Sathvik's armour sheet).
+## The tunic, and any armour whose sheet isn't there, use Cedalion's own sheet. The weapon is
+## always its own sprite, so every armour goes with every weapon.
+const ARMOUR_LOOKS := {"linothorax": "leather", "mail": "mail", "cuirass": "plate"}
+
 ## Frame animations from art/final/cedalion_sheet.* (null = the single stills).
 var _anim: SheetAnim
+## Which sheet _anim came from ("cedalion" or "cedalion_<look>"; "" for the stills).
+var sheet_name := ""
 var _anim_base := ""
 var _anim_t := 0.0
 var _idle_t := 0.0
@@ -99,9 +106,8 @@ func _ready() -> void:
 	add_child(body_node)
 	sprite = Art.feet_sprite("cedalion_se")
 	body_node.add_child(sprite)
-	_anim = SheetAnim.load_for("cedalion")
-	if _anim:
-		sprite.offset = _anim.sprite_offset()
+	_load_body()
+	Game.gear_changed.connect(_load_body)
 	sword = Sprite2D.new()
 	sword.hframes = 32
 	sword.visible = false
@@ -149,6 +155,25 @@ func _ready() -> void:
 	camera.base_offset = Vector2(0, -12)
 	camera.offset = camera.base_offset
 	add_child(camera)
+
+
+## Loads the body sheet for the armour he wears; called again whenever his gear changes, so
+## putting on armour in the shop changes how he looks at once.
+func _load_body() -> void:
+	var look: String = ARMOUR_LOOKS.get(Game.armour_id, "")
+	var want := "cedalion_" + look if look != "" else "cedalion"
+	if want == sheet_name:
+		return
+	var a := SheetAnim.load_for(want)
+	if a == null:
+		want = "cedalion"
+		a = SheetAnim.load_for(want) if sheet_name != want else null
+	if a == null:
+		return
+	_anim = a
+	sheet_name = want
+	_anim_base = ""
+	sprite.offset = _anim.sprite_offset()
 
 
 func set_camera_limits(r: Rect2) -> void:
