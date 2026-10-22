@@ -5,7 +5,7 @@
    "frame": {
     "x": 0,
     "y": 0,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 400,
@@ -23,9 +23,9 @@
   {
    "filename": "cedalion_mail 1",
    "frame": {
-    "x": 26,
+    "x": 34,
     "y": 0,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 400,
@@ -43,9 +43,9 @@
   {
    "filename": "cedalion_mail 2",
    "frame": {
-    "x": 52,
+    "x": 68,
     "y": 0,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 400,
@@ -63,9 +63,9 @@
   {
    "filename": "cedalion_mail 3",
    "frame": {
-    "x": 78,
+    "x": 102,
     "y": 0,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 400,
@@ -83,9 +83,9 @@
   {
    "filename": "cedalion_mail 4",
    "frame": {
-    "x": 104,
+    "x": 136,
     "y": 0,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 150,
@@ -103,9 +103,9 @@
   {
    "filename": "cedalion_mail 5",
    "frame": {
-    "x": 130,
+    "x": 170,
     "y": 0,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 150,
@@ -123,9 +123,9 @@
   {
    "filename": "cedalion_mail 6",
    "frame": {
-    "x": 156,
+    "x": 204,
     "y": 0,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 150,
@@ -143,9 +143,9 @@
   {
    "filename": "cedalion_mail 7",
    "frame": {
-    "x": 182,
+    "x": 238,
     "y": 0,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 150,
@@ -165,127 +165,127 @@
    "frame": {
     "x": 0,
     "y": 30,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 300,
    "torch": {
-    "x": 4,
-    "y": -15
+    "x": -6,
+    "y": -14
    },
    "hand": {
-    "x": -5,
+    "x": 5,
     "y": -7,
-    "angle": -136
+    "angle": -45
    },
    "faces": "right"
   },
   {
    "filename": "cedalion_mail 9",
    "frame": {
-    "x": 26,
+    "x": 34,
     "y": 30,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 300,
    "torch": {
-    "x": -7,
-    "y": -15
+    "x": -6,
+    "y": -16
    },
    "hand": {
-    "x": 7,
+    "x": 6,
     "y": -7,
-    "angle": -44
+    "angle": -45
    },
    "faces": "right"
   },
   {
    "filename": "cedalion_mail 10",
    "frame": {
-    "x": 52,
+    "x": 68,
     "y": 30,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 300,
    "torch": {
-    "x": 6,
-    "y": -15
+    "x": -6,
+    "y": -14
    },
    "hand": {
-    "x": -6,
-    "y": -5,
-    "angle": -136
+    "x": 5,
+    "y": -7,
+    "angle": -45
    },
    "faces": "right"
   },
   {
    "filename": "cedalion_mail 11",
    "frame": {
-    "x": 78,
+    "x": 102,
     "y": 30,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 300,
    "torch": {
     "x": -6,
-    "y": -15
+    "y": -16
    },
    "hand": {
     "x": 6,
     "y": -7,
-    "angle": -44
+    "angle": -45
    },
    "faces": "right"
   },
   {
    "filename": "cedalion_mail 12",
    "frame": {
-    "x": 104,
+    "x": 136,
     "y": 30,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 300,
    "torch": {
-    "x": 4,
-    "y": -15
+    "x": -6,
+    "y": -14
    },
    "hand": {
-    "x": -5,
+    "x": 5,
     "y": -7,
-    "angle": -136
+    "angle": -45
    },
    "faces": "right"
   },
   {
    "filename": "cedalion_mail 13",
    "frame": {
-    "x": 130,
+    "x": 170,
     "y": 30,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 300,
    "torch": {
-    "x": -7,
-    "y": -15
+    "x": -6,
+    "y": -16
    },
    "hand": {
-    "x": 7,
+    "x": 6,
     "y": -7,
-    "angle": -44
+    "angle": -45
    },
    "faces": "right"
   },
   {
    "filename": "cedalion_mail 14",
    "frame": {
-    "x": 156,
+    "x": 204,
     "y": 30,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 300,
@@ -303,9 +303,9 @@
   {
    "filename": "cedalion_mail 15",
    "frame": {
-    "x": 182,
+    "x": 238,
     "y": 30,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 300,
@@ -325,7 +325,7 @@
    "frame": {
     "x": 0,
     "y": 60,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 300,
@@ -343,9 +343,9 @@
   {
    "filename": "cedalion_mail 17",
    "frame": {
-    "x": 26,
+    "x": 34,
     "y": 60,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 300,
@@ -363,9 +363,9 @@
   {
    "filename": "cedalion_mail 18",
    "frame": {
-    "x": 52,
+    "x": 68,
     "y": 60,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 300,
@@ -383,9 +383,9 @@
   {
    "filename": "cedalion_mail 19",
    "frame": {
-    "x": 78,
+    "x": 102,
     "y": 60,
-    "w": 26,
+    "w": 34,
     "h": 30
    },
    "duration": 300,
@@ -405,11 +405,11 @@
   "app": "tools/process_sheet.py",
   "image": "cedalion_mail_sheet.png",
   "size": {
-   "w": 208,
+   "w": 272,
    "h": 90
   },
   "pivot": {
-   "x": 13,
+   "x": 17,
    "y": 29
   },
   "frameTags": [

@@ -192,11 +192,12 @@ CONFIGS = {
 # are mirrored to face screen-right; the back views look away up-right. The sheet's figures stand
 # square to the viewer and barely change pose, so every move is built from these four frames.
 # They hold no torch: one is drawn into the off hand (draw_torch) and its flame recorded.
-ARMOUR_FACES = {"w1": "right", "w2": "left", "w4": "left", "w5": "right"}
+ARMOUR_FACES = {"w1": "right", "w2": "left", "w4": "left", "w5": "right", "a3": "right", "a4": "right"}
 # Leather's boxes and points, in sheet pixels; the other blocks sit lower by their own offsets.
 ARMOUR_BOXES = {
     "w1": (1122, 71, 1162, 147), "w2": (1198, 71, 1237, 146),
     "w4": (1349, 70, 1390, 146), "w5": (1418, 71, 1456, 146),
+    "a3": (1266, 171, 1312, 236), "a4": (1349, 171, 1392, 236),
 }
 # (club tip, club neck, sword hand) - only w1 holds anything (a club, cut out)
 ARMOUR_SWORDS = {
@@ -204,21 +205,24 @@ ARMOUR_SWORDS = {
     "w2": (None, None, (1229, 124)),
     "w4": (None, None, (1384, 127)),
     "w5": (None, None, (1450, 124)),
+    "a3": ((1320, 197), (1302, 215), (1299, 219)),
+    "a4": ((1405, 196), (1385, 216), (1381, 219)),
 }
-ARMOUR_TORCH_HANDS = {"w1": (1129, 124), "w2": (1205, 124), "w4": (1355, 124), "w5": (1417, 124)}
+ARMOUR_TORCH_HANDS = {"w1": (1129, 124), "w2": (1205, 124), "w4": (1355, 124), "w5": (1417, 124),
+                      "a3": (1270, 222), "a4": (1352, 217)}
 # Where each block's figures sit, per frame (found by detect_rows): leather's boxes moved by these.
 ARMOUR_BLOCKS = {
-    "leather": {"w1": (1122, 71), "w2": (1198, 71), "w4": (1349, 70), "w5": (1418, 71)},
-    "mail": {"w1": (1118, 408), "w2": (1195, 408), "w4": (1351, 408), "w5": (1420, 408)},
-    "plate": {"w1": (1121, 756), "w2": (1197, 756), "w4": (1349, 755), "w5": (1418, 755)},
+    "leather": {"w1": (1122, 71), "w2": (1198, 71), "w4": (1349, 70), "w5": (1418, 71), "a3": (1266, 171), "a4": (1349, 171)},
+    "mail": {"w1": (1118, 408), "w2": (1195, 408), "w4": (1351, 408), "w5": (1420, 408), "a3": (1265, 516), "a4": (1350, 517)},
+    "plate": {"w1": (1121, 756), "w2": (1197, 756), "w4": (1349, 755), "w5": (1418, 755), "a3": (1263, 855), "a4": (1351, 855)},
 }
 ARMOUR_TAGS = [
     ("idle_se", ["w2"], 400), ("idle_ne", ["w5"], 400),
     ("look_se", ["w4"], 400), ("look_ne", ["w1"], 400),
     ("walk_se", ["w4", "w2"], 150), ("walk_ne", ["w5", "w1"], 150),
-    ("attack_se", ["w2"], 300), ("attack_ne", ["w5"], 300),
-    ("parry_se", ["w4"], 300), ("parry_ne", ["w1"], 300),
-    ("lunge_se", ["w2"], 300), ("lunge_ne", ["w5"], 300),
+    ("attack_se", ["a3"], 300), ("attack_ne", ["a4"], 300),
+    ("parry_se", ["a3"], 300), ("parry_ne", ["a4"], 300),
+    ("lunge_se", ["a3"], 300), ("lunge_ne", ["a4"], 300),
     ("jump_se", ["w4"], 300), ("jump_ne", ["w1"], 300),
     ("dodge_se", ["w4"], 300), ("dodge_ne", ["w1"], 300),
     ("hurt_se", ["w2"], 300), ("hurt_ne", ["w1"], 300),
@@ -271,7 +275,7 @@ def armour_config(look):
         # front views rest the blade up and back over the shoulder, back views up and forward,
         # like the tunic sheet's walk
         angles={"w2": -136, "w4": -136, "w1": -44, "w5": -44},
-        blade_r=4, guard_r=3, guard_half=0,
+        blade_r=4, guard_r=3, guard_half=4,
         scale=0.40, palette=22, background="paper", is_bg=lambda c: is_paper(c) or is_paper_jpg(c),
         # the leather is the colour of his skin: firmer contrast keeps his face apart from it
         enhance=(1.3, 1.2, 1.5) if look == "leather" else None,
