@@ -30,6 +30,15 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
   moonlit strata cliffs, a jagged underside with roots and ivy, waterfalls off the cistern and
   the statue court; far islands with temple ruins and braziers, and cloud banks, in parallax.
   Stars now show over every room. 11:45, 48% of the 5-hour window, 175 tests pass.
+- `tools/process_sheet.py <name>` replaces the Cedalion-only tool: a hand-made sheet in the same
+  layout drops straight in (frames detected automatically; checked on Cedalion's own sheet).
+- Leaving a room climbs to the next island: the camera rises, the island sinks away, the next
+  one settles into view from above as the dark lifts.
+- Combat feedback: a fighting guard shows his health as pips (a lost pip pops off); a knockout
+  bursts stars and leaves dizzy stars over the fallen head.
+- Adithya asked for hearts instead of stars for health: the HUD draws pixel hearts, and every
+  health line says hearts. (docs/GDD.md, a snapshot of the live doc, still says stars.)
+- 12:00, 56% of the 5-hour window, 175 tests pass. Not pushed: waiting for Adithya's OK.
 
 ; stopped at about 55% of the 5-hour window)
 
