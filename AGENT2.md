@@ -182,7 +182,7 @@ Expected merge conflicts, easy to resolve:
   `art/generated/alcyone_sheet.png` (`SheetSprite.make("alcyone")` picks up an `alcyone_sheet` in
   `art/final/` by itself).
 - 16:20: Sathvik pushed the three design branches by hand, and they are merged into
-  `v1-prototype` here, after the Alcyone ending: the title (`7b3486b`'s parent), the ruin props
+  `v1-prototype` here, after the Alcyone ending: the title (`40d9a1a`), the ruin props
   (`7b3486b`) and the armour with the labrys and koryne (including its WIP commit `b42bce5`). The
   only conflicts were the tests' registration lines and new test functions; all kept. 332 tests
   pass. Checked in screenshots: the new title, and every armour with every weapon (`--script=gear`).
