@@ -70,6 +70,12 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
   `SWORDS` lines in `tools/process_sheet.py` as before and dropping the painted swing arcs; keep
   the current walk and idle (they work, and the new sheet's direction labels don't match its
   rows). Then the chest and Alcyone once their images are in `art/generated/`.
+- 16:20, back after the reset. Sathvik's agent (see AGENT2.md) did the roll, block and get-hit,
+  more mosaics, cracked walls, storeroom clutter, facing fixes, going back and Phineus's dais.
+  Here: Alcyone is bound by the shrine's altar, and freeing her after taking the Belt Star ends
+  the demo on the Dawn Rank card (placeholder art until her sheet is saved). Merged Sathvik's
+  three design branches (the new title, ruin props, armour looks with the labrys and koryne).
+  332 tests pass.
 - 14:39 New session on Sathvik's machine (Godot 4.7.2 installed by winget; Pillow, NumPy and
   SciPy by pip). 175 tests pass; the game runs windowed in the cistern.
 - Cedalion's roll, block and get-hit from `art/generated/cedalion_sheet_v2.jpg`:
