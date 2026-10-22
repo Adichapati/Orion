@@ -225,6 +225,19 @@ const KEY_BORDER := {Vector2i(-1, 0): "floor_key_w", Vector2i(1, 0): "floor_key_
 
 
 func _add_key_border(c: Vector2i, k: String) -> void:
+	# The pool's edge: a coping lip on the stone, and the water shadowed under it.
+	for n in KEY_BORDER:
+		var nk := ch(c + n)
+		var dir: String = String(KEY_BORDER[n]).trim_prefix("floor_key_")
+		var over := ""
+		if k in ".m*xED^" and nk == "W":
+			over = "floor_coping_" + dir
+		elif k == "W" and (nk in ".m*xED^"):
+			over = "water_shade_" + dir
+		if over != "":
+			var o := Art.tile_sprite(over)
+			o.position = cell_center(c)
+			floor_layer.add_child(o)
 	if id == "storerooms" or not (k in ".m*"):
 		return
 	for n in KEY_BORDER:

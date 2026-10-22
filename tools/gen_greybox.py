@@ -237,6 +237,33 @@ def key_border(name, axis, side):
     save(img, name)
 
 
+def edge_band(name, axis, side, width, paint):
+    """An overlay band along one edge of a 32x16 tile, in grid space. paint(a, along) gives the
+    colour at depth a (0 at the edge, 1 at the band's inner side) and position along the edge
+    (0..1), or None for nothing."""
+    img = Image.new("RGBA", (32, 16), CLEAR)
+    for py in range(16):
+        for px in range(32):
+            dx, dy = px + 0.5 - 16, py + 0.5 - 8
+            if abs(dx) / 16 + abs(dy) / 8 > 1.0:
+                continue
+            u, v = dx / 32 + dy / 16, dy / 16 - dx / 32
+            across_g, along = (u, v) if axis == "x" else (v, u)
+            a = (0.5 - across_g * side) / width
+            if 0 <= a <= 1:
+                c = paint(a, along + 0.5)
+                if c:
+                    img.putpixel((px, py), c)
+    save(img, name)
+
+
+# The cistern's pool: a coping lip on the stone beside the water, and the water shadowed under it.
+for n, axis, side in (("w", "x", -1), ("e", "x", 1), ("n", "y", -1), ("s", "y", 1)):
+    edge_band(f"floor_coping_{n}", axis, side, 0.26,
+              lambda a, t: hexc("3e3a36") if a < 0.2 else (P["marble2"] if a < 0.62 else hexc("7a7468")))
+    edge_band(f"water_shade_{n}", axis, side, 0.3,
+              lambda a, t: P["night1"][:3] + (200,) if a < 0.5 else (P["night1"][:3] + (110,) if (a < 0.8) else None))
+
 key_border("floor_key_w", "x", -1)   # wall on the -x side
 key_border("floor_key_e", "x", 1)    # wall on the +x side
 key_border("floor_key_n", "y", -1)   # wall on the -y side
