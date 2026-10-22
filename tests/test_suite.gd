@@ -131,6 +131,8 @@ func test_rooms_build_and_connect() -> void:
 		check(reach, "%s: an exit is reachable from the spawn (walking and 2-tile jumps)" % r.id)
 		r.spawn_guards()
 		check(r.guards.size() == data.get("guards", []).size(), "%s spawns %d guards" % [r.id, r.guards.size()])
+		check(r.get_node_or_null("Island") != null and r.get_node_or_null("Cliffs") != null,
+				"%s stands on its floating island (drawn for its grid size)" % r.id)
 		_free_room(r)
 
 

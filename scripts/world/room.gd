@@ -118,6 +118,7 @@ func build(room_data: Dictionary) -> void:
 		_build_floor(c)
 	for c in order:
 		_build_solid(c)
+	_build_island()
 	_build_ledges()
 	_build_bounds()
 	_build_moonlight()
@@ -500,6 +501,48 @@ func _add_hazard(c: Vector2i) -> void:
 	body.add_child(shape)
 	add_child(body)
 	_hazard_bodies[c] = body
+
+
+## The island the room stands on: a grassy rim around the walls, cliffs and a jagged underside
+## hanging into the sky (tools/gen_islands.py draws it from the grid's size). It sits under the
+## floor, in the room's own light, so torches light its rim.
+func _build_island() -> void:
+	var meta_path := ""
+	for dir in ["res://art/final/", "res://art/greybox/"]:
+		if FileAccess.file_exists(dir + "island_%s.json" % id):
+			meta_path = dir + "island_%s.json" % id
+			break
+	if meta_path == "":
+		return
+	var meta: Variant = JSON.parse_string(FileAccess.get_file_as_string(meta_path))
+	if not (meta is Dictionary):
+		return
+	var g: Array = meta.get("grid", [0, 0])
+	if Vector2i(int(g[0]), int(g[1])) != size:
+		push_warning("Room %s: island art was drawn for a %sx%s grid; re-run tools/gen_islands.py" % [id, g[0], g[1]])
+		return
+	var island := Sprite2D.new()
+	island.name = "Island"
+	island.texture = Art.tex("island_" + id)
+	island.centered = false
+	var o: Array = meta.get("origin", [0, 0])
+	island.position = Vector2(float(o[0]), float(o[1]))
+	island.z_index = -110
+	add_child(island)
+	var cliff := Sprite2D.new()
+	cliff.name = "Cliffs"
+	cliff.texture = Art.tex("island_%s_cliff" % id)
+	cliff.centered = false
+	cliff.position = island.position
+	cliff.z_index = -111
+	cliff.material = Atmosphere.unshaded()
+	add_child(cliff)
+	for f in meta.get("falls", []):
+		var fall := Atmosphere.Waterfall.new()
+		fall.position = Vector2(float(f.x), float(f.y))
+		fall.length = float(f.length)
+		fall.z_index = -105
+		add_child(fall)
 
 
 ## The room is an island: a ring of solid cells just outside the grid seals every edge, so doors
@@ -1069,4 +1112,5 @@ func bounds() -> Rect2:
 	var r := Rect2(pts[0], Vector2.ZERO)
 	for p in pts:
 		r = r.expand(p)
-	return r.grow_individual(24, 56, 24, 24)
+	# Room around the walls for the island's rim, and below for its underside.
+	return r.grow_individual(44, 56, 44, 112)

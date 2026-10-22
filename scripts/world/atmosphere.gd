@@ -14,8 +14,6 @@ const FIRE_2 := Color("ffc857")
 const FIRE_3 := Color("fff1c1")
 const POOL := Color("5fb3b0")
 
-## Rooms under a roof or underground show no stars.
-const ROOFED := ["storerooms", "cistern"]
 
 static var _dot: Texture2D
 static var _water_mat: ShaderMaterial
@@ -44,8 +42,15 @@ static func dress(room: Node2D, room_id: String) -> void:
 	back.name = "Sky"
 	room.add_child(back)
 	var sky := NightSky.new()
-	sky.stars = not (room_id in ROOFED)
 	back.add_child(sky)
+	# Far islands with ruins and lit braziers, and low cloud banks, drifting at their own depths.
+	var distance := CanvasLayer.new()
+	distance.layer = -9
+	distance.name = "Distance"
+	room.add_child(distance)
+	var far := FarSky.new()
+	far.seed_from(room_id)
+	distance.add_child(far)
 	var front := CanvasLayer.new()
 	front.layer = 3
 	front.name = "Vignette"
@@ -245,9 +250,6 @@ class NightSky extends Node2D:
 		queue_redraw()
 
 	func _draw() -> void:
-		if not stars:
-			draw_rect(Rect2(0, 0, 480, 270), NIGHT_0)
-			return
 		draw_texture(_bands, Vector2.ZERO)
 		var cam := get_viewport().get_canvas_transform().origin
 		var shift := Vector2(roundf(cam.x * 0.04), roundf(cam.y * 0.04))
@@ -295,3 +297,103 @@ class NightSky extends Node2D:
 		var n := int(a.distance_to(b) / 3.0)
 		for i in range(1, n):
 			draw_rect(Rect2(a.lerp(b, float(i) / n).round(), Vector2.ONE), c)
+
+
+## The far distance: ruined islands floating in the haze, a brazier or two still burning on them,
+## and banks of moonlit cloud below, each at its own parallax depth. Drawn in screen space behind
+## the room; the camera's movement shifts each layer by its depth.
+class FarSky extends Node2D:
+	# texture name, screen position, parallax depth, bob phase
+	var _islands: Array = []
+	var _fires: Array = []
+	var _clouds: Array = []
+	var _t := 0.0
+	var _rng := RandomNumberGenerator.new()
+	const SPOTS := [
+		[0, Vector2(14, 92), 0.10], [1, Vector2(418, 170), 0.14],
+		[2, Vector2(70, 196), 0.16], [3, Vector2(236, 18), 0.07],
+	]
+
+	func seed_from(room_id: String) -> void:
+		_rng.seed = hash(room_id)
+
+	func _ready() -> void:
+		var meta: Variant = null
+		if FileAccess.file_exists("res://art/greybox/far_islands.json"):
+			meta = JSON.parse_string(FileAccess.get_file_as_string("res://art/greybox/far_islands.json"))
+		# Each room shows the far islands shuffled a little, so the sky isn't the same twice.
+		for s in SPOTS:
+			var i: int = s[0]
+			var tex := Art.tex("far_island_%d" % i)
+			if tex == null:
+				continue
+			var pos: Vector2 = s[1] + Vector2(_rng.randi_range(-18, 18), _rng.randi_range(-10, 10))
+			_islands.append([tex, pos, float(s[2]), _rng.randf() * TAU])
+			if meta is Array and i < meta.size():
+				for f in meta[i].get("fires", []):
+					_fires.append([_islands.size() - 1, Vector2(float(f[0]), float(f[1])), _rng.randf() * TAU])
+		for i in 3:
+			var tex := Art.tex("cloud_%d" % i)
+			if tex:
+				# texture, y, parallax depth, drift speed (px/s), x offset
+				_clouds.append([tex, [214.0, 236.0, 252.0][i], [0.2, 0.28, 0.38][i], [2.0, -3.0, 4.5][i], _rng.randf() * 480.0])
+
+	func _process(delta: float) -> void:
+		_t += delta
+		queue_redraw()
+
+	func _draw() -> void:
+		var cam := get_viewport().get_canvas_transform().origin
+		for isl in _islands:
+			var depth: float = isl[2]
+			var bob := roundf(sin(_t * 0.6 + float(isl[3])) * 1.5)
+			var p: Vector2 = isl[1] + Vector2(roundf(cam.x * depth), roundf(cam.y * depth) + bob)
+			draw_texture(isl[0], p)
+		for f in _fires:
+			var isl: Array = _islands[f[0]]
+			var depth: float = isl[2]
+			var bob := roundf(sin(_t * 0.6 + float(isl[3])) * 1.5)
+			var p: Vector2 = isl[1] + Vector2(roundf(cam.x * depth), roundf(cam.y * depth) + bob) + (f[1] as Vector2)
+			var flick := 0.7 + 0.3 * sin(_t * 9.0 + float(f[2])) * sin(_t * 5.3 + float(f[2]) * 2.0)
+			draw_circle(p, 5.0, Color(FIRE_1, 0.08 * flick))
+			draw_circle(p, 3.0, Color(FIRE_1, 0.14 * flick))
+			draw_rect(Rect2(p - Vector2(0, 1), Vector2(1, 2)), Color(FIRE_2, flick))
+			draw_rect(Rect2(p + Vector2(-1, 1), Vector2(3, 1)), Color(FIRE_1, 0.9))
+		for c in _clouds:
+			var tex: Texture2D = c[0]
+			var depth: float = c[2]
+			var x := fposmod(float(c[4]) + _t * float(c[3]) + cam.x * depth, 480.0)
+			var y := float(c[1]) + roundf(cam.y * depth)
+			draw_texture(tex, Vector2(roundf(x) - 480.0, y))
+			draw_texture(tex, Vector2(roundf(x), y))
+
+
+## A thin stream of water pouring off the island's edge into the void: streaks run down it and
+## it frays into mist as it falls.
+class Waterfall extends Node2D:
+	var length := 100.0
+	var _t := 0.0
+
+	func _ready() -> void:
+		material = Atmosphere.unshaded()
+
+	func _process(delta: float) -> void:
+		_t += delta
+		queue_redraw()
+
+	func _draw() -> void:
+		var n := int(length)
+		for y in n:
+			var k := float(y) / n
+			# it widens a little and thins out as it falls
+			var half := 1 + int(k * 2.5)
+			for x in range(-half, half + 1):
+				var phase := fposmod(y - _t * 46.0 + x * 7.0, 11.0)
+				var a := (0.7 if phase < 2.5 else 0.42) * (1.0 - k * 0.9)
+				if k > 0.5 and (x + y) % 2 == 0:
+					continue
+				var c := MOON_1 if phase < 2.0 else MOON_0
+				c.a = a * (0.8 if absi(x) == half else 1.0)
+				draw_rect(Rect2(Vector2(x, y), Vector2.ONE), c)
+		# a lip of white where it spills over
+		draw_rect(Rect2(Vector2(-2, -1), Vector2(5, 1)), Color(MOON_1, 0.6))

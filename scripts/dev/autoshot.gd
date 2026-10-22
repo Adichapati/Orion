@@ -185,6 +185,12 @@ const SCRIPTS := {
 		[3.33, "shot", "", "down2"],
 		[3.4, "shot", "", "down3"],
 	],
+	# The island from its front corner, where the underside shows.
+	"vista": [
+		[0.4, "call", "goto_corner"],
+		[1.2, "shot", "", "corner"],
+		[6.5, "shot", "", "corner_later"],
+	],
 	"pause": [
 		[1.0, "tap", "pause"],
 		[1.5, "shot", "", "paused"],
@@ -264,6 +270,10 @@ func _run(e: Array) -> void:
 				_run([0, "shot", "", "strike"])
 			elif e[2] == "goto" and main.room:
 				main.player.global_position = main.room.cell_center(e[3])
+				main.player.camera.reset_smoothing()
+			elif e[2] == "goto_corner" and main.room:
+				var c: Vector2i = main.room.nearest_walkable(main.room.size - Vector2i(2, 2))
+				main.player.global_position = main.room.cell_center(c)
 				main.player.camera.reset_smoothing()
 			elif e[2] == "info" and main.room:
 				var f: Interactable = main.player.focus
