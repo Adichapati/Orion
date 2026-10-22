@@ -46,17 +46,18 @@ COLS = 8
 
 # (box in the sheet, mirror?, kind) - boxes found by scanning the sheet; mirror normalises facing:
 # front views must look toward screen-right (SE) and back views away up-right (NE). The sheet's
-# front idle and walk poses already look right (the sword in his right hand on our left, the
-# torch on our right); mirroring them made him walk one way while looking the other.
+# front idle and walk poses look toward screen-LEFT (eyes on the left of the face, the ear on the
+# right), so they are mirrored, which also puts the sword on the same side as in the attack
+# frames. Left unmirrored (as on 2026-10-22 morning) he walked one way while looking the other.
 BOXES = {
-    "idle_f": ((60, 50, 280, 222), False, "stand"),
-    "idle_f2": ((380, 50, 590, 222), False, "stand"),
+    "idle_f": ((60, 50, 280, 222), True, "stand"),
+    "idle_f2": ((380, 50, 590, 222), True, "stand"),
     "idle_b": ((640, 50, 880, 222), False, "stand"),
     "idle_b2": ((950, 50, 1190, 222), False, "stand"),
-    "walk_f0": ((15, 275, 182, 429), False, "stand"),
-    "walk_f1": ((191, 274, 320, 430), False, "stand"),
-    "walk_f2": ((327, 274, 458, 430), False, "stand"),
-    "walk_f3": ((462, 274, 596, 430), False, "stand"),
+    "walk_f0": ((15, 275, 182, 429), True, "stand"),
+    "walk_f1": ((191, 274, 320, 430), True, "stand"),
+    "walk_f2": ((327, 274, 458, 430), True, "stand"),
+    "walk_f3": ((462, 274, 596, 430), True, "stand"),
     "walk_b0": ((638, 276, 780, 429), True, "stand"),
     "walk_b1": ((775, 276, 912, 429), True, "stand"),
     "walk_b2": ((912, 276, 1051, 430), True, "stand"),
@@ -109,10 +110,12 @@ BOXES_V2 = {
     "roll0": ((161, 641, 229, 707), False, "stand"),
     "roll1": ((266, 638, 338, 705), False, "stand"),
     "roll2": ((383, 635, 454, 705), False, "stand"),
-    "block_f": ((698, 626, 771, 704), False, "stand"),
+    # the front block looks left like the first sheet's front views, so it is mirrored too
+    "block_f": ((698, 626, 771, 704), True, "stand"),
     # the back views hold the sword on the left: mirrored to match the first sheet's back views
     "block_b": ((962, 628, 1042, 704), True, "stand"),
-    "hurt_f": ((537, 779, 608, 862), True, "stand"),
+    # the flinch already holds the sword on our right, like the (mirrored) front views
+    "hurt_f": ((537, 779, 608, 862), False, "stand"),
     "hurt_b": ((609, 778, 694, 854), False, "stand"),
 }
 SWORDS_V2 = {

@@ -97,6 +97,19 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
   and top untouched. Storeroom clutter, looks only and placed by hand against the walls
   (`Room.CLUTTER`): burlap grain sacks, plank crates, a coil of rope and spilled grain. Test:
   clutter stands on plain floor clear of cracks, doors, chests and marks. 209 tests pass.
+- 15:26 Bug (Sathvik: "when I move left the character also faces right"): the first sheet's front
+  idle and walk poses look screen-LEFT (eyes on the left of the face, the ear on the right), but
+  were used unmirrored as the screen-right views, so he walked one way looking the other and
+  turned round when he swung. They (and the front block) are mirrored again; every clip now holds
+  the sword on the side he faces. Test: every frame's sword hand is on the facing side and the
+  torch on the other; walking left mirrors the walk.
+- Sky nits (a Sonnet screenshot tour of every room found them): far islands showed just over the
+  back walls in four rooms (the pavilion island looked built on the storerooms' and cistern's
+  walls), and Orion was hidden in the statue court and the star shrine. `Atmosphere.skyline()`
+  projects the back walls' top edge to the screen; a far island that would peek eases up clear or
+  sinks behind the walls, and Orion moves to the nearest open sky (up, then sideways, at 80% if
+  tight) clear of the moon and the HUD. Test: from each room's north end Orion clears the walls
+  and no island rests on them. 229 tests pass.
 
 ; stopped at about 55% of the 5-hour window)
 

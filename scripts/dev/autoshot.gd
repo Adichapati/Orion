@@ -216,6 +216,24 @@ const SCRIPTS := {
 		[5.37, "shot", "", "back_hurt_c"],
 		[5.6, "call", "untrace"],
 	],
+	# Walk each of the four ways in turn, tracing the frame and mirroring every frame.
+	"turns": [
+		[0.5, "call", "give_sword"],
+		[0.6, "call", "trace"],
+		[0.7, "press", "move_left"],
+		[1.5, "shot", "", "left"],
+		[1.7, "release", "move_left"],
+		[1.9, "press", "move_right"],
+		[2.7, "shot", "", "right"],
+		[2.9, "release", "move_right"],
+		[3.1, "press", "move_up"],
+		[3.9, "shot", "", "up"],
+		[4.1, "release", "move_up"],
+		[4.3, "press", "move_down"],
+		[5.1, "shot", "", "down"],
+		[5.3, "release", "move_down"],
+		[5.4, "call", "untrace"],
+	],
 	# Stand by the Lion Gate's first cracked wall (3, 0), to look at its cracks.
 	"ruins": [
 		[0.5, "call", "goto", Vector2i(3, 2)],

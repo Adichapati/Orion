@@ -42,6 +42,7 @@ static func dress(room: Node2D, room_id: String) -> void:
 	back.name = "Sky"
 	room.add_child(back)
 	var sky := NightSky.new()
+	sky.room = room
 	back.add_child(sky)
 	# Far islands with ruins and lit braziers, and low cloud banks, drifting at their own depths.
 	var distance := CanvasLayer.new()
@@ -49,6 +50,7 @@ static func dress(room: Node2D, room_id: String) -> void:
 	distance.name = "Distance"
 	room.add_child(distance)
 	var far := FarSky.new()
+	far.room = room
 	far.seed_from(room_id)
 	distance.add_child(far)
 	var front := CanvasLayer.new()
@@ -202,6 +204,60 @@ void fragment() {
 	return _water_mat
 
 
+## How far tall back walls rise above their cell's ground diamond, in pixels (wall_tall is 32x48).
+const WALL_RISE := 32.0
+
+
+## The top edge of the room's back walls on screen (viewport pixels), from its left corner over
+## the top corner to its right corner: below it the room hides the sky. A wall's top diamond peaks
+## 8 px above its cell's centre. Empty before the room is built.
+static func skyline(room: Node2D, xf: Transform2D) -> PackedVector2Array:
+	if room == null or not room.has_method("cell_center"):
+		return PackedVector2Array()
+	var size: Vector2i = room.get("size")
+	if size.x <= 0 or size.y <= 0:
+		return PackedVector2Array()
+	var left: Vector2 = room.cell_center(Vector2i(0, size.y - 1)) + Vector2(-16, -WALL_RISE)
+	var top: Vector2 = room.cell_center(Vector2i(0, 0)) + Vector2(0, -WALL_RISE - 8)
+	var right: Vector2 = room.cell_center(Vector2i(size.x - 1, 0)) + Vector2(16, -WALL_RISE)
+	return PackedVector2Array([xf * room.to_global(left), xf * room.to_global(top), xf * room.to_global(right)])
+
+
+## The skyline's highest and lowest y over the screen columns x0..x1 (x: highest, y: lowest), or
+## (INF, INF) where it doesn't reach them.
+static func skyline_span(line: PackedVector2Array, x0: float, x1: float) -> Vector2:
+	var hi_y := INF
+	var lo_y := -INF
+	for i in range(line.size() - 1):
+		var a := line[i]
+		var b := line[i + 1]
+		var lo := maxf(x0, minf(a.x, b.x))
+		var hi := minf(x1, maxf(a.x, b.x))
+		if lo > hi:
+			continue
+		for x: float in [lo, hi]:
+			var t: float = 0.0 if is_equal_approx(a.x, b.x) else (x - a.x) / (b.x - a.x)
+			var y := lerpf(a.y, b.y, t)
+			hi_y = minf(hi_y, y)
+			lo_y = maxf(lo_y, y)
+	return Vector2(hi_y, lo_y) if hi_y != INF else Vector2(INF, INF)
+
+
+## A sky object spanning screen box `r` "peeks" when part of it shows just over the room's walls,
+## as if resting on them. Returns the vertical shift that fixes it: up (negative) until it clears
+## the walls by `margin`, or down (positive) until the walls hide it, whichever is shorter; 0 if
+## it doesn't peek. `max_up` caps the lift (Orion must stay on screen).
+static func unpeek(line: PackedVector2Array, r: Rect2, margin: float, max_up := INF) -> float:
+	var span := skyline_span(line, r.position.x, r.end.x)
+	if span.x == INF or r.end.y <= span.x - margin or r.position.y >= span.y:
+		return 0.0
+	var up := r.end.y - (span.x - margin)
+	var down := span.y - r.position.y + 1.0
+	if up <= down and up <= max_up:
+		return -up
+	return down
+
+
 ## Where Orion hangs: high in the east at the start of the run, low in the west at the end.
 static func orion_progress() -> float:
 	var rooms := maxf(1.0, float(Game.rooms.size()))
@@ -211,8 +267,16 @@ static func orion_progress() -> float:
 
 class NightSky extends Node2D:
 	var stars := true
+	## The room whose walls Orion must clear (null on the title screen).
+	var room: Node2D
+	## Orion's stars on screen this frame (viewport pixels), for tests.
+	var orion_box := Rect2()
 	var _field: Array = []
 	var _t := 0.0
+	var _off := Vector2.ZERO
+	var _off_set := false
+	var _moon := Vector2(70, 34)
+	var _scale := 1.0
 	static var _bands: Texture2D
 
 	# Orion's main stars (x right, y down, in "units"; north is up): name, position, size, colour.
@@ -264,6 +328,7 @@ class NightSky extends Node2D:
 			draw_rect(Rect2(p.round(), Vector2.ONE), c)
 		# The moon, top left, with a soft halo.
 		var moon := Vector2(70, 34) + shift
+		_moon = moon
 		for r in [14, 11]:
 			draw_circle(moon, r, Color(MOON_0, 0.06 if r == 14 else 0.08))
 		draw_circle(moon, 6, MOON_1)
@@ -274,6 +339,23 @@ class NightSky extends Node2D:
 		# (Kept to the top right, which the rooms leave open.)
 		var centre := Vector2(lerpf(360.0, 440.0, k), lerpf(46.0, 120.0, k)) + shift
 		var unit := 15.0
+		# Where a room's back walls rise into his corner (the statue court, the star shrine), he
+		# moves to the nearest open patch of sky above them (up first, then sideways) instead of
+		# setting behind them, and stays there until the walls cover it; he never leaves the screen.
+		# Where even that is too tight he draws a little smaller.
+		var want := _off
+		if room:
+			var line := Atmosphere.skyline(room, get_viewport().get_canvas_transform())
+			if not _fits(line, centre + _off, unit * _scale):
+				var spot := _find_spot(line, centre, unit)
+				if spot.z > 0.0:
+					want = Vector2(spot.x, spot.y)
+					_scale = spot.z
+		_off = want if not _off_set else _off.move_toward(want, 240.0 * get_process_delta_time())
+		_off_set = true
+		centre += _off.round()
+		unit *= _scale
+		orion_box = _stars_box(centre, unit)
 		var pts: Array = []
 		for st in ORION:
 			pts.append((centre + (st[1] as Vector2) * unit).round())
@@ -295,6 +377,36 @@ class NightSky extends Node2D:
 				_:
 					draw_rect(Rect2(p, Vector2.ONE), Color(c, 0.8 * pulse))
 
+	## The box round Orion's stars when centred at `c`.
+	func _stars_box(c: Vector2, unit: float) -> Rect2:
+		return Rect2(c + Vector2(-1.15, -2.15) * unit, Vector2(2.3, 3.75) * unit).grow(2.0)
+
+	## Orion centred at `c` is wholly on screen and clear of the room's walls.
+	func _fits(line: PackedVector2Array, c: Vector2, unit: float) -> bool:
+		var b := _stars_box(c, unit)
+		var view := get_viewport_rect().size
+		if b.position.x < 2.0 or b.position.y < 2.0 or b.end.x > view.x - 2.0:
+			return false
+		# clear of the moon and of the HUD along the top: hearts, the objective line, the obols
+		for keep_out in [Rect2(_moon - Vector2(16, 16), Vector2(32, 32)), Rect2(0, 0, 64, 18),
+				Rect2(90, 0, 300, 16), Rect2(440, 0, 40, 18)]:
+			if b.intersects(keep_out):
+				return false
+		var span := Atmosphere.skyline_span(line, b.position.x, b.end.x)
+		return span.x == INF or b.end.y <= span.x - 6.0
+
+	## The smallest move from `c` that puts Orion in open sky (up first, then sideways), full size
+	## if he fits, else at 80%: (dx, dy, scale), or scale 0 if the walls fill the sky.
+	func _find_spot(line: PackedVector2Array, c: Vector2, unit: float) -> Vector3:
+		for sc in [1.0, 0.8]:
+			for i in 41:
+				var dx := 12.0 * ceilf(i / 2.0) * (1.0 if i % 2 == 1 else -1.0)
+				for k in 16:
+					var d := Vector2(dx, -8.0 * k)
+					if _fits(line, c + d, unit * sc):
+						return Vector3(d.x, d.y, sc)
+		return Vector3.ZERO
+
 	func _dotted(a: Vector2, b: Vector2, c: Color) -> void:
 		var n := int(a.distance_to(b) / 3.0)
 		for i in range(1, n):
@@ -305,8 +417,11 @@ class NightSky extends Node2D:
 ## and banks of moonlit cloud below, each at its own parallax depth. Drawn in screen space behind
 ## the room; the camera's movement shifts each layer by its depth.
 class FarSky extends Node2D:
-	# texture name, screen position, parallax depth, bob phase
+	## The room whose walls the islands must not rest on.
+	var room: Node2D
+	# texture name, screen position, parallax depth, bob phase, vertical shift off the walls
 	var _islands: Array = []
+	var _shift_set := false
 	var _fires: Array = []
 	var _clouds: Array = []
 	var _t := 0.0
@@ -330,7 +445,7 @@ class FarSky extends Node2D:
 			if tex == null:
 				continue
 			var pos: Vector2 = s[1] + Vector2(_rng.randi_range(-18, 18), _rng.randi_range(-10, 10))
-			_islands.append([tex, pos, float(s[2]), _rng.randf() * TAU])
+			_islands.append([tex, pos, float(s[2]), _rng.randf() * TAU, 0.0])
 			if meta is Array and i < meta.size():
 				for f in meta[i].get("fires", []):
 					_fires.append([_islands.size() - 1, Vector2(float(f[0]), float(f[1])), _rng.randf() * TAU])
@@ -342,20 +457,39 @@ class FarSky extends Node2D:
 
 	func _process(delta: float) -> void:
 		_t += delta
+		# An island that would show just over the room's walls, as if resting on them, eases up
+		# clear of them or sinks out of sight behind them, whichever is the shorter way.
+		var line := Atmosphere.skyline(room, get_viewport().get_canvas_transform()) if room else PackedVector2Array()
+		for isl in _islands:
+			var r := _box(isl, 0.0)
+			var want: float = float(isl[4]) + Atmosphere.unpeek(line, r.grow(1.0), 4.0) if not line.is_empty() else 0.0
+			# keep an island that is already clear where it is, rather than drifting back
+			if not line.is_empty() and Atmosphere.unpeek(line, _box(isl, 0.0, 0.0).grow(1.0), 4.0) == 0.0:
+				want = 0.0
+			isl[4] = want if not _shift_set else move_toward(float(isl[4]), want, 160.0 * delta)
+		_shift_set = true
 		queue_redraw()
+
+	## Where an island is drawn this frame (its texture's box), with `shift` instead of its own.
+	func _box(isl: Array, extra: float, shift: Variant = null) -> Rect2:
+		var cam := get_viewport().get_canvas_transform().origin
+		var depth: float = isl[2]
+		var bob := roundf(sin(_t * 0.6 + float(isl[3])) * 1.5)
+		var s: float = float(isl[4]) if shift == null else float(shift)
+		var p: Vector2 = isl[1] + Vector2(roundf(cam.x * depth), roundf(cam.y * depth) + bob + roundf(s) + extra)
+		return Rect2(p, (isl[0] as Texture2D).get_size())
+
+	## Every far island's box on screen this frame, for tests.
+	func island_boxes() -> Array:
+		return _islands.map(func(isl): return _box(isl, 0.0))
 
 	func _draw() -> void:
 		var cam := get_viewport().get_canvas_transform().origin
 		for isl in _islands:
-			var depth: float = isl[2]
-			var bob := roundf(sin(_t * 0.6 + float(isl[3])) * 1.5)
-			var p: Vector2 = isl[1] + Vector2(roundf(cam.x * depth), roundf(cam.y * depth) + bob)
-			draw_texture(isl[0], p)
+			draw_texture(isl[0], _box(isl, 0.0).position)
 		for f in _fires:
 			var isl: Array = _islands[f[0]]
-			var depth: float = isl[2]
-			var bob := roundf(sin(_t * 0.6 + float(isl[3])) * 1.5)
-			var p: Vector2 = isl[1] + Vector2(roundf(cam.x * depth), roundf(cam.y * depth) + bob) + (f[1] as Vector2)
+			var p: Vector2 = _box(isl, 0.0).position + (f[1] as Vector2)
 			var flick := 0.7 + 0.3 * sin(_t * 9.0 + float(f[2])) * sin(_t * 5.3 + float(f[2]) * 2.0)
 			draw_circle(p, 5.0, Color(FIRE_1, 0.08 * flick))
 			draw_circle(p, 3.0, Color(FIRE_1, 0.14 * flick))

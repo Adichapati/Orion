@@ -18,6 +18,7 @@ func run() -> void:
 	await test_rooms_are_sealed()
 	await test_interactables_reachable()
 	await test_cedalion_sword()
+	test_cedalion_faces_where_he_walks()
 	await test_cedalion_moves()
 	await test_guard_animation()
 	await test_guard_sees_player()
@@ -27,6 +28,7 @@ func run() -> void:
 	await test_shove_into_pit()
 	await test_duel_parry_and_hit()
 	await test_shop_buy_and_equip()
+	await test_sky_clears_walls()
 	await test_playthrough()
 	print("
 %d passed, %d failed" % [_passed, _failed])
@@ -364,6 +366,32 @@ func test_cedalion_sword() -> void:
 	_free_room(r)
 
 
+## Bug (Sathvik: "when I move left the character also faces right"): the sheet's front idle and
+## walk poses look screen-left, but were used as the screen-right (SE) views, so he walked one way
+## looking the other and turned round whenever he swung. Every frame of every clip now faces the
+## same way as the attack: sword hand on the screen-right of his feet, torch on the left.
+func test_cedalion_faces_where_he_walks() -> void:
+	print("Cedalion faces where he walks")
+	var anim := SheetAnim.load_for("cedalion")
+	if anim == null:
+		check(false, "Cedalion has an animation sheet")
+		return
+	var wrong: Array = []
+	for name in anim.clips:
+		var clip: SheetAnim.Clip = anim.clips[name]
+		for i in clip.frames.size():
+			var h: Variant = clip.hand[i]
+			var t: Variant = clip.torch[i]
+			if h != null and h.x <= 0.0:
+				wrong.append("%s#%d sword at x %d" % [name, i, h.x])
+			if t != null and h != null and t.x >= 0.0:
+				wrong.append("%s#%d torch at x %d" % [name, i, t.x])
+	check(wrong.is_empty(), "every frame holds the sword on the side he faces and the torch on the other%s" % ("" if wrong.is_empty() else " (%s)" % ", ".join(wrong)))
+	# Walking left mirrors the front walk, walking right doesn't: so he faces the way he goes.
+	check(anim.pick("walk", Vector2(-1, 0)).flip and not anim.pick("walk", Vector2(1, 0)).flip,
+			"walking left mirrors the walk, walking right shows it as drawn")
+
+
 ## Cedalion's dodge was a walk frame, his parry the attack's wind-up and his get-hit the idle pose.
 ## Adithya's fuller sheet adds a tucked roll, a braced block and a flinch: the roll plays once over
 ## the dodge with the blade hidden, and a hit shows the flinch.
@@ -659,6 +687,40 @@ func _door(r: Room, verb: String) -> Interactable:
 
 
 ## Drives the real main scene: walks every exit, the shop, the star-shrine escape and a death.
+## Bug: Orion, the run's clock, hid behind the star shrine's back walls, and far islands sometimes
+## showed just over a room's walls as if resting on them. Orion now lifts clear of the walls' top
+## edge on screen, and a far island that would peek lifts clear or sinks out of sight behind them.
+func test_sky_clears_walls() -> void:
+	print("Sky over the walls")
+	var main: Node = load("res://scenes/main.tscn").instantiate()
+	add_child(main)
+	await get_tree().process_frame
+	Game.reset_run()
+	for i in Game.rooms.size():
+		main.load_room(i)
+		var r: Room = main.room
+		# At the room's north end, where the view shows the sky over the back walls (from the
+		# spawn the statue court and the shrine fill the screen right up to its top edge).
+		main.player.global_position = r.cell_center(r.nearest_walkable(Vector2i(r.size.x / 2, 1)))
+		main.player.camera.reset_smoothing()
+		await _seconds(1.5)
+		var sky: Atmosphere.NightSky = r.get_node("Sky").get_child(0)
+		var far: Atmosphere.FarSky = r.get_node("Distance").get_child(0)
+		var line := Atmosphere.skyline(r, r.get_viewport().get_canvas_transform())
+		var o: Rect2 = sky.orion_box
+		var span := Atmosphere.skyline_span(line, o.position.x, o.end.x)
+		check(o.size.x > 0 and (span.x == INF or o.end.y <= span.x), "%s: Orion clears the walls (stars %s, walls top at %.0f)" % [r.id, o, span.x])
+		check(o.position.y >= 0.0, "%s: ...and stays on screen" % r.id)
+		var peeking: Array = []
+		for b in far.island_boxes():
+			if Atmosphere.unpeek(line, b, 0.0) != 0.0:
+				peeking.append(b)
+		check(peeking.is_empty(), "%s: no far island rests on the walls%s" % [r.id, "" if peeking.is_empty() else " (%s)" % [peeking]])
+	main.queue_free()
+	await get_tree().process_frame
+	Game.reset_run()
+
+
 func test_playthrough() -> void:
 	print("Play-through")
 	var main: Node = load("res://scenes/main.tscn").instantiate()
