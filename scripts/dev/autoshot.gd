@@ -191,6 +191,15 @@ const SCRIPTS := {
 		[1.2, "shot", "", "corner"],
 		[6.5, "shot", "", "corner_later"],
 	],
+	# Leaving by the exit: the climb to the next island.
+	"transition": [
+		[0.8, "call", "use_exit"],
+		[1.05, "shot", "", "leave1"],
+		[1.3, "shot", "", "leave2"],
+		[1.55, "shot", "", "arrive1"],
+		[1.8, "shot", "", "arrive2"],
+		[2.3, "shot", "", "arrive3"],
+	],
 	"pause": [
 		[1.0, "tap", "pause"],
 		[1.5, "shot", "", "paused"],
@@ -271,6 +280,11 @@ func _run(e: Array) -> void:
 			elif e[2] == "goto" and main.room:
 				main.player.global_position = main.room.cell_center(e[3])
 				main.player.camera.reset_smoothing()
+			elif e[2] == "use_exit" and main.room:
+				for it in main.room.interactables:
+					if is_instance_valid(it) and it.verb == "Enter":
+						it.used.emit(main.player)
+						break
 			elif e[2] == "goto_corner" and main.room:
 				var c: Vector2i = main.room.nearest_walkable(main.room.size - Vector2i(2, 2))
 				main.player.global_position = main.room.cell_center(c)

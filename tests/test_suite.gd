@@ -606,7 +606,8 @@ func test_playthrough() -> void:
 		var exit := _door(r, "Enter")
 		check(exit != null, "%s has a usable exit" % r.id)
 		exit.use(main.player)
-		await _seconds(0.6)
+		# The climb to the next island: the camera rises for about half a second first.
+		await _seconds(0.9)
 	check(main._screen is EndCard, "the last exit shows the Dawn Rank end card")
 	check(Game.stats.end_msec > 0, "...and the run's clock stops")
 

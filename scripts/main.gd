@@ -118,7 +118,7 @@ func _clear_room() -> void:
 
 
 ## Builds room `index` from Game.rooms and drops Cedalion at its entrance.
-func load_room(index: int) -> void:
+func load_room(index: int, arrive := false) -> void:
 	_clear_room()
 	_set_screen(null)
 	Game.room_index = index
@@ -149,7 +149,25 @@ func load_room(index: int) -> void:
 	hud.show_room(room.id, room.display_name)
 	Sfx.start_music()
 	Sfx.set_ambience({"storerooms": "indoor", "cistern": "cistern"}.get(room.id, "night"))
-	_fade(false)
+	if arrive:
+		# Arriving from below: the island settles into place as the dark lifts.
+		var cam := player.camera
+		var base := cam.base_offset
+		cam.base_offset.y = base.y + RISE_PX
+		player.lock(true)
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(cam, "base_offset:y", base.y, 0.8).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tw.tween_property(_fader, "color:a", 0.0, 0.4)
+		tw.chain().tween_callback(func():
+			if player and is_instance_valid(player) and player.state == Player.S.LOCKED and _menu == null:
+				player.lock(false))
+	else:
+		_fade(false)
+
+
+## The climb between islands: the camera rises, so this island sinks away below and the next one
+## comes down into view from above, the sky's layers sliding past at their own depths.
+const RISE_PX := 150.0
 
 
 func _on_exit_reached() -> void:
@@ -158,10 +176,15 @@ func _on_exit_reached() -> void:
 	_busy = true
 	player.lock(true)
 	Sfx.play("ui_select")
-	await _fade(true)
+	var cam := player.camera
+	var base := cam.base_offset
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(cam, "base_offset:y", base.y - RISE_PX, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tw.tween_property(_fader, "color:a", 1.0, 0.3).set_delay(0.25)
+	await tw.finished
 	Game.take_snapshot()
 	if Game.room_index + 1 < Game.rooms.size():
-		load_room(Game.room_index + 1)
+		load_room(Game.room_index + 1, true)
 	else:
 		Game.finish_run()
 		_show_end()
