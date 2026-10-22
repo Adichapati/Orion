@@ -452,6 +452,15 @@ def amb_indoor():
     return loopify(wind(total, 0.3, 0.025, [(1, 0.3, 0.0), (2, 0.2, 1.0), (4, 0.1, 2.5)]))
 
 
+def rise():
+    """The climb between islands: a rush of air that swells and fades, an airy tone rising under
+    it, and a soft lyre chord as the next island settles."""
+    air = noise(1.1, 0.5, lp=0.12, attack=0.45, curve=2.0)
+    lift = tone(196, 1.0, "sine", 0.12, slide=196, attack=0.3, curve=2.0)
+    chord = mix(pluck(hz(12), 1.0, 0.22), pluck(hz(19), 0.9, 0.16), pluck(hz(24), 0.8, 0.12), offsets=[0.0, 0.07, 0.14])
+    return mix(air, lift, chord, offsets=[0.0, 0.05, 0.62])
+
+
 if __name__ == "__main__":
     random.seed(7)  # the same files every run, so regenerating doesn't churn git
     names = effects()
@@ -463,3 +472,5 @@ if __name__ == "__main__":
     write(AMBIENCE / "cistern.wav", amb_cistern(), peak=0.5)
     write(AMBIENCE / "indoor.wav", amb_indoor(), peak=0.5)
     print("ambience: night.wav, cistern.wav, indoor.wav in", AMBIENCE)
+    # Added last, so every file above keeps its random stream and stays byte-identical.
+    write(SFX / "rise.wav", rise(), peak=0.6)

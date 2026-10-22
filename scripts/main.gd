@@ -175,7 +175,7 @@ func _on_exit_reached() -> void:
 		return
 	_busy = true
 	player.lock(true)
-	Sfx.play("ui_select")
+	Sfx.play("rise", null, -3.0, 0.0)
 	var cam := player.camera
 	var base := cam.base_offset
 	var tw := create_tween().set_parallel(true)
