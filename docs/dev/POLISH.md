@@ -45,6 +45,18 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
 - Adithya asked for full screen: the game starts full screen and scales fractionally to fill any
   screen (it scaled by whole numbers only, so a 1366x768 laptop showed it at 1x in a black
   window). F11 toggles; `-- --windowed` starts windowed; screenshot runs stay windowed.
+- A Sonnet agent toured every room in screenshots: no layering bugs. Fixed what it found: the
+  sky's haze had a hard top edge (now dithered in), and the bigger objective line sat over
+  sprites (now on a dark strip). Pushed at 6a997f3, tagged locally as demo-checkpoint-1.
+- Environment pass (Adithya: "biggest payoff first"), all in the generators and `Room`:
+  a Greek fret frieze under the top of every tall wall; a Greek-key border on floors where they
+  meet walls (not on cracked marble, not in the storerooms); a coping lip and shadowed water
+  round the cistern's pool, and coping round the statue court's fountain; ruined column stumps,
+  a drum and a fallen column on every island rim; Vergina-sun medallions before the Lion Gate
+  and in the colonnade. 13:00, 82% of the 5-hour window, 175 tests pass.
+- Waiting on Adithya: the princess (Alcyone) and chest reference images saved to
+  `art/generated/`, and where Alcyone should appear (suggested: chained by the shrine's altar).
+  Next after the reset (15:50): the chest art, Alcyone, a broken-wall variant, more medallions.
 
 ; stopped at about 55% of the 5-hour window)
 
