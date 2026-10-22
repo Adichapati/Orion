@@ -73,8 +73,8 @@ func _ready() -> void:
 	_obols = UiKit.label("0", 18, UiKit.GOLD)
 	top_right.add_child(_obols)
 
-	_gear = UiKit.label("", 13, UiKit.DIM)
-	_gear.position = Vector2(16, H - 30)
+	_gear = UiKit.label("", 16, UiKit.DIM)
+	_gear.position = Vector2(16, H - 34)
 	add_child(_gear)
 
 	_toast_panel = UiKit.panel(UiKit.INK)
@@ -108,9 +108,10 @@ func _ready() -> void:
 	_banner.size = Vector2(600, 40)
 	_banner.modulate.a = 0.0
 	add_child(_banner)
-	_objective = UiKit.label("", 13, Color(UiKit.GOLD, 0.85), HORIZONTAL_ALIGNMENT_CENTER)
-	_objective.position = Vector2(W / 2.0 - 300, 16)
-	_objective.size = Vector2(600, 14)
+	# Twice the smallest size, so the objective reads on a projector from the back of the room.
+	_objective = UiKit.label("", 16, Color(UiKit.GOLD, 0.9), HORIZONTAL_ALIGNMENT_CENTER)
+	_objective.position = Vector2(W / 2.0 - 350, 12)
+	_objective.size = Vector2(700, 20)
 	add_child(_objective)
 
 	Game.health_changed.connect(func(_h, _m): _refresh())
