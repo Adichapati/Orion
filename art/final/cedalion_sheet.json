@@ -314,13 +314,13 @@
    },
    "duration": 300,
    "torch": {
-    "x": -18,
-    "y": -19
+    "x": 10,
+    "y": -15
    },
    "hand": {
-    "x": 4,
-    "y": -8,
-    "angle": -39
+    "x": -7,
+    "y": -6,
+    "angle": -147
    }
   },
   {
@@ -333,13 +333,13 @@
    },
    "duration": 300,
    "torch": {
-    "x": -14,
-    "y": -19
+    "x": -13,
+    "y": -18
    },
    "hand": {
-    "x": 6,
-    "y": -7,
-    "angle": -42
+    "x": 7,
+    "y": -13,
+    "angle": -44
    }
   },
   {
@@ -426,15 +426,10 @@
     "w": 46,
     "h": 32
    },
-   "duration": 300,
+   "duration": 90,
    "torch": {
-    "x": 12,
-    "y": -19
-   },
-   "hand": {
-    "x": -8,
-    "y": -9,
-    "angle": -136
+    "x": -5,
+    "y": -11
    }
   },
   {
@@ -445,14 +440,103 @@
     "w": 46,
     "h": 32
    },
+   "duration": 90,
+   "torch": {
+    "x": -1,
+    "y": -10
+   }
+  },
+  {
+   "filename": "cedalion 24",
+   "frame": {
+    "x": 0,
+    "y": 96,
+    "w": 46,
+    "h": 32
+   },
+   "duration": 90,
+   "torch": {
+    "x": -1,
+    "y": -13
+   }
+  },
+  {
+   "filename": "cedalion 25",
+   "frame": {
+    "x": 46,
+    "y": 96,
+    "w": 46,
+    "h": 32
+   },
+   "duration": 90,
+   "torch": {
+    "x": -5,
+    "y": -11
+   }
+  },
+  {
+   "filename": "cedalion 26",
+   "frame": {
+    "x": 92,
+    "y": 96,
+    "w": 46,
+    "h": 32
+   },
+   "duration": 90,
+   "torch": {
+    "x": -1,
+    "y": -10
+   }
+  },
+  {
+   "filename": "cedalion 27",
+   "frame": {
+    "x": 138,
+    "y": 96,
+    "w": 46,
+    "h": 32
+   },
+   "duration": 90,
+   "torch": {
+    "x": -1,
+    "y": -13
+   }
+  },
+  {
+   "filename": "cedalion 28",
+   "frame": {
+    "x": 184,
+    "y": 96,
+    "w": 46,
+    "h": 32
+   },
    "duration": 300,
    "torch": {
-    "x": -3,
+    "x": 3,
     "y": -17
    },
    "hand": {
-    "x": 8,
-    "y": -8,
+    "x": -8,
+    "y": -15,
+    "angle": -126
+   }
+  },
+  {
+   "filename": "cedalion 29",
+   "frame": {
+    "x": 230,
+    "y": 96,
+    "w": 46,
+    "h": 32
+   },
+   "duration": 300,
+   "torch": {
+    "x": -8,
+    "y": -11
+   },
+   "hand": {
+    "x": 6,
+    "y": -6,
     "angle": -44
    }
   }
@@ -462,7 +546,7 @@
   "image": "cedalion_sheet.png",
   "size": {
    "w": 368,
-   "h": 96
+   "h": 128
   },
   "pivot": {
    "x": 23,
@@ -556,13 +640,25 @@
    {
     "name": "dodge_se",
     "from": 22,
-    "to": 22,
+    "to": 24,
     "direction": "forward"
    },
    {
     "name": "dodge_ne",
-    "from": 23,
-    "to": 23,
+    "from": 25,
+    "to": 27,
+    "direction": "forward"
+   },
+   {
+    "name": "hurt_se",
+    "from": 28,
+    "to": 28,
+    "direction": "forward"
+   },
+   {
+    "name": "hurt_ne",
+    "from": 29,
+    "to": 29,
     "direction": "forward"
    }
   ]

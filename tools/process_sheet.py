@@ -99,6 +99,41 @@ ARCS = {
     "atk_f1": [(512, 488, 548, 528, 8), (548, 528, 545, 570, 8), (545, 570, 512, 604, 8), (512, 604, 478, 616, 7)],
 }
 
+# Adithya's fuller sheet (art/generated/cedalion_sheet_v2.jpg) adds the moves the first one lacks:
+# the dodge roll, the block and the get-hit. Only those are taken: its walk and idle rows are
+# labelled with directions that don't match them, and the first sheet's work. Its lower rows are
+# drawn smaller (about 72 px standing against 160), hence their own scale. The roll's first and
+# last poses are just standing, so only the three tucked frames are used; they show no sword, so
+# they get no sword hand and the game hides the blade while he's curled up.
+BOXES_V2 = {
+    "roll0": ((161, 641, 229, 707), False, "stand"),
+    "roll1": ((266, 638, 338, 705), False, "stand"),
+    "roll2": ((383, 635, 454, 705), False, "stand"),
+    "block_f": ((698, 626, 771, 704), False, "stand"),
+    # the back views hold the sword on the left: mirrored to match the first sheet's back views
+    "block_b": ((962, 628, 1042, 704), True, "stand"),
+    "hurt_f": ((537, 779, 608, 862), True, "stand"),
+    "hurt_b": ((609, 778, 694, 854), False, "stand"),
+}
+SWORDS_V2 = {
+    "block_f": (None, None, (708, 683)),
+    "block_b": (None, None, (979, 668)),
+    "hurt_f": ((603, 790), (586, 813), (582, 821)),
+    "hurt_b": ((690, 803), (664, 828), (659, 833)),
+}
+# The painted block effects: a crescent round the front block and a pale shield on the back one.
+ARCS_V2 = {
+    "block_f": [(746, 629, 764, 641, 6), (764, 641, 772, 662, 6), (772, 662, 767, 685, 6), (767, 685, 750, 702, 6)],
+    "block_b": [(963, 645, 963, 691, 5), (963, 645, 990, 645, 5), (963, 691, 986, 691, 5)],
+}
+# Frames without a drawn blade borrow a resting angle (the game poses the parry blade itself).
+ANGLE_FROM_V2 = {"block_f": "idle_f", "block_b": "idle_b"}
+SHEET_V2 = dict(
+    source=GENERATED / "cedalion_sheet_v2.jpg",
+    boxes=BOXES_V2, swords=SWORDS_V2, arcs=ARCS_V2,
+    scale=0.40, is_bg=lambda c: is_paper_jpg(c), enhance=(1.45, 1.35, 2.5),
+)
+
 # Cedalion's lying poses sit on a grass tile that can't be separated cleanly at this scale, so the
 # game animates the fall in code instead.
 # Animation tags: name -> (frame keys, ms per frame). Facing suffix: _se front, _ne back; the game
@@ -111,18 +146,21 @@ TAGS = [
     ("walk_ne", ["walk_b1", "walk_b0", "walk_b3", "walk_b2"], 150),
     ("attack_se", ["atk_f0", "atk_f1", "atk_f2"], 100),
     ("attack_ne", ["atk_b"], 300),
-    ("parry_se", ["atk_f0"], 300), ("parry_ne", ["atk_b"], 300),
+    ("parry_se", ["block_f"], 300), ("parry_ne", ["block_b"], 300),
     ("lunge_se", ["atk_f2"], 300), ("lunge_ne", ["atk_b"], 300),
     ("jump_se", ["walk_f1"], 300), ("jump_ne", ["walk_b1"], 300),
-    ("dodge_se", ["walk_f3"], 300), ("dodge_ne", ["walk_b3"], 300),
+    # the roll is the same tucked ball from either side; the game plays it over the dodge's length
+    ("dodge_se", ["roll0", "roll1", "roll2"], 90), ("dodge_ne", ["roll0", "roll1", "roll2"], 90),
+    ("hurt_se", ["hurt_f"], 300), ("hurt_ne", ["hurt_b"], 300),
 ]
 
 CONFIGS = {
     "cedalion": dict(
         source=GENERATED / "cedalion_friend_sheet.webp",
-        boxes=BOXES, tags=TAGS, swords=SWORDS, arcs=ARCS, angle_from=ANGLE_FROM,
+        boxes=BOXES, tags=TAGS, swords=SWORDS, arcs=ARCS, angle_from={**ANGLE_FROM, **ANGLE_FROM_V2},
         scale=0.19,  # sheet pixels -> game pixels (~26 px tall, the doc's 16x24 hero plus hair)
         palette=22, background="paper", torch=True, stills=("idle_f", "idle_b"),
+        more=[SHEET_V2],
     ),
 }
 
@@ -132,6 +170,20 @@ def is_paper(c):
     warm (red >= blue), so they stay."""
     r, g, b = c[:3]
     return (max(r, g, b) - min(r, g, b)) < 42 and max(r, g, b) > 112 and b >= r - 6
+
+
+def is_paper_jpg(c):
+    """The v2 sheet's paper is a JPEG: its edges round each figure blur into light greys that lean
+    a little warm, and its drop shadows are a darker slate blue. Skin, hair, tunic and flame lean
+    much warmer, and the outline is dark and warm, so they stay. The sheet also ends in a black
+    strip along its bottom edge."""
+    r, g, b = c[:3]
+    hi, lo = max(r, g, b), min(r, g, b)
+    if hi < 14:
+        return True
+    if hi - lo < 48 and hi > 150 and b >= r - 28:
+        return True
+    return b >= r + 4 and hi - lo < 70 and hi >= 60
 
 
 def tile_colours(img: Image.Image):
@@ -281,6 +333,20 @@ def cut_sword(img: Image.Image, key, origin, cfg):
     return keep_main_parts(img)
 
 
+def enhance(img: Image.Image, contrast: float, colour: float, sharpness: float) -> Image.Image:
+    """Firms up a soft, washed-out drawing (the v2 JPEG) to match the first sheet's tones before it
+    is shrunk: more contrast and colour, sharper edges. The alpha is kept as it is."""
+    from PIL import ImageEnhance
+    alpha = img.getchannel("A")
+    rgb = img.convert("RGB")
+    rgb = ImageEnhance.Contrast(rgb).enhance(contrast)
+    rgb = ImageEnhance.Color(rgb).enhance(colour)
+    rgb = ImageEnhance.Sharpness(rgb).enhance(sharpness)
+    out = rgb.convert("RGBA")
+    out.putalpha(alpha)
+    return out
+
+
 def shrink(img: Image.Image, scale: float) -> Image.Image:
     bb = img.getbbox()
     img = img.crop(bb)
@@ -389,38 +455,47 @@ def flame_of(f: Image.Image, side=0):
 
 
 def process(name, cfg, preview=None):
-    sheet = Image.open(cfg["source"]).convert("RGB")
-    is_bg = is_paper if cfg.get("background") == "paper" else flat_background(sheet)
-    swords = cfg.get("swords", {})
     raw = {}
     hands = {}
-    for key, (box, mirror, kind) in cfg["boxes"].items():
-        x0, y0, x1, y1 = box
-        origin = (max(0, x0 - 4), max(0, y0 - 4))
-        crop = sheet.crop((origin[0], origin[1], min(sheet.width, x1 + 5), min(sheet.height, y1 + 5)))
-        cut = cut_sword(cut_out(crop, kind == "lying", is_bg), key, origin, cfg)
-        tip, guard, hand = swords.get(key, (None, None, None))
-        if mirror:
-            cut = cut.transpose(Image.FLIP_LEFT_RIGHT)
-        bb = cut.getbbox()
-        small = shrink(cut, cfg["scale"])
-        if hand:
-            hx, hy = hand[0] - origin[0], hand[1] - origin[1]
+    first = None
+    # The main sheet, then any extra sheets ("more": their own source, boxes, swords, arcs and
+    # scale) that add frames to the same set.
+    for part in [cfg] + cfg.get("more", []):
+        sheet = Image.open(part["source"]).convert("RGB")
+        is_bg = part.get("is_bg") or (is_paper if cfg.get("background") == "paper" else flat_background(sheet))
+        swords = part.get("swords", {})
+        for key, (box, mirror, kind) in part["boxes"].items():
+            x0, y0, x1, y1 = box
+            origin = (max(0, x0 - 4), max(0, y0 - 4))
+            crop = sheet.crop((origin[0], origin[1], min(sheet.width, x1 + 5), min(sheet.height, y1 + 5)))
+            cut = cut_sword(cut_out(crop, kind == "lying", is_bg), key, origin, part)
+            if part.get("enhance"):
+                cut = enhance(cut, *part["enhance"])
+            tip, guard, hand = swords.get(key, (None, None, None))
             if mirror:
-                hx = crop.width - 1 - hx
-            sx, sy = small.width / (bb[2] - bb[0]), small.height / (bb[3] - bb[1])
-            angle = None
-            if tip:
-                dx, dy = tip[0] - guard[0], tip[1] - guard[1]
+                cut = cut.transpose(Image.FLIP_LEFT_RIGHT)
+            bb = cut.getbbox()
+            small = shrink(cut, part["scale"])
+            if hand:
+                hx, hy = hand[0] - origin[0], hand[1] - origin[1]
                 if mirror:
-                    dx = -dx
-                angle = math.degrees(math.atan2(dy, dx))
-            hands[key] = [(hx - bb[0]) * sx, (hy - bb[1]) * sy, angle]
-        raw[key] = (small, kind)
+                    hx = crop.width - 1 - hx
+                sx, sy = small.width / (bb[2] - bb[0]), small.height / (bb[3] - bb[1])
+                angle = None
+                if tip:
+                    dx, dy = tip[0] - guard[0], tip[1] - guard[1]
+                    if mirror:
+                        dx = -dx
+                    angle = math.degrees(math.atan2(dy, dx))
+                hands[key] = [(hx - bb[0]) * sx, (hy - bb[1]) * sy, angle]
+            raw[key] = (small, kind)
+        if first is None:
+            first = list(raw)
     for key, src in cfg.get("angle_from", {}).items():
         if key in hands and src in hands:
             hands[key][2] = hands[src][2]
-    pal = build_palette([f for f, _ in raw.values()], cfg.get("palette", 22))
+    # The palette comes from the main sheet alone, so extra frames never shift its colours.
+    pal = build_palette([raw[k][0] for k in first], cfg.get("palette", 22))
     ink = min(pal, key=lambda p: p[0] + p[1] + p[2])
     frames = {}
     for key, (f, kind) in raw.items():

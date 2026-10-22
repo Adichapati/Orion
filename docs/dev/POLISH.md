@@ -70,6 +70,19 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
   `SWORDS` lines in `tools/process_sheet.py` as before and dropping the painted swing arcs; keep
   the current walk and idle (they work, and the new sheet's direction labels don't match its
   rows). Then the chest and Alcyone once their images are in `art/generated/`.
+- 14:39 New session on Sathvik's machine (Godot 4.7.2 installed by winget; Pillow, NumPy and
+  SciPy by pip). 175 tests pass; the game runs windowed in the cistern.
+- Cedalion's roll, block and get-hit from `art/generated/cedalion_sheet_v2.jpg`:
+  `tools/process_sheet.py` takes extra sheets (`more`, each with its own boxes, sword lines,
+  painted arcs and scale; the v2 rows are drawn at about 72 px standing, so 0.40). The palette
+  still comes from the first sheet alone, so the walk and idle are byte-identical. The JPEG
+  needed its own background test (`is_paper_jpg`: fringe, slate drop shadows, the black strip at
+  the bottom) and a contrast, colour and sharpness lift before shrinking. The dodge plays the
+  three tucked roll frames once over its 0.28 s with the sword hidden (a frame with no sword
+  hand on a sheet that has them hides the blade); the parry shows the braced block (its crescent
+  and pale shield removed); a hit shows the flinch, front and back. Screenshots: `--script=moves`.
+  Test: the roll, block and get-hit clips exist and play, and the sword hides through the roll.
+  185 tests pass.
 
 ; stopped at about 55% of the 5-hour window)
 

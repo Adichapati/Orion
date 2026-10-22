@@ -118,6 +118,15 @@ func _parse(text: String, tex: Texture2D) -> bool:
 	return not clips.is_empty()
 
 
+## True if any frame marks a sword hand: then a frame without one means the blade is hidden.
+func has_hands() -> bool:
+	for c in clips.values():
+		for h in c.hand:
+			if h != null:
+				return true
+	return false
+
+
 func has(base: String) -> bool:
 	for d in ["se", "sw", "ne", "nw"]:
 		if clips.has(base + "_" + d):

@@ -185,6 +185,37 @@ const SCRIPTS := {
 		[3.33, "shot", "", "down2"],
 		[3.4, "shot", "", "down3"],
 	],
+	# The roll, the block and the get-hit from the v2 sheet: front (down-right), then back (up-right).
+	"moves": [
+		[0.5, "call", "give_sword"],
+		[0.6, "call", "trace"],
+		[0.8, "tap", "dodge"],
+		[0.84, "shot", "", "roll1"],
+		[0.93, "shot", "", "roll2"],
+		[1.02, "shot", "", "roll3"],
+		[1.6, "tap", "parry"],
+		[1.7, "shot", "", "block"],
+		[2.3, "call", "hurt"],
+		# three shots: the hit's flicker hides him on every other twentieth of a second
+		[2.38, "shot", "", "hurt"],
+		[2.42, "shot", "", "hurt_b"],
+		[2.47, "shot", "", "hurt_c"],
+		[3.2, "press", "move_up"],
+		[3.2, "press", "move_right"],
+		[3.45, "release", "move_up"],
+		[3.45, "release", "move_right"],
+		[3.7, "tap", "dodge"],
+		[3.74, "shot", "", "back_roll1"],
+		[3.83, "shot", "", "back_roll2"],
+		[3.92, "shot", "", "back_roll3"],
+		[4.5, "tap", "parry"],
+		[4.6, "shot", "", "back_block"],
+		[5.2, "call", "hurt"],
+		[5.28, "shot", "", "back_hurt"],
+		[5.32, "shot", "", "back_hurt_b"],
+		[5.37, "shot", "", "back_hurt_c"],
+		[5.6, "call", "untrace"],
+	],
 	# The island from its front corner, where the underside shows.
 	"vista": [
 		[0.4, "call", "goto_corner"],
@@ -330,6 +361,9 @@ func _run(e: Array) -> void:
 				print("autoshot info: player at %s, focus %s" % [main.player.grid_pos(), f.verb if f else "none"])
 			elif e[2] == "give_sword":
 				Game.give_weapon("xiphos")
+			elif e[2] == "hurt" and main.player:
+				# A harmless blow from the side he faces, to show the get-hit frame.
+				main.player.take_hit(0, main.player.global_position + Iso.grid_to_screen(main.player.facing), 0.0)
 			elif e[2] == "unarm":
 				Game.weapon_id = ""
 			elif e[2] == "trace":

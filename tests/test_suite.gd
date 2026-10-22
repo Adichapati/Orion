@@ -17,6 +17,7 @@ func run() -> void:
 	await test_rooms_are_sealed()
 	await test_interactables_reachable()
 	await test_cedalion_sword()
+	await test_cedalion_moves()
 	await test_guard_animation()
 	await test_guard_sees_player()
 	await test_noise_makes_guard_suspicious()
@@ -290,11 +291,14 @@ func test_cedalion_sword() -> void:
 		return
 	var missing: Array = []
 	for name in anim.clips:
+		# The dodge roll is tucked into a ball with the blade hidden (see test_cedalion_moves).
+		if String(name).begins_with("dodge_"):
+			continue
 		var clip: SheetAnim.Clip = anim.clips[name]
 		for i in clip.frames.size():
 			if clip.hand[i] == null:
 				missing.append("%s#%d" % [name, i])
-	check(missing.is_empty(), "every frame of every clip has a sword hand%s" % ("" if missing.is_empty() else " (missing: %s)" % ", ".join(missing)))
+	check(missing.is_empty(), "every frame of every clip but the roll has a sword hand%s" % ("" if missing.is_empty() else " (missing: %s)" % ", ".join(missing)))
 	for wid in Game.weapons:
 		check(ResourceLoader.exists("res://art/final/sword_%s.png" % wid), "the %s has a sword sprite" % wid)
 
@@ -318,6 +322,52 @@ func test_cedalion_sword() -> void:
 		frames[p.sword.frame] = true
 		await get_tree().physics_frame
 	check(frames.size() >= 5, "a swing sweeps the blade through %d angles" % frames.size())
+	Game.reset_run()
+	_free_room(r)
+
+
+## Cedalion's dodge was a walk frame, his parry the attack's wind-up and his get-hit the idle pose.
+## Adithya's fuller sheet adds a tucked roll, a braced block and a flinch: the roll plays once over
+## the dodge with the blade hidden, and a hit shows the flinch.
+func test_cedalion_moves() -> void:
+	print("Cedalion's roll, block and get-hit")
+	var anim := SheetAnim.load_for("cedalion")
+	if anim == null:
+		check(false, "Cedalion has an animation sheet")
+		return
+	for d in ["se", "ne"]:
+		var roll: SheetAnim.Clip = anim.clips.get("dodge_" + d)
+		check(roll != null and roll.frames.size() >= 3 and roll.hand.all(func(h): return h == null),
+				"dodge_%s is a roll of 3+ frames with no sword hand" % d)
+		check(anim.clips.has("hurt_" + d) and anim.clips.has("parry_" + d), "hurt_%s and parry_%s exist" % [d, d])
+		var parry: SheetAnim.Clip = anim.clips.get("parry_" + d)
+		var attack: SheetAnim.Clip = anim.clips.get("attack_" + d)
+		check(parry != null and attack != null and parry.frames[0].region != attack.frames[0].region,
+				"parry_%s is its own block pose, not the attack's first frame" % d)
+
+	Game.reset_run()
+	Game.give_weapon("xiphos")
+	var r := _open_room([])
+	var p := _add_player(r, Vector2i(4, 3))
+	await _seconds(0.1)
+	p._start_dodge(Vector2(1, 0))
+	var seen := {}
+	var hidden := true
+	while p.state == Player.S.DODGE:
+		await get_tree().physics_frame
+		if p.state != Player.S.DODGE:
+			break
+		seen[p.sprite.texture.region] = true
+		hidden = hidden and not p.sword.visible
+	check(seen.size() >= 3, "a dodge plays %d roll frames" % seen.size())
+	check(hidden, "the sword is hidden all through the roll")
+	await get_tree().physics_frame
+	check(p.sword.visible, "the sword is back once he's up")
+	await _seconds(0.7)
+	p.take_hit(0, p.global_position + Vector2(20, 0), 0.0)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	check(p._anim_base == "hurt", "a hit shows the get-hit frame (showing '%s')" % p._anim_base)
 	Game.reset_run()
 	_free_room(r)
 

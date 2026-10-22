@@ -67,6 +67,8 @@ var _torch_at := Vector2(-8, -19)
 ## The sword hand in the current frame: x, y from the feet and the resting blade angle (degrees),
 ## as drawn (before mirroring).
 var _hand := Vector3(6, -9, -45)
+## The current frame shows no sword hand (tucked into the roll), so no blade is drawn.
+var _frame_hides_sword := false
 var _sword_tex := ""
 var _lunge := 0.0
 
@@ -757,11 +759,15 @@ func _animate(delta: float, sd: Vector2) -> bool:
 			base = "parry"
 		S.DODGE:
 			base = "dodge"
+			# The roll plays once over the dodge, however many frames it has.
+			progress = _state_t / DODGE_TIME
 		S.JUMP, S.FALL:
 			base = "jump"
 		S.SHOVE, S.THRUST:
 			base = "lunge"
-		S.HURT, S.DEAD:
+		S.HURT:
+			base = "hurt"
+		S.DEAD:
 			base = "idle"
 	if not _anim.has(base):
 		base = "idle"
@@ -787,6 +793,8 @@ func _animate(delta: float, sd: Vector2) -> bool:
 	var h: Variant = clip.hand[i] if i < clip.hand.size() else null
 	if h != null:
 		_hand = h
+	# On a sheet that marks sword hands, a frame without one (tucked into the roll) shows no blade.
+	_frame_hides_sword = h == null and _anim.has_hands()
 	var at := Vector2(-_torch_at.x if pick.flip else _torch_at.x, _torch_at.y)
 	torch.position = at + Vector2(0, 2)
 	torch_embers.position = at + Vector2(0, -2)
@@ -888,7 +896,7 @@ func _swing_pose(k: float, face: float, rest: float) -> Vector3:
 
 func _update_sword(delta: float, sd: Vector2) -> void:
 	var w := Game.weapon()
-	sword.visible = w != null and sprite.visible and state != S.DEAD and state != S.FALL
+	sword.visible = w != null and sprite.visible and state != S.DEAD and state != S.FALL and not _frame_hides_sword
 	if not sword.visible:
 		trail.stop()
 		if state != S.DEAD:
