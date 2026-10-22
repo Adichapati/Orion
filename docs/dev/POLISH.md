@@ -3,7 +3,35 @@
 Polish pass on the `v1-prototype` branch: real character sprites, game feel, atmosphere, UI,
 sound and tuning. The checklist is in priority order; the dated log is at the bottom.
 
-## Morning summary (2026-10-19, second session; stopped at about 55% of the 5-hour window)
+## Demo day (2026-10-22)
+
+Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
+
+- 10:20 Started at 18% of the 5-hour window. 127 tests pass.
+- Bug: Cedalion could walk out of any room through its entrance or exit door (both sit on the
+  grid's edge with nothing behind them) and off the Lion Gate's open south edge, onto the sky.
+  A ring of solid cells now seals every grid, and jumps check their whole flight so a diagonal
+  jump can't clip a wall's corner. Test: Cedalion is pushed from every reachable edge cell in
+  eight directions by walking, dodging and jumping, in every room.
+- Bug: Phineus sat on a raised floor with no steps. A step now leads up from the south, and he
+  can be talked to from 2.2 tiles. Test: every door, chest, mark, the rack, the altar and
+  Phineus can be used from a cell reachable from the spawn.
+- Cedalion's sword: two of the four walk frames had no sword (it blinked with every step), every
+  frame showed one before he had it, and the swing was three similar poses. The sheet tool now
+  cuts the sword out of every frame and records the sword hand; the game draws the weapon's own
+  sword there (`tools/gen_swords.py`, 32 angles, one per weapon), hides it while unarmed and
+  swings it: a wind-up beside the head, a fast strike with a lunge and a blade trail, a
+  follow-through. The combo's three swings differ; a parry holds the blade across the body.
+- The guards and Phineus animate: `tools/animate_stills.py` builds walk, attack and hurt frames
+  (Phineus: idle and talk) from the stills in the same sheet format, so hand-made sheets replace
+  them by name. Guards walk by speed, hold the wind-up behind the glint and lunge on the strike.
+  Asked Adithya for hand-made sheets.
+- Floating islands: every room stands on an island (`tools/gen_islands.py`): a grassy rim,
+  moonlit strata cliffs, a jagged underside with roots and ivy, waterfalls off the cistern and
+  the statue court; far islands with temple ruins and braziers, and cloud banks, in parallax.
+  Stars now show over every room. 11:45, 48% of the 5-hour window, 175 tests pass.
+
+; stopped at about 55% of the 5-hour window)
 
 Two sessions ran overnight. The first (8 commits) did the sprites, game feel, atmosphere, the
 pixel font and new sounds. The second (about 35 commits) worked down the rest of
