@@ -460,7 +460,7 @@ func test_cracked_marble_collapses() -> void:
 	await _seconds(0.6)
 	check(r.is_hazard(c), "it collapses after 1.2 s of standing on it")
 	await _seconds(0.8)
-	check(Game.hp == hp_before - 1, "falling in costs a star")
+	check(Game.hp == hp_before - 1, "falling in costs a heart")
 	Game.heal(10)
 	_free_room(r)
 
@@ -516,7 +516,7 @@ func test_duel_parry_and_hit() -> void:
 	while t < 6.0 and Game.hp == stars:
 		await get_tree().physics_frame
 		t += 1.0 / 60.0
-	check(Game.hp < stars, "an unparried strike costs a star")
+	check(Game.hp < stars, "an unparried strike costs a heart")
 	_free_room(r)
 	Game.reset_run()
 	await _test_parry_on_the_flash()
@@ -588,7 +588,7 @@ func test_playthrough() -> void:
 			await get_tree().process_frame
 			check(main._menu is ShopPanel and main.player.state == Player.S.LOCKED, "talking to Phineus opens the shop and locks the player")
 			var err := Game.buy("linothorax")
-			check(err == "" and Game.armour_id == "linothorax" and Game.max_hp() == 5, "buying the linothorax equips it (+1 star)")
+			check(err == "" and Game.armour_id == "linothorax" and Game.max_hp() == 5, "buying the linothorax equips it (+1 heart)")
 			main._menu.close()
 			await get_tree().process_frame
 			check(main._menu == null and main.player.state == Player.S.NORMAL, "leaving the shop unlocks the player")
@@ -620,10 +620,10 @@ func test_playthrough() -> void:
 	Game.hp = 1
 	var p: Player = main.player
 	p.take_hit(1, p.global_position + Vector2(10, 0), 0.2)
-	check(p.state == Player.S.DEAD, "losing the last star kills Cedalion")
+	check(p.state == Player.S.DEAD, "losing the last heart kills Cedalion")
 	await _seconds(4.5)
 	check(main.room != null and main.room.id == "colonnade" and main.player != p, "death rebuilds the same room")
-	check(Game.obols == obols_at_entry and Game.hp == Game.max_hp(), "...with the obols and stars from the entry snapshot")
+	check(Game.obols == obols_at_entry and Game.hp == Game.max_hp(), "...with the obols and hearts from the entry snapshot")
 	main.queue_free()
 	await get_tree().process_frame
 

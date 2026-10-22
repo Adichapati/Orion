@@ -810,6 +810,32 @@ def star_shape(d, cx, cy, r, fill):
 
 icon("hud_star", 11, 11, lambda img, d, w, h: star_shape(d, 5, 5.5, 5.4, P["fire2"]))
 icon("hud_star_empty", 11, 11, lambda img, d, w, h: star_shape(d, 5, 5.5, 5.4, P["night2"]))
+
+# Cedalion's health: hearts. o outline, r red, d its shade, w a highlight.
+HEART = [
+    "..ooo.ooo..",
+    ".orrrorrro.",
+    "orwrrrrrrdo",
+    "orrrrrrrrdo",
+    "orrrrrrrddo",
+    ".orrrrrddo.",
+    "..orrrddo..",
+    "...orddo...",
+    "....odo....",
+    ".....o.....",
+]
+
+
+def heart(img, full):
+    cols = {"o": (36, 10, 18, 255), "r": P["scorp1"], "d": P["scorp0"], "w": P["fire3"]} if full else         {"o": P["night0"], "r": P["night2"], "d": P["night1"], "w": P["night2"]}
+    for y, row in enumerate(HEART):
+        for x, ch in enumerate(row):
+            if ch in cols:
+                img.putpixel((x, y + 1), cols[ch])
+
+
+icon("hud_heart", 11, 11, lambda img, d, w, h: heart(img, True))
+icon("hud_heart_empty", 11, 11, lambda img, d, w, h: heart(img, False))
 icon("hud_obol", 9, 9, lambda img, d, w, h: (d.ellipse([0, 0, 8, 8], fill=P["gold"]), d.ellipse([2, 2, 6, 6], fill=hexc("f0c45a"))))
 icon("glyph_door", 7, 7, lambda img, d, w, h: d.polygon([(3, 0), (6, 3), (3, 6), (0, 3)], outline=P["fire2"]))
 icon("glyph_coin", 7, 7, lambda img, d, w, h: d.ellipse([0, 0, 6, 6], outline=P["gold"]))

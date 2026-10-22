@@ -706,7 +706,7 @@ func _after_fall() -> void:
 	camera.reset_smoothing()
 	_invuln = 1.2
 	_set_state(S.NORMAL)
-	Game.toast.emit("You fell, and lost a star.")
+	Game.toast.emit("You fell, and lost a heart.")
 
 
 func _die() -> void:

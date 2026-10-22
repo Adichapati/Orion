@@ -1,6 +1,6 @@
 class_name Hud
 extends Control
-## The in-game HUD in 960x540 UI space: stars (health), pomegranates, obols, gear, toasts, the
+## The in-game HUD in 960x540 UI space: hearts (health), pomegranates, obols, gear, toasts, the
 ## "E — verb" prompt with hold progress, floating texts and barks, and the room-name banner.
 ##
 ## World positions are mapped to UI space through `project` (set by main), so floating texts
@@ -127,7 +127,7 @@ func _refresh() -> void:
 	for c in _stars.get_children():
 		c.queue_free()
 	for i in Game.max_hp():
-		_stars.add_child(UiKit.icon("hud_star" if i < Game.hp else "hud_star_empty", 2))
+		_stars.add_child(UiKit.icon("hud_heart" if i < Game.hp else "hud_heart_empty", 2))
 	_pom.text = "Pomegranates %d/%d  (H)" % [Game.pomegranates, Game.POMEGRANATE_LIMIT] if Game.pomegranates > 0 else ""
 	_obols.text = str(Game.obols)
 	var w := Game.weapon()

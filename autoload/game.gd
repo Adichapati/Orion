@@ -157,7 +157,7 @@ func display_name_of(id: String) -> String:
 
 func description_of(id: String) -> String:
 	if id == "pomegranate":
-		return "Persephone's fruit. Eat one at any time (H) to restore 2 stars. Carry up to 2."
+		return "Persephone's fruit. Eat one at any time (H) to restore 2 hearts. Carry up to 2."
 	if weapons.has(id):
 		return weapons[id].description
 	if armours.has(id):

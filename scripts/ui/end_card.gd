@@ -45,7 +45,7 @@ func _ready() -> void:
 	var cells := [
 		[rank.time, "time"], [str(rank.spotted), "spotted"], [str(rank.ghosted), "guards ghosted"],
 		[str(rank.marks), "marks read"], [str(rank.kos), "knock-outs"], [str(rank.env_kos), "by the world"],
-		[str(rank.obols), "obols found"], [str(rank.damage), "stars lost"],
+		[str(rank.obols), "obols found"], [str(rank.damage), "hearts lost"],
 	]
 	for i in cells.size():
 		var x := 120.0 + (i % 4) * 180.0

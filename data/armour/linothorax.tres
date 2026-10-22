@@ -6,7 +6,7 @@
 script = ExtResource("1")
 id = &"linothorax"
 display_name = "Bronze-scaled linothorax"
-description = "Layered linen with bronze scales. One extra star, and only a little noise."
+description = "Layered linen with bronze scales. One extra heart, and only a little noise."
 price = 40
 hp_bonus = 1
 noise_bonus = 1.0

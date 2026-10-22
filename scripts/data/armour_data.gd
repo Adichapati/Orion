@@ -6,7 +6,7 @@ extends Resource
 @export var display_name := ""
 @export_multiline var description := ""
 @export var price := 0
-## Extra stars of health.
+## Extra hearts of health.
 @export var hp_bonus := 0
 ## Extra footstep noise radius in tiles while moving.
 @export var noise_bonus := 0.0
