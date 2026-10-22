@@ -236,6 +236,62 @@ def room_island(room, seed):
         if rng.random() < 0.18 and e[x] > 0:
             px[x, e[x] - 1] = OLIVE2 + (255,)
 
+    # --- ruins on the rim: broken column stumps, a loose drum and a fallen column, on the
+    # grass in front of the walls (kept low, so they never reach up into the wall above)
+    def put(x, y, c):
+        if 0 <= x < w and 0 <= y < maxy - miny and top[x][y] and not in_grid[x][y]:
+            px[x, y] = c + (255,)
+
+    def stump(x, y, hgt):
+        for dx in range(-3, 4):
+            put(x + dx, y, MARBLE0)
+            put(x + dx, y + 1, NIGHT1)
+        for yy in range(y - hgt, y):
+            for dx in range(-2, 3):
+                c = MARBLE2 if dx == -2 else (MARBLE1 if dx in (-1, 1) else (MARBLE0 if dx == 2 else MARBLE1))
+                if dx == 0 and yy % 2 == 0:
+                    c = mix(MARBLE1, MARBLE0, 0.5)  # fluting
+                put(x + dx, yy, c)
+        for dx in range(-2, 3):  # broken top
+            put(x + dx, y - hgt - rng.randint(0, 2) + (1 if dx == 2 else 0), MARBLE2 if dx < 1 else MARBLE0)
+        for yy in range(y - hgt - 1, y + 1):
+            put(x - 3, yy, NIGHT1)
+            put(x + 3, yy, NIGHT1)
+
+    def fallen(x, y, length, slope):
+        for i in range(length):
+            cx, cy = x + i, y + round(i * slope)
+            for t in range(-2, 2):
+                c = MARBLE2 if t == -2 else (MARBLE1 if t < 1 else MARBLE0)
+                if i % 6 == 5:
+                    c = mix(c, NIGHT1, 0.45)  # joint between drums
+                put(cx, cy + t, c)
+            put(cx, cy - 3, NIGHT1)
+            put(cx, cy + 2, NIGHT1)
+
+    spots = []
+    for _ in range(400):
+        x = rng.randint(lx + 8, rx - 8)
+        y = e[x] - rng.randint(3, 6)
+        gx, gy = to_grid(x + minx + 0.5, y + miny + 0.5)
+        outside = gx - x1 if gx > x1 else (gy - y1 if gy > y1 else -1)
+        if 0.45 < outside < 1.1 and abs(x - bx) > 16 and all(abs(x - sx) > 26 for sx, _ in spots):
+            spots.append((x, y))
+        if len(spots) >= 4:
+            break
+    for i, (x, y) in enumerate(spots):
+        if i == 2:
+            fallen(x - 8, y, rng.randint(13, 17), 0.5 if x < bx else -0.5)
+        elif i == 3:
+            for dx in range(-3, 3):  # a loose drum on its side
+                for t in range(-2, 2):
+                    put(x + dx, y + t, MARBLE1 if t < 0 else MARBLE0)
+            for t in range(-2, 2):
+                put(x - 4, y + t, NIGHT1)
+                put(x + 3, y + t, mix(MARBLE0, NIGHT1, 0.4))
+        else:
+            stump(x, y, rng.randint(4, 7))
+
     # --- hanging roots and ivy
     for _ in range((rx - lx) // 5):
         x = rng.randint(lx + 3, rx - 3)
