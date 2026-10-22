@@ -320,6 +320,18 @@ def main_island():
         for i in range(8):
             cv.set(bx + leg + (leg // 4) * (i // 4), by - 4 + i, BRONZE if leg < 0 else C0)
     cv.rect(bx - 2, by - 9, 5, 1, F1)
+    # Worn flagstones from the temple steps toward the brazier.
+    prng = random.Random(4013)
+    for i in range(16):
+        t = i / 15
+        x = int(round(112 + (BRAZIER[0] - 12 - 112) * t))
+        y = int(round(64 + (BRAZIER[1] + 2 - 64) * t + 3 * math.sin(t * 3.2)))
+        if prng.random() < 0.2:
+            continue
+        w = prng.randint(2, 3)
+        cv.rect(x, y, w, 1, S1)
+        cv.set(x + w, y, S0)
+        cv.rect(x, y + 1, w + 1, 1, S0 if prng.random() < 0.5 else O0)
     # Two olive trees: gnarled trunks, round silver-green crowns lit from the upper left.
     for tx, ty, r in [(150, 52, 11), (28, 72, 8)]:
         for i in range(r + 2):
