@@ -264,6 +264,41 @@ for n, axis, side in (("w", "x", -1), ("e", "x", 1), ("n", "y", -1), ("s", "y", 
     edge_band(f"water_shade_{n}", axis, side, 0.3,
               lambda a, t: P["night1"][:3] + (200,) if a < 0.5 else (P["night1"][:3] + (110,) if (a < 0.8) else None))
 
+def medallion(name, r=1.4):
+    """A floor mosaic laid out in grid space, so it lies flat on the iso floor: a dark border, a
+    band of alternating stones, and a Vergina sun (sixteen rays round a disk) in gold."""
+    w, h = int(r * 22.63 * 2) + 2, int(r * 11.32 * 2) + 2
+    img = Image.new("RGBA", (w, h), CLEAR)
+    dark, ground = hexc("3e3a36"), hexc("6a645b")
+    for py in range(h):
+        for px in range(w):
+            dx, dy = px + 0.5 - w / 2, py + 0.5 - h / 2
+            u, v = dx / 32 + dy / 16, dy / 16 - dx / 32
+            rho = math.hypot(u, v)
+            phi = math.atan2(v, u) % (2 * math.pi)
+            if rho > r:
+                continue
+            seg = int(phi / (2 * math.pi) * 24)
+            if rho > r - 0.1:
+                c = dark
+            elif rho > r - 0.3:
+                c = P["marble2"] if seg % 2 == 0 else P["marble0"]
+            elif rho > r - 0.38:
+                c = dark
+            else:
+                c = ground
+                k = phi / (2 * math.pi) * 16
+                off = abs(k - round(k))  # 0 on a ray's axis, 0.5 between rays
+                if rho < 0.26:
+                    c = P["fire2"] if rho < 0.12 else P["gold"]
+                elif rho < r - 0.48 and off < 0.5 * (1 - (rho - 0.26) / (r - 0.74)):
+                    c = P["gold"] if off < 0.18 else P["bronze"]
+            img.putpixel((px, py), c)
+    save(img, name)
+
+
+medallion("floor_medallion")
+
 key_border("floor_key_w", "x", -1)   # wall on the -x side
 key_border("floor_key_e", "x", 1)    # wall on the +x side
 key_border("floor_key_n", "y", -1)   # wall on the -y side

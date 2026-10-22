@@ -116,6 +116,7 @@ func build(room_data: Dictionary) -> void:
 		return a.x + a.y < b.x + b.y or (a.x + a.y == b.x + b.y and a.x < b.x))
 	for c in order:
 		_build_floor(c)
+	_lay_medallions()
 	for c in order:
 		_build_solid(c)
 	_build_island()
@@ -216,6 +217,18 @@ func _build_floor(c: Vector2i) -> void:
 			else:
 				_add_floor_sprite(c, Art.tile_sprite(_plain_floor(c)))
 	_add_key_border(c, k)
+
+
+## Mosaic medallions (a Vergina sun in a ring) at a few rooms' focal points, on plain floor only.
+const MEDALLIONS := {"lion-gate": [Vector2i(7, 2)], "colonnade": [Vector2i(10, 5)]}
+
+
+func _lay_medallions() -> void:
+	for c in MEDALLIONS.get(id, []):
+		if ch(c) in ".m":
+			var m := Art.tile_sprite("floor_medallion")
+			m.position = cell_center(c)
+			floor_layer.add_child(m)
 
 
 ## A Greek-key border runs around a room's floor where it meets the walls (not over cracked
