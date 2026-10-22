@@ -44,16 +44,19 @@ COLS = 8
 
 # ---------------------------------------------------------------- Cedalion's hand-made sheet
 
-# (box in the sheet, mirror?, kind) - boxes found by scanning the sheet; mirror normalises facing
+# (box in the sheet, mirror?, kind) - boxes found by scanning the sheet; mirror normalises facing:
+# front views must look toward screen-right (SE) and back views away up-right (NE). The sheet's
+# front idle and walk poses already look right (the sword in his right hand on our left, the
+# torch on our right); mirroring them made him walk one way while looking the other.
 BOXES = {
-    "idle_f": ((60, 50, 280, 222), True, "stand"),
-    "idle_f2": ((380, 50, 590, 222), True, "stand"),
+    "idle_f": ((60, 50, 280, 222), False, "stand"),
+    "idle_f2": ((380, 50, 590, 222), False, "stand"),
     "idle_b": ((640, 50, 880, 222), False, "stand"),
     "idle_b2": ((950, 50, 1190, 222), False, "stand"),
-    "walk_f0": ((15, 275, 182, 429), True, "stand"),
-    "walk_f1": ((191, 274, 320, 430), True, "stand"),
-    "walk_f2": ((327, 274, 458, 430), True, "stand"),
-    "walk_f3": ((462, 274, 596, 430), True, "stand"),
+    "walk_f0": ((15, 275, 182, 429), False, "stand"),
+    "walk_f1": ((191, 274, 320, 430), False, "stand"),
+    "walk_f2": ((327, 274, 458, 430), False, "stand"),
+    "walk_f3": ((462, 274, 596, 430), False, "stand"),
     "walk_b0": ((638, 276, 780, 429), True, "stand"),
     "walk_b1": ((775, 276, 912, 429), True, "stand"),
     "walk_b2": ((912, 276, 1051, 430), True, "stand"),
@@ -366,17 +369,20 @@ def anchor_of(f: Image.Image, lying: bool):
     return (sum(xs) / len(xs), yb)
 
 
-def flame_of(f: Image.Image):
-    """Where the torch flame is. After mirroring the torch is always on the figure's left, and the
-    golden hair sits in the middle, so only orange pixels in the left third count."""
+def flame_of(f: Image.Image, side=0):
+    """Where the torch flame is. The golden hair sits in the middle and is flame-coloured too, so
+    only orange pixels in the outer thirds count: on `side` (-1 left, 1 right) if given (the torch
+    is in the hand that doesn't hold the sword), else on whichever side has more of them."""
     bb = f.getbbox()
-    limit = bb[0] + (bb[2] - bb[0]) * 0.36
-    pts = []
+    left = bb[0] + (bb[2] - bb[0]) * 0.36
+    right = bb[2] - (bb[2] - bb[0]) * 0.36
+    sides = ([], [])
     for y in range(f.height):
         for x in range(f.width):
             c = f.getpixel((x, y))
-            if c[3] and x < limit and is_flame(c):
-                pts.append((x, y))
+            if c[3] and is_flame(c) and (x < left or x > right):
+                sides[0 if x < left else 1].append((x, y))
+    pts = sides[0] if side < 0 else (sides[1] if side > 0 else max(sides, key=len))
     if len(pts) < 3:
         return None
     return (sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts))
@@ -451,7 +457,10 @@ def process(name, cfg, preview=None):
         ox, oy = round(cx + pivot[0] - ax), round(cy + pivot[1] - ay)
         out.alpha_composite(f, (ox, oy))
         entry = {"filename": f"{name} {i}", "frame": {"x": cx, "y": cy, "w": cw, "h": ch}, "duration": ms}
-        fl = flame_of(f) if cfg.get("torch") else None
+        side = 0
+        if k in hands:
+            side = 1 if hands[k][0] < f.width / 2 else -1
+        fl = flame_of(f, side) if cfg.get("torch") else None
         if fl:
             entry["torch"] = {"x": round(fl[0] - ax), "y": round(fl[1] - ay)}
         if k in hands:

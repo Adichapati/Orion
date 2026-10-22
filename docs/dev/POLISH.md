@@ -57,6 +57,11 @@ Getting the hackathon demo into shape by 17:00 IST. Log, newest last:
 - Waiting on Adithya: the princess (Alcyone) and chest reference images saved to
   `art/generated/`, and where Alcyone should appear (suggested: chained by the shrine's altar).
   Next after the reset (15:50): the chest art, Alcyone, a broken-wall variant, more medallions.
+- Bug (Adithya: "the walk animation is inverted"): Cedalion's front idle and walk frames looked
+  screen-left while he walked right, and snapped round when he swung (the attack frames face
+  right). The sheet tool mirrored them to put the torch on the left; the artist had drawn them
+  facing right. They are no longer mirrored, and the torch is found on the side opposite the
+  sword hand (his golden hair fooled the flame finder).
 
 ; stopped at about 55% of the 5-hour window)
 
