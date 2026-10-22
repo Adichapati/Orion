@@ -31,6 +31,7 @@ func run() -> void:
 	await test_phineus_dais()
 	await test_sky_clears_walls()
 	await test_axe_mace_and_mail()
+	await test_armour_swaps_body()
 	await test_playthrough()
 	print("
 %d passed, %d failed" % [_passed, _failed])
@@ -849,5 +850,50 @@ func test_axe_mace_and_mail() -> void:
 		await get_tree().physics_frame
 		await get_tree().physics_frame
 		check(p.sword.visible and p.sword.texture == t, "equipping the %s puts it in Cedalion's hand" % id)
+	Game.reset_run()
+	_free_room(r)
+
+
+## Each armour has its own body (art/final/cedalion_<look>_sheet.*, from Sathvik's armour sheet,
+## once it is there) and putting it on swaps Cedalion's sheet at once; the tunic keeps his own.
+## Any armour sheet that exists must have every move, a sword hand on every frame but a tucked
+## roll, and face the way he moves in every clip but the glance back.
+func test_armour_swaps_body() -> void:
+	print("Armour swaps Cedalion's body")
+	for look: String in Player.ARMOUR_LOOKS.values():
+		var path := "res://art/final/cedalion_%s_sheet.json" % look
+		if not FileAccess.file_exists(path):
+			continue
+		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+		var tags := {}
+		for tag in data.meta.frameTags:
+			tags[String(tag.name)] = tag
+		var bad: Array = []
+		for base: String in ["idle", "look", "walk", "attack", "parry", "lunge", "jump", "dodge", "hurt"]:
+			for d: String in ["se", "ne"]:
+				var tag: Variant = tags.get(base + "_" + d)
+				if tag == null:
+					bad.append("no %s_%s" % [base, d])
+					continue
+				for i in range(int(tag.from), int(tag.to) + 1):
+					var f: Dictionary = data.frames[i]
+					if base != "dodge" and not f.has("hand"):
+						bad.append("%s_%s#%d has no hand" % [base, d, i - int(tag.from)])
+					if base != "look" and String(f.get("faces", "")) != "right":
+						bad.append("%s_%s#%d faces %s" % [base, d, i - int(tag.from), f.get("faces", "?")])
+		check(bad.is_empty(), "the %s sheet has every move, hands and facing%s" % [look, "" if bad.is_empty() else " (%s)" % ", ".join(bad)])
+	Game.reset_run()
+	var r := _open_room([])
+	var p := _add_player(r, Vector2i(4, 3))
+	await get_tree().physics_frame
+	check(p.sheet_name == "cedalion", "in the tunic he wears his own sheet")
+	for id: String in Player.ARMOUR_LOOKS:
+		Game.owned[id] = true
+		Game.equip(id)
+		var want := "cedalion_" + String(Player.ARMOUR_LOOKS[id])
+		var expect := want if SheetAnim.load_for(want) != null else "cedalion"
+		check(p.sheet_name == expect, "putting on the %s shows %s (showing %s)" % [id, expect, p.sheet_name])
+	Game.equip("tunic")
+	check(p.sheet_name == "cedalion", "back in the tunic he wears his own sheet again")
 	Game.reset_run()
 	_free_room(r)
