@@ -233,10 +233,12 @@ class NightSky extends Node2D:
 			# Bands of night, darkest at the top, the lower sky lifted by a dithered haze.
 			var img := Image.create(480, 270, false, Image.FORMAT_RGBA8)
 			img.fill(NIGHT_0)
-			for y in range(150, 270):
-				var k := (y - 150) / 120.0
+			# The haze fades in through a 4x4 ordered dither, so it has no hard top edge.
+			const BAYER := [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5]
+			for y in range(130, 270):
+				var density := smoothstep(0.0, 1.0, (y - 130) / 140.0) * 0.55
 				for x in 480:
-					if ((x + y) % 4 == 0 and k > 0.15) or (k > 0.55 and (x + y) % 2 == 0):
+					if (BAYER[(y % 4) * 4 + x % 4] + 0.5) / 16.0 < density:
 						img.set_pixel(x, y, NIGHT_1)
 			_bands = ImageTexture.create_from_image(img)
 		var rng := RandomNumberGenerator.new()

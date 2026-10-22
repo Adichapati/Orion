@@ -48,6 +48,7 @@ var _prompt: Label
 var _hold: ProgressBar
 var _banner: Label
 var _objective: Label
+var _objective_back: ColorRect
 var _floaters: Array = []
 var _hint_timer: Tween
 
@@ -109,6 +110,12 @@ func _ready() -> void:
 	_banner.modulate.a = 0.0
 	add_child(_banner)
 	# Twice the smallest size, so the objective reads on a projector from the back of the room.
+	# A dark strip behind it keeps it legible over whatever stands at the top of the screen.
+	_objective_back = ColorRect.new()
+	_objective_back.color = Color(0.02, 0.02, 0.07, 0.6)
+	_objective_back.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_objective_back.visible = false
+	add_child(_objective_back)
 	_objective = UiKit.label("", 16, Color(UiKit.GOLD, 0.9), HORIZONTAL_ALIGNMENT_CENTER)
 	_objective.position = Vector2(W / 2.0 - 350, 12)
 	_objective.size = Vector2(700, 20)
@@ -177,6 +184,10 @@ func show_room(id: String, display_name: String) -> void:
 	show_banner(display_name)
 	var info: Array = ROOMS.get(id, ["", []])
 	_objective.text = info[0]
+	var tw := _objective.get_minimum_size().x
+	_objective_back.visible = info[0] != ""
+	_objective_back.position = Vector2(roundf(W / 2.0 - tw / 2.0 - 12), 8)
+	_objective_back.size = Vector2(roundf(tw + 24), 26)
 	if _hint_timer:
 		_hint_timer.kill()
 	if _hinted.has(id):
